@@ -8,6 +8,11 @@ file_length:
 disabled_rules:
   - trailing_whitespace
 
+identifier_name:
+  excluded:
+    - id  # Standard Swift/Identifiable protocol property name
+    - gi  # BJJ domain term (kimono/uniform)
+
 excluded:
   - .git
   - Pods

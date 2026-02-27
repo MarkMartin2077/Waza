@@ -15,6 +15,12 @@ struct CoreInteractor: GlobalInteractor {
     private let xpManager: ExperiencePointsManager
     private let progressManager: ProgressManager
 
+    // MARK: BJJ Managers
+    let sessionManager: SessionManager
+    let beltManager: BeltManager
+    let goalManager: GoalManager
+    let achievementManager: AchievementManager
+
     init(container: DependencyContainer) {
         self.appState = container.resolve(AppState.self)!
         self.authManager = container.resolve(AuthManager.self)!
@@ -28,24 +34,28 @@ struct CoreInteractor: GlobalInteractor {
         self.streakManager = container.resolve(StreakManager.self, key: Dependencies.streakConfiguration.streakKey)!
         self.xpManager = container.resolve(ExperiencePointsManager.self, key: Dependencies.xpConfiguration.experienceKey)!
         self.progressManager = container.resolve(ProgressManager.self, key: Dependencies.progressConfiguration.progressKey)!
+        self.sessionManager = container.resolve(SessionManager.self)!
+        self.beltManager = container.resolve(BeltManager.self)!
+        self.goalManager = container.resolve(GoalManager.self)!
+        self.achievementManager = container.resolve(AchievementManager.self)!
     }
-    
+
     // MARK: APP STATE
-    
+
     var startingModuleId: String {
         appState.startingModuleId
     }
 
     // MARK: AuthManager
-    
+
     var auth: UserAuthInfo? {
         authManager.auth
     }
-    
+
     func getAuthId() throws -> String {
         try authManager.getAuthId()
     }
-    
+
     func signInAnonymously() async throws -> (user: UserAuthInfo, isNewUser: Bool) {
         try await authManager.signInAnonymously()
     }
@@ -53,62 +63,62 @@ struct CoreInteractor: GlobalInteractor {
     func signInApple() async throws -> (user: UserAuthInfo, isNewUser: Bool) {
         try await authManager.signInApple()
     }
-    
+
     func signInGoogle() async throws -> (user: UserAuthInfo, isNewUser: Bool) {
         guard let clientId = Constants.firebaseAppClientId else {
             throw AppError("Firebase not configured or clientID missing")
         }
         return try await authManager.signInGoogle(GIDClientID: clientId)
     }
-    
+
     // MARK: UserManager
-    
+
     var currentUser: UserModel? {
         userManager.currentUser
     }
-    
+
     func getUser(userId: String) async throws -> UserModel {
         try await userManager.getUser(userId: userId)
     }
-    
+
     func saveOnboardingComplete() async throws {
         try await userManager.saveOnboardingCompleteForCurrentUser()
     }
-    
+
     func saveUserName(name: String) async throws {
         try await userManager.saveUserName(name: name)
     }
-    
+
     func saveUserEmail(email: String) async throws {
         try await userManager.saveUserEmail(email: email)
     }
-    
+
     func saveUserProfileImage(image: UIImage) async throws {
         try await userManager.saveUserProfileImage(image: image)
     }
-    
+
     func saveUserFCMToken(token: String) async throws {
         try await userManager.saveUserFCMToken(token: token)
     }
 
     // MARK: LogManager
-    
+
     func identifyUser(userId: String, name: String?, email: String?) {
         logManager.identifyUser(userId: userId, name: name, email: email)
     }
-    
+
     func addUserProperties(dict: [String: Any], isHighPriority: Bool) {
         logManager.addUserProperties(dict: dict, isHighPriority: isHighPriority)
     }
-    
+
     func deleteUserProfile() {
         logManager.deleteUserProfile()
     }
-    
+
     func trackEvent(eventName: String, parameters: [String: Any]? = nil, type: LogType = .analytic) {
         logManager.trackEvent(eventName: eventName, parameters: parameters, type: type)
     }
-    
+
     func trackEvent(event: AnyLoggableEvent) {
         logManager.trackEvent(event: event)
     }
@@ -116,87 +126,87 @@ struct CoreInteractor: GlobalInteractor {
     func trackEvent(event: LoggableEvent) {
         logManager.trackEvent(event: event)
     }
-    
+
     func trackScreenEvent(event: LoggableEvent) {
         logManager.trackEvent(event: event)
     }
 
     // MARK: PushManager
-    
+
     func requestPushAuthorization() async throws -> Bool {
         try await pushManager.requestAuthorization()
     }
-    
+
     func canRequestPushAuthorization() async -> Bool {
         await pushManager.canRequestAuthorization()
     }
 
     // MARK: ABTestManager
-    
+
     var activeTests: ActiveABTests {
         abTestManager.activeTests
     }
-        
+
     func override(updateTests: ActiveABTests) throws {
         try abTestManager.override(updateTests: updateTests)
     }
-    
+
     // MARK: PurchaseManager
-    
+
     var entitlements: [PurchasedEntitlement] {
         purchaseManager.entitlements
     }
-    
+
     var isPremium: Bool {
         entitlements.hasActiveEntitlement
     }
-    
+
     func getProducts(productIds: [String]) async throws -> [AnyProduct] {
         try await purchaseManager.getProducts(productIds: productIds)
     }
-    
+
     func restorePurchase() async throws -> [PurchasedEntitlement] {
         try await purchaseManager.restorePurchase()
     }
-    
+
     func purchaseProduct(productId: String) async throws -> [PurchasedEntitlement] {
         try await purchaseManager.purchaseProduct(productId: productId)
     }
-    
+
     func updateProfileAttributes(attributes: PurchaseProfileAttributes) async throws {
         try await purchaseManager.updateProfileAttributes(attributes: attributes)
     }
-    
+
     // MARK: Haptics
-    
+
     func prepareHaptic(option: HapticOption) {
         hapticManager.prepare(option: option)
     }
-    
+
     func prepareHaptics(options: [HapticOption]) {
         hapticManager.prepare(options: options)
     }
-        
+
     func playHaptic(option: HapticOption) {
         hapticManager.play(option: option)
     }
-    
+
     func playHaptics(options: [HapticOption]) {
         hapticManager.play(options: options)
     }
-    
+
     func tearDownHaptic(option: HapticOption) {
         hapticManager.tearDown(option: option)
     }
-    
+
     func tearDownHaptics(options: [HapticOption]) {
         hapticManager.tearDown(options: options)
     }
-    
+
     func tearDownAllHaptics() {
         hapticManager.tearDownAll()
     }
-    
+
     // MARK: Sound Effects
 
     func prepareSoundEffect(sound: SoundEffectFile, simultaneousPlayers: Int = 1) {
@@ -240,7 +250,7 @@ struct CoreInteractor: GlobalInteractor {
     func addStreakFreeze(id: String, dateExpires: Date? = nil) async throws -> StreakFreeze {
         try await streakManager.addStreakFreeze(id: id, dateExpires: dateExpires)
     }
-    
+
     func useStreakFreezes() async throws {
         try await streakManager.useStreakFreezes()
     }
@@ -319,10 +329,179 @@ struct CoreInteractor: GlobalInteractor {
         try await progressManager.deleteAllProgress()
     }
 
+    // MARK: BJJ Sessions
+
+    var recentSessions: [BJJSessionModel] {
+        sessionManager.getRecentSessions(limit: 5)
+    }
+
+    var sessionStats: SessionStats {
+        sessionManager.getSessionStats()
+    }
+
+    @discardableResult
+    func createSession(
+        date: Date = Date(),
+        duration: TimeInterval = 5400,
+        sessionType: SessionType = .gi,
+        academy: String? = nil,
+        instructor: String? = nil,
+        focusAreas: [String] = [],
+        notes: String? = nil,
+        preSessionMood: Int? = nil,
+        postSessionMood: Int? = nil,
+        roundsCount: Int = 0,
+        whatWorkedWell: String? = nil,
+        needsImprovement: String? = nil,
+        keyInsights: String? = nil
+    ) throws -> BJJSessionModel {
+        try sessionManager.createSession(
+            date: date,
+            duration: duration,
+            sessionType: sessionType,
+            academy: academy,
+            instructor: instructor,
+            focusAreas: focusAreas,
+            notes: notes,
+            preSessionMood: preSessionMood,
+            postSessionMood: postSessionMood,
+            roundsCount: roundsCount,
+            whatWorkedWell: whatWorkedWell,
+            needsImprovement: needsImprovement,
+            keyInsights: keyInsights
+        )
+    }
+
+    func updateSession(_ session: BJJSessionModel) throws {
+        try sessionManager.updateSession(session)
+    }
+
+    func deleteSession(_ session: BJJSessionModel) throws {
+        try sessionManager.deleteSession(session)
+    }
+
+    // MARK: BJJ Belt
+
+    var currentBelt: BeltRecordModel? {
+        beltManager.currentBelt
+    }
+
+    var currentBeltEnum: BJJBelt {
+        beltManager.currentBeltEnum
+    }
+
+    var beltHistory: [BeltRecordModel] {
+        beltManager.beltHistory
+    }
+
+    @discardableResult
+    func addBeltPromotion(
+        belt: BJJBelt,
+        stripes: Int = 0,
+        date: Date = Date(),
+        academy: String? = nil,
+        notes: String? = nil
+    ) throws -> BeltRecordModel {
+        let record = try beltManager.addPromotion(belt: belt, stripes: stripes, date: date, academy: academy, notes: notes)
+        achievementManager.checkAndAward(
+            event: .beltPromoted(belt: belt),
+            sessionStats: sessionStats,
+            streakCount: currentStreakData.currentStreak ?? 0
+        )
+        return record
+    }
+
+    func estimatedTimeToNextBelt() -> String? {
+        beltManager.estimatedTimeToNextBelt(sessionsPerWeek: Double(sessionStats.thisWeekSessions))
+    }
+
+    // MARK: BJJ Goals
+
+    var activeGoals: [TrainingGoalModel] {
+        goalManager.activeGoals
+    }
+
+    var completedGoals: [TrainingGoalModel] {
+        goalManager.completedGoals
+    }
+
+    @discardableResult
+    func createGoal(
+        title: String,
+        description: String? = nil,
+        goalType: GoalType = .custom,
+        deadline: Date? = nil
+    ) throws -> TrainingGoalModel {
+        try goalManager.createGoal(title: title, description: description, goalType: goalType, deadline: deadline)
+    }
+
+    func updateGoalProgress(goalId: String, progress: Double) throws {
+        try goalManager.updateProgress(goalId: goalId, progress: progress)
+    }
+
+    func completeGoal(goalId: String) throws {
+        try goalManager.completeGoal(goalId: goalId)
+        achievementManager.checkAndAward(
+            event: .goalCompleted(goalId: goalId),
+            sessionStats: sessionStats,
+            streakCount: currentStreakData.currentStreak ?? 0
+        )
+    }
+
+    func updateGoal(_ goal: TrainingGoalModel) throws {
+        try goalManager.updateGoal(goal)
+    }
+
+    func deleteGoal(_ goal: TrainingGoalModel) throws {
+        try goalManager.deleteGoal(goal)
+    }
+
+    // MARK: BJJ Achievements
+
+    var earnedAchievements: [AchievementEarnedModel] {
+        achievementManager.earnedAchievements
+    }
+
+    func isAchievementEarned(_ id: AchievementId) -> Bool {
+        achievementManager.isEarned(id)
+    }
+
+    // MARK: Session + Gamification Combined
+
+    func logSessionWithGamification(_ params: SessionEntryParams) async throws -> BJJSessionModel {
+        let session = try createSession(
+            date: params.date,
+            duration: params.duration,
+            sessionType: params.sessionType,
+            academy: params.academy,
+            instructor: params.instructor,
+            focusAreas: params.focusAreas,
+            notes: params.notes,
+            preSessionMood: params.preSessionMood,
+            postSessionMood: params.postSessionMood,
+            roundsCount: params.roundsCount,
+            whatWorkedWell: params.whatWorkedWell,
+            needsImprovement: params.needsImprovement,
+            keyInsights: params.keyInsights
+        )
+
+        async let streakResult = addStreakEvent()
+        async let xpResult = addExperiencePoints(points: 10)
+        _ = try await (streakResult, xpResult)
+
+        let stats = sessionStats
+        achievementManager.checkAndAward(
+            event: .sessionLogged(totalCount: stats.totalSessions, streakCount: currentStreakData.currentStreak ?? 0),
+            sessionStats: stats,
+            streakCount: currentStreakData.currentStreak ?? 0
+        )
+
+        return session
+    }
+
     // MARK: SHARED
 
     func logIn(user: UserAuthInfo, isNewUser: Bool) async throws {
-        // Run all logins in parallel
         async let userLogin: Void = userManager.logIn(auth: user, isNewUser: isNewUser)
         async let purchaseLogin: ([PurchasedEntitlement]) = purchaseManager.logIn(
             userId: user.uid,
@@ -338,7 +517,6 @@ struct CoreInteractor: GlobalInteractor {
 
         let (_, _, _, _, _) = await (try userLogin, try purchaseLogin, try streakLogin, try xpLogin, try progressLogin)
 
-        // Add user properties
         logManager.addUserProperties(dict: Utilities.eventParameters, isHighPriority: false)
     }
 
@@ -350,32 +528,24 @@ struct CoreInteractor: GlobalInteractor {
         xpManager.logOut()
         await progressManager.logOut()
     }
-    
+
     func deleteAccount() async throws {
         guard let auth else {
             throw AppError("Auth not found.")
         }
-        
+
         var option: SignInOption = .anonymous
         if auth.authProviders.contains(.apple) {
             option = .apple
         } else if auth.authProviders.contains(.google), let clientId = Constants.firebaseAppClientId {
             option = .google(GIDClientID: clientId)
         }
-        
-        // Delete auth
+
         try await authManager.deleteAccountWithReauthentication(option: option, revokeToken: false) {
-            // Delete User profile (Firestore)
-            // Note: this must be done within this closure
-            // So that it completes before auth is revoked
-            // Once auth is revoked, security rules may restrict user from reading/writing to Firestore
             try await userManager.deleteCurrentUser()
         }
-        
-        // Delete Purchases (RevenueCat)
+
         try await purchaseManager.logOut()
-        
-        // Delete logs (Mixpanel)
         logManager.deleteUserProfile()
     }
 

@@ -2,7 +2,6 @@
 //  Dependencies.swift
 //  Waza
 //
-//  
 //
 import SwiftUI
 import SwiftfulRouting
@@ -25,7 +24,14 @@ struct Dependencies {
         let streakManager: StreakManager
         let xpManager: ExperiencePointsManager
         let progressManager: ProgressManager
-        
+
+        // BJJ Managers
+        let bjjDataManager: BJJDataManager
+        let sessionManager: SessionManager
+        let beltManager: BeltManager
+        let goalManager: GoalManager
+        let achievementManager: AchievementManager
+
         switch config {
         case .mock(isSignedIn: let isSignedIn):
             logManager = LogManager(services: [
@@ -33,10 +39,7 @@ struct Dependencies {
             ])
             authManager = AuthManager(service: MockAuthService(user: isSignedIn ? .mock() : nil), logger: logManager)
             userManager = UserManager(services: MockUserServices(user: isSignedIn ? .mock : nil), logManager: logManager)
-            
-            // Note: configure AB tests for UI tests here
-            //
-            // let isInTest = ProcessInfo.processInfo.arguments.contains("SOMETEST")
+
             let abTestService = MockABTestService(
                 boolTest: nil,
                 enumTest: nil
@@ -48,6 +51,8 @@ struct Dependencies {
             streakManager = StreakManager(services: MockStreakServices(), configuration: Dependencies.streakConfiguration, logger: logManager)
             xpManager = ExperiencePointsManager(services: MockExperiencePointsServices(), configuration: Dependencies.xpConfiguration, logger: logManager)
             progressManager = ProgressManager(services: MockProgressServices(), configuration: Dependencies.progressConfiguration, logger: logManager)
+
+            bjjDataManager = BJJDataManager(inMemory: true)
         case .dev:
             logManager = LogManager(services: [
                 ConsoleService(printParameters: true),
@@ -59,7 +64,7 @@ struct Dependencies {
             userManager = UserManager(services: ProductionUserServices(), logManager: logManager)
             abTestManager = ABTestManager(service: LocalABTestService(), logManager: logManager)
             purchaseManager = PurchaseManager(
-                service: RevenueCatPurchaseService(apiKey: Keys.revenueCatAPIKey), // StoreKitPurchaseService(),
+                service: RevenueCatPurchaseService(apiKey: Keys.revenueCatAPIKey),
                 logger: logManager
             )
             hapticManager = HapticManager(logger: logManager)
@@ -67,6 +72,8 @@ struct Dependencies {
             streakManager = StreakManager(services: ProdStreakServices(), configuration: Dependencies.streakConfiguration, logger: logManager)
             xpManager = ExperiencePointsManager(services: ProdExperiencePointsServices(), configuration: Dependencies.xpConfiguration, logger: logManager)
             progressManager = ProgressManager(services: ProdProgressServices(), configuration: Dependencies.progressConfiguration, logger: logManager)
+
+            bjjDataManager = BJJDataManager(inMemory: false)
         case .prod:
             logManager = LogManager(services: [
                 FirebaseAnalyticsService(),
@@ -75,7 +82,6 @@ struct Dependencies {
             ])
             authManager = AuthManager(service: FirebaseAuthService(), logger: logManager)
             userManager = UserManager(services: ProductionUserServices(), logManager: logManager)
-
             abTestManager = ABTestManager(service: FirebaseABTestService(), logManager: logManager)
             purchaseManager = PurchaseManager(
                 service: RevenueCatPurchaseService(apiKey: Keys.revenueCatAPIKey),
@@ -86,10 +92,25 @@ struct Dependencies {
             streakManager = StreakManager(services: ProdStreakServices(), configuration: Dependencies.streakConfiguration, logger: logManager)
             xpManager = ExperiencePointsManager(services: ProdExperiencePointsServices(), configuration: Dependencies.xpConfiguration, logger: logManager)
             progressManager = ProgressManager(services: ProdProgressServices(), configuration: Dependencies.progressConfiguration, logger: logManager)
+
+            bjjDataManager = BJJDataManager(inMemory: false)
         }
+
         pushManager = PushManager(logManager: logManager)
         soundEffectManager = SoundEffectManager(logger: logManager)
-        
+
+        sessionManager = SessionManager(modelContext: bjjDataManager.modelContext)
+        beltManager = BeltManager(modelContext: bjjDataManager.modelContext)
+        goalManager = GoalManager(modelContext: bjjDataManager.modelContext)
+        achievementManager = AchievementManager(modelContext: bjjDataManager.modelContext)
+
+        // Seed mock data for signed-in mock builds
+        if case .mock(isSignedIn: let isSignedIn) = config, isSignedIn {
+            sessionManager.seedMockDataIfEmpty()
+            beltManager.seedMockDataIfEmpty()
+            goalManager.seedMockDataIfEmpty()
+        }
+
         let container = DependencyContainer()
         container.register(AuthManager.self, service: authManager)
         container.register(UserManager.self, service: userManager)
@@ -103,12 +124,17 @@ struct Dependencies {
         container.register(StreakManager.self, key: Dependencies.streakConfiguration.streakKey, service: streakManager)
         container.register(ExperiencePointsManager.self, key: Dependencies.xpConfiguration.experienceKey, service: xpManager)
         container.register(ProgressManager.self, key: Dependencies.progressConfiguration.progressKey, service: progressManager)
+        container.register(BJJDataManager.self, service: bjjDataManager)
+        container.register(SessionManager.self, service: sessionManager)
+        container.register(BeltManager.self, service: beltManager)
+        container.register(GoalManager.self, service: goalManager)
+        container.register(AchievementManager.self, service: achievementManager)
 
         self.container = container
-        
+
         SwiftfulRoutingLogger.enableLogging(logger: logManager)
     }
-    
+
     static let streakConfiguration = StreakConfiguration(
         streakKey: Constants.streakKey,
         eventsRequiredPerDay: 1,
@@ -116,12 +142,12 @@ struct Dependencies {
         leewayHours: 0,
         freezeBehavior: .autoConsumeFreezes
     )
-    
+
     static let xpConfiguration = ExperiencePointsConfiguration(
         experienceKey: Constants.xpKey,
         useServerCalculation: false
     )
-    
+
     static let progressConfiguration = ProgressConfiguration(
         progressKey: Constants.progressKey
     )
@@ -131,7 +157,7 @@ struct Dependencies {
 @MainActor
 class DevPreview {
     static let shared = DevPreview()
-    
+
     func container() -> DependencyContainer {
         let container = DependencyContainer()
         container.register(AuthManager.self, service: authManager)
@@ -146,9 +172,14 @@ class DevPreview {
         container.register(StreakManager.self, key: Dependencies.streakConfiguration.streakKey, service: streakManager)
         container.register(ExperiencePointsManager.self, key: Dependencies.xpConfiguration.experienceKey, service: xpManager)
         container.register(ProgressManager.self, key: Dependencies.progressConfiguration.progressKey, service: progressManager)
+        container.register(BJJDataManager.self, service: bjjDataManager)
+        container.register(SessionManager.self, service: sessionManager)
+        container.register(BeltManager.self, service: beltManager)
+        container.register(GoalManager.self, service: goalManager)
+        container.register(AchievementManager.self, service: achievementManager)
         return container
     }
-    
+
     let authManager: AuthManager
     let userManager: UserManager
     let logManager: LogManager
@@ -161,6 +192,11 @@ class DevPreview {
     let streakManager: StreakManager
     let xpManager: ExperiencePointsManager
     let progressManager: ProgressManager
+    let bjjDataManager: BJJDataManager
+    let sessionManager: SessionManager
+    let beltManager: BeltManager
+    let goalManager: GoalManager
+    let achievementManager: AchievementManager
 
     init(isSignedIn: Bool = true) {
         self.authManager = AuthManager(service: MockAuthService(user: isSignedIn ? .mock() : nil))
@@ -175,6 +211,17 @@ class DevPreview {
         self.streakManager = StreakManager(services: MockStreakServices(), configuration: StreakConfiguration.mockDefault())
         self.xpManager = ExperiencePointsManager(services: MockExperiencePointsServices(), configuration: ExperiencePointsConfiguration.mockDefault())
         self.progressManager = ProgressManager(services: MockProgressServices(), configuration: ProgressConfiguration.mockDefault())
+        self.bjjDataManager = BJJDataManager(inMemory: true)
+        self.sessionManager = SessionManager(modelContext: bjjDataManager.modelContext)
+        self.beltManager = BeltManager(modelContext: bjjDataManager.modelContext)
+        self.goalManager = GoalManager(modelContext: bjjDataManager.modelContext)
+        self.achievementManager = AchievementManager(modelContext: bjjDataManager.modelContext)
+
+        if isSignedIn {
+            sessionManager.seedMockDataIfEmpty()
+            beltManager.seedMockDataIfEmpty()
+            goalManager.seedMockDataIfEmpty()
+        }
     }
 
 }

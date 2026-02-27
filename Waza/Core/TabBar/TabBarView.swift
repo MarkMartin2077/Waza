@@ -1,8 +1,7 @@
 //
 //  TabBarView.swift
-//  
+//  Waza
 //
-//  
 //
 
 import SwiftUI
@@ -11,14 +10,14 @@ struct TabBarScreen: Identifiable {
     var id: String {
         title
     }
-    
+
     let title: String
     let systemImage: String
     @ViewBuilder var screen: () -> AnyView
 }
 
 struct TabBarView: View {
-    
+
     var tabs: [TabBarScreen]
 
     var body: some View {
@@ -34,36 +33,31 @@ struct TabBarView: View {
 }
 
 extension CoreBuilder {
-    
+
     func tabbarView() -> some View {
         TabBarView(
             tabs: [
-                TabBarScreen(title: "Home", systemImage: "house.fill", screen: {
+                TabBarScreen(title: "Dashboard", systemImage: "house.fill", screen: {
                     RouterView { router in
-                        homeView(router: router, delegate: HomeDelegate())
+                        dashboardView(router: router, delegate: DashboardDelegate())
                     }
                     .any()
                 }),
-                TabBarScreen(title: "Beta", systemImage: "heart.fill", screen: {
+                TabBarScreen(title: "Games", systemImage: "puzzlepiece.fill", screen: {
+                    RouterView { _ in
+                        gamesPlaceholderView()
+                    }
+                    .any()
+                }),
+                TabBarScreen(title: "Analytics", systemImage: "chart.bar.fill", screen: {
+                    RouterView { _ in
+                        analyticsPlaceholderView()
+                    }
+                    .any()
+                }),
+                TabBarScreen(title: "Goals", systemImage: "target", screen: {
                     RouterView { router in
-                        List {
-                            Button("Streaks") {
-                                router.showScreen { router in
-                                    streakExampleView(router: router, delegate: StreakExampleDelegate())
-                                }
-                            }
-                            Button("Experience Points") {
-                                router.showScreen { router in
-                                    experiencePointsExampleView(router: router, delegate: ExperiencePointsExampleDelegate())
-                                }
-                            }
-                            Button("Progress") {
-                                router.showScreen { router in
-                                    progressExampleView(router: router, delegate: ProgressExampleDelegate())
-                                }
-                            }
-                        }
-                        .navigationTitle("Gamificiation Examples")
+                        goalsPlanningView(router: router, delegate: GoalsPlanningDelegate())
                     }
                     .any()
                 }),
@@ -77,14 +71,50 @@ extension CoreBuilder {
         )
     }
 
+    // Phase 2 placeholder
+    private func gamesPlaceholderView() -> some View {
+        VStack(spacing: 16) {
+            Image(systemName: "puzzlepiece.fill")
+                .font(.system(size: 48))
+                .foregroundStyle(.accent)
+            Text("CLA Games")
+                .font(.title2)
+                .fontWeight(.bold)
+            Text("Constraint-Led Approach game library coming in Phase 2")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+        }
+        .navigationTitle("Games")
+    }
+
+    // Phase 2 placeholder
+    private func analyticsPlaceholderView() -> some View {
+        VStack(spacing: 16) {
+            Image(systemName: "chart.bar.fill")
+                .font(.system(size: 48))
+                .foregroundStyle(.accent)
+            Text("Analytics")
+                .font(.title2)
+                .fontWeight(.bold)
+            Text("Training analytics and insights coming in Phase 2")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+        }
+        .navigationTitle("Analytics")
+    }
+
 }
 
 #Preview("Fake tabs") {
     TabBarView(tabs: [
-        TabBarScreen(title: "Explore", systemImage: "eyes", screen: {
+        TabBarScreen(title: "Dashboard", systemImage: "house.fill", screen: {
             Color.red.any()
         }),
-        TabBarScreen(title: "Chats", systemImage: "bubble.left.and.bubble.right.fill", screen: {
+        TabBarScreen(title: "Games", systemImage: "puzzlepiece.fill", screen: {
             Color.blue.any()
         }),
         TabBarScreen(title: "Profile", systemImage: "person.fill", screen: {
@@ -96,6 +126,6 @@ extension CoreBuilder {
 #Preview("Real tabs") {
     let container = DevPreview.shared.container()
     let builder = CoreBuilder(interactor: CoreInteractor(container: container))
-    
+
     return builder.tabbarView()
 }
