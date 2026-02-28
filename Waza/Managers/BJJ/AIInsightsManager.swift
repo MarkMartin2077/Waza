@@ -33,6 +33,7 @@ class AIInsightsManager {
     // MARK: - Check-In Encouragement (Streaming)
 
     func generateCheckInEncouragement(
+        userName: String,
         streakCount: Int,
         classesThisWeek: Int,
         weeklyTarget: Int,
@@ -50,7 +51,8 @@ class AIInsightsManager {
                     let progressText = weeklyTarget > 0 ? "\(classesThisWeek)/\(weeklyTarget) classes this week" : "\(classesThisWeek) classes this week"
                     let prompt = """
                     You are a warm, encouraging BJJ coach. Write a 1–2 sentence personalised \
-                    check-in message for a \(belt.displayName) belt athlete who just arrived at the gym. \
+                    check-in message addressed to \(userName), a \(belt.displayName) belt athlete who just arrived at the gym. \
+                    Use their name naturally in the message. \
                     Details: \(progressText), \(streakCount) day training streak, \(totalAttendance) total classes attended. \
                     Be specific, upbeat and brief.
                     """

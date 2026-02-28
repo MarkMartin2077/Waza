@@ -1,6 +1,8 @@
 import SwiftUI
 
 @MainActor
-protocol TrainingStatsRouter: GlobalRouter { }
+protocol TrainingStatsRouter: GlobalRouter {
+    func showGoalsPlanningView()
+}
 
 extension CoreRouter: TrainingStatsRouter { }

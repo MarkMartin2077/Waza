@@ -7,6 +7,7 @@ import Foundation
 protocol AchievementLocalService {
     func getAchievements() -> [AchievementEarnedModel]
     func create(_ model: AchievementEarnedModel) throws
+    func deleteAll() throws
 }
 
 // MARK: - SwiftData Implementation
@@ -32,6 +33,11 @@ struct SwiftDataAchievementPersistence: AchievementLocalService {
     func create(_ model: AchievementEarnedModel) throws {
         let entity = AchievementEarnedEntity(from: model)
         container.mainContext.insert(entity)
+        try container.mainContext.save()
+    }
+
+    func deleteAll() throws {
+        try container.mainContext.delete(model: AchievementEarnedEntity.self)
         try container.mainContext.save()
     }
 }

@@ -7,16 +7,62 @@ struct TrainingStatsView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
+                activeGoalsSection
                 periodPicker
                 sessionStatsSection
                 typeBreakdownSection
             }
             .padding(16)
         }
-        .navigationTitle("Analytics")
+        .navigationTitle("Progress")
         .onAppear {
             presenter.onViewAppear()
         }
+    }
+
+    private var activeGoalsSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Text("Training Goals")
+                    .font(.headline)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Text("Manage")
+                    .font(.caption)
+                    .foregroundStyle(.accent)
+                    .anyButton {
+                        presenter.onManageGoalsTapped()
+                    }
+            }
+
+            if presenter.activeGoals.isEmpty {
+                Text("No active goals. Tap Manage to set your training targets.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            } else {
+                ForEach(presenter.activeGoals, id: \.goalId) { goal in
+                    HStack(spacing: 10) {
+                        Image(systemName: goal.goalType.iconName)
+                            .foregroundStyle(.accent)
+                            .frame(width: 20)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(goal.title)
+                                .font(.subheadline)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            ProgressView(value: goal.progress)
+                                .tint(.accent)
+                        }
+                        Text("\(goal.progressPercentage)%")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .frame(width: 36, alignment: .trailing)
+                    }
+                }
+            }
+        }
+        .padding(14)
+        .background(Color(.systemGray6))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
     private var periodPicker: some View {
@@ -145,7 +191,7 @@ extension CoreBuilder {
 
 // MARK: - Previews
 
-#Preview("Analytics") {
+#Preview("Progress") {
     let container = DevPreview.shared.container()
     let builder = CoreBuilder(interactor: CoreInteractor(container: container))
     return RouterView { router in

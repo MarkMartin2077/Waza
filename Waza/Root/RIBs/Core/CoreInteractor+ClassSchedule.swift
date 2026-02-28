@@ -50,6 +50,10 @@ extension CoreInteractor {
         try classScheduleManager.deleteSchedule(schedule)
     }
 
+    func requestLocationAuthorization() {
+        classScheduleManager.startGeofencing()
+    }
+
     @discardableResult
     func checkIn(gymId: String, scheduleId: String? = nil, method: CheckInMethod = .manual, moodRating: Int? = nil) throws -> ClassAttendanceModel {
         let record = try classScheduleManager.checkIn(gymId: gymId, scheduleId: scheduleId, method: method, moodRating: moodRating)
@@ -69,7 +73,12 @@ extension CoreInteractor {
         try classScheduleManager.updateAttendance(record)
     }
 
+    var currentUserName: String {
+        currentUser?.commonNameCalculated ?? currentUser?.displayName ?? "Grappler"
+    }
+
     func generateCheckInEncouragement(
+        userName: String,
         streakCount: Int,
         classesThisWeek: Int,
         weeklyTarget: Int,
@@ -77,6 +86,7 @@ extension CoreInteractor {
         totalAttendance: Int
     ) -> AsyncThrowingStream<String, Error> {
         aiInsightsManager.generateCheckInEncouragement(
+            userName: userName,
             streakCount: streakCount,
             classesThisWeek: classesThisWeek,
             weeklyTarget: weeklyTarget,

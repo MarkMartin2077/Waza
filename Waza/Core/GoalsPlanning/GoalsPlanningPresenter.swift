@@ -66,6 +66,7 @@ class GoalsPlanningPresenter {
     }
 
     func onCancelAddGoal() {
+        interactor.trackEvent(event: Event.cancelAddGoalTapped)
         showAddGoalSheet = false
     }
 
@@ -74,6 +75,7 @@ class GoalsPlanningPresenter {
             try interactor.updateGoalProgress(goalId: goal.id, progress: newProgress)
             loadData()
         } catch {
+            interactor.trackEvent(event: Event.updateProgressFail(error: error))
             errorMessage = error.localizedDescription
         }
     }
@@ -85,6 +87,7 @@ class GoalsPlanningPresenter {
             loadData()
             interactor.playHaptic(option: .success)
         } catch {
+            interactor.trackEvent(event: Event.completeGoalFail(error: error))
             errorMessage = error.localizedDescription
         }
     }
@@ -95,6 +98,7 @@ class GoalsPlanningPresenter {
             try interactor.deleteGoal(goal)
             loadData()
         } catch {
+            interactor.trackEvent(event: Event.deleteGoalFail(error: error))
             errorMessage = error.localizedDescription
         }
     }
@@ -117,32 +121,45 @@ extension GoalsPlanningPresenter {
     enum Event: LoggableEvent {
         case onAppear
         case addGoalTapped
+        case cancelAddGoalTapped
         case saveGoalTapped
         case goalCompleted
         case goalDeleted
         case saveFail(error: Error)
+        case updateProgressFail(error: Error)
+        case completeGoalFail(error: Error)
+        case deleteGoalFail(error: Error)
 
         var eventName: String {
             switch self {
-            case .onAppear:         return "GoalsPlanningView_Appear"
-            case .addGoalTapped:    return "GoalsPlanningView_AddGoal_Tap"
-            case .saveGoalTapped:   return "GoalsPlanningView_SaveGoal_Tap"
-            case .goalCompleted:    return "GoalsPlanningView_Goal_Complete"
-            case .goalDeleted:      return "GoalsPlanningView_Goal_Delete"
-            case .saveFail:         return "GoalsPlanningView_Save_Fail"
+            case .onAppear:             return "GoalsPlanningView_Appear"
+            case .addGoalTapped:        return "GoalsPlanningView_AddGoal_Tap"
+            case .cancelAddGoalTapped:  return "GoalsPlanningView_CancelAddGoal_Tap"
+            case .saveGoalTapped:       return "GoalsPlanningView_SaveGoal_Tap"
+            case .goalCompleted:        return "GoalsPlanningView_Goal_Complete"
+            case .goalDeleted:          return "GoalsPlanningView_Goal_Delete"
+            case .saveFail:             return "GoalsPlanningView_Save_Fail"
+            case .updateProgressFail:   return "GoalsPlanningView_UpdateProgress_Fail"
+            case .completeGoalFail:     return "GoalsPlanningView_CompleteGoal_Fail"
+            case .deleteGoalFail:       return "GoalsPlanningView_DeleteGoal_Fail"
             }
         }
 
         var parameters: [String: Any]? {
             switch self {
-            case .saveFail(error: let error): return error.eventParameters
+            case .saveFail(error: let error),
+                 .updateProgressFail(error: let error),
+                 .completeGoalFail(error: let error),
+                 .deleteGoalFail(error: let error):
+                return error.eventParameters
             default: return nil
             }
         }
 
         var type: LogType {
             switch self {
-            case .saveFail: return .severe
+            case .saveFail, .updateProgressFail, .completeGoalFail, .deleteGoalFail:
+                return .severe
             default: return .analytic
             }
         }

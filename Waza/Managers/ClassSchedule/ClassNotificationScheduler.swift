@@ -6,6 +6,8 @@ struct ClassNotificationScheduler {
 
     /// Schedules a weekly recurring reminder for a class.
     func scheduleReminder(for schedule: ClassScheduleModel, gym: GymLocationModel) {
+        guard schedule.reminderMinutesBefore > 0 else { return }
+
         let content = UNMutableNotificationContent()
         content.title = "Class Reminder"
         content.body = "\(schedule.name) at \(gym.name) starts in \(schedule.reminderMinutesBefore) minutes."

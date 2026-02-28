@@ -7,16 +7,14 @@ class DashboardPresenter {
     private let router: DashboardRouter
     let delegate: DashboardDelegate
 
-    private(set) var recentSessions: [BJJSessionModel] = []
+    private(set) var sessions: [BJJSessionModel] = []
     private(set) var sessionStats: SessionStats = .empty
     private(set) var currentBelt: BeltRecordModel?
-    private(set) var activeGoals: [TrainingGoalModel] = []
     private(set) var streakCount: Int = 0
     private(set) var totalXP: Int = 0
     private(set) var isPremium: Bool = false
     private(set) var isAIAvailable: Bool = false
     private(set) var nextUpcomingClass: (ClassScheduleModel, GymLocationModel)?
-    let weeklyAttendanceTarget: Int = 3
     private var gymArrivalObserver: NSObjectProtocol?
 
     init(interactor: DashboardInteractor, router: DashboardRouter, delegate: DashboardDelegate) {
@@ -32,10 +30,9 @@ class DashboardPresenter {
     }
 
     func loadData() {
-        recentSessions = interactor.recentSessions
+        sessions = interactor.recentSessions
         sessionStats = interactor.sessionStats
         currentBelt = interactor.currentBelt
-        activeGoals = Array(interactor.activeGoals.prefix(3))
         streakCount = interactor.currentStreakData.currentStreak ?? 0
         totalXP = interactor.currentExperiencePointsData.pointsAllTime ?? 0
         isPremium = interactor.isPremium
@@ -43,26 +40,60 @@ class DashboardPresenter {
         nextUpcomingClass = interactor.nextUpcomingClass
     }
 
-    var weeklyAttendanceCount: Int {
-        interactor.weeklyAttendanceCount(weekOf: Date())
+    // MARK: - Computed display values
+
+    var sessionsThisWeek: Int {
+        sessionStats.thisWeekSessions
     }
 
-    func onScheduleTapped() {
-        interactor.trackEvent(event: Event.scheduleTapped)
-        router.showClassScheduleView()
+    var beltDisplayName: String {
+        currentBelt?.displayTitle ?? interactor.currentBeltEnum.displayName
+    }
+
+    // MARK: - User actions
+
+    func onLogSessionTapped() {
+        interactor.trackEvent(event: Event.logSessionTapped)
+        router.showSessionEntryView(onDismiss: { [weak self] in
+            self?.loadData()
+        })
+    }
+
+    func onSessionTapped(_ session: BJJSessionModel) {
+        interactor.trackEvent(event: Event.sessionTapped)
+        router.showSessionDetailView(session: session)
     }
 
     func onCheckInTapped(gym: GymLocationModel, schedule: ClassScheduleModel?) {
         interactor.trackEvent(event: Event.checkInTapped)
-        router.showCheckInView(gym: gym, schedule: schedule, onDismiss: nil)
+        router.showCheckInView(gym: gym, schedule: schedule, onDismiss: { [weak self] in
+            self?.loadData()
+        })
     }
+
+    func onAIInsightsTapped() {
+        interactor.trackEvent(event: Event.aiInsightsTapped)
+        router.showAIInsightsView()
+    }
+
+    func onUpgradeTapped() {
+        interactor.trackEvent(event: Event.upgradeTapped)
+        router.showPaywallView()
+    }
+
+    func onDevSettingsTapped() {
+        interactor.trackEvent(event: Event.devSettingsTapped)
+        router.showDevSettingsView()
+    }
+
+    // MARK: - Private
 
     private func observeGymArrival() {
         guard gymArrivalObserver == nil else { return }
         gymArrivalObserver = NotificationCenter.default.addObserver(
             forName: .gymArrival,
             object: nil,
-            queue: nil  // deliver on poster's thread; hop to MainActor explicitly below
+            queue: nil
         ) { [weak self] notification in
             // Extract String (Sendable) before hopping actors — Notification is not Sendable
             let gymId = notification.userInfo?["gymId"] as? String
@@ -77,67 +108,29 @@ class DashboardPresenter {
             }
         }
     }
-
-    func onLogSessionTapped() {
-        interactor.trackEvent(event: Event.logSessionTapped)
-        router.showSessionEntryView(onDismiss: { [weak self] in
-            self?.loadData()
-        })
-    }
-
-    func onSessionTapped(_ session: BJJSessionModel) {
-        interactor.trackEvent(event: Event.sessionTapped)
-        router.showSessionDetailView(session: session)
-    }
-
-    func onGoalsTapped() {
-        interactor.trackEvent(event: Event.goalsTapped)
-        router.showGoalsPlanningView()
-    }
-
-    func onDevSettingsTapped() {
-        router.showDevSettingsView()
-    }
-
-    func onUpgradeTapped() {
-        interactor.trackEvent(event: Event.upgradeTapped)
-        router.showPaywallView()
-    }
-
-    func onAIInsightsTapped() {
-        interactor.trackEvent(event: Event.aiInsightsTapped)
-        router.showAIInsightsView()
-    }
-
-    var beltDisplayName: String {
-        guard let belt = currentBelt else {
-            return interactor.currentBeltEnum.displayName
-        }
-        return belt.displayTitle
-    }
 }
+
+// MARK: - Events
 
 extension DashboardPresenter {
     enum Event: LoggableEvent {
         case onAppear
         case logSessionTapped
         case sessionTapped
-        case goalsTapped
-        case upgradeTapped
-        case aiInsightsTapped
-        case scheduleTapped
         case checkInTapped
+        case aiInsightsTapped
+        case upgradeTapped
+        case devSettingsTapped
 
         var eventName: String {
             switch self {
-            case .onAppear:         return "DashboardView_Appear"
-            case .logSessionTapped: return "DashboardView_LogSession_Tap"
-            case .sessionTapped:    return "DashboardView_Session_Tap"
-            case .goalsTapped:      return "DashboardView_Goals_Tap"
-            case .upgradeTapped:    return "DashboardView_Upgrade_Tap"
-            case .aiInsightsTapped: return "DashboardView_AIInsights_Tap"
-            case .scheduleTapped:   return "DashboardView_Schedule_Tap"
-            case .checkInTapped:    return "DashboardView_CheckIn_Tap"
+            case .onAppear:          return "DashboardView_Appear"
+            case .logSessionTapped:  return "DashboardView_LogSession_Tap"
+            case .sessionTapped:     return "DashboardView_Session_Tap"
+            case .checkInTapped:     return "DashboardView_CheckIn_Tap"
+            case .aiInsightsTapped:  return "DashboardView_AIInsights_Tap"
+            case .upgradeTapped:     return "DashboardView_Upgrade_Tap"
+            case .devSettingsTapped: return "DashboardView_DevSettings_Tap"
             }
         }
 

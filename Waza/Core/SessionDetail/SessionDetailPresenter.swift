@@ -59,6 +59,7 @@ class SessionDetailPresenter {
     }
 
     func onCancelEditPressed() {
+        interactor.trackEvent(event: Event.cancelEditPressed)
         loadEditFields()
         isEditing = false
     }
@@ -84,6 +85,7 @@ extension SessionDetailPresenter {
     enum Event: LoggableEvent {
         case onAppear
         case editPressed
+        case cancelEditPressed
         case saveEditPressed
         case deletePressed
         case deleteConfirmed
@@ -91,12 +93,13 @@ extension SessionDetailPresenter {
 
         var eventName: String {
             switch self {
-            case .onAppear:         return "SessionDetailView_Appear"
-            case .editPressed:      return "SessionDetailView_Edit_Press"
-            case .saveEditPressed:  return "SessionDetailView_SaveEdit_Press"
-            case .deletePressed:    return "SessionDetailView_Delete_Press"
-            case .deleteConfirmed:  return "SessionDetailView_Delete_Confirm"
-            case .saveFail:         return "SessionDetailView_Save_Fail"
+            case .onAppear:           return "SessionDetailView_Appear"
+            case .editPressed:        return "SessionDetailView_Edit_Press"
+            case .cancelEditPressed:  return "SessionDetailView_CancelEdit_Press"
+            case .saveEditPressed:    return "SessionDetailView_SaveEdit_Press"
+            case .deletePressed:      return "SessionDetailView_Delete_Press"
+            case .deleteConfirmed:    return "SessionDetailView_Delete_Confirm"
+            case .saveFail:           return "SessionDetailView_Save_Fail"
             }
         }
 

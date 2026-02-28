@@ -7,13 +7,9 @@ struct DashboardView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
-                streakIndicator
+                statStrip
                 upcomingClassSection
-                weeklyRingSection
-                recentSessionsContent
-                if !presenter.activeGoals.isEmpty {
-                    activeGoalsSection
-                }
+                sessionsSection
             }
             .padding(.horizontal, 16)
             .padding(.top, 8)
@@ -36,6 +32,24 @@ struct DashboardView: View {
         }
     }
 
+    // MARK: - Stat Strip
+
+    private var statStrip: some View {
+        HStack(spacing: 0) {
+            Image(systemName: "flame.fill")
+                .foregroundStyle(presenter.streakCount > 0 ? .orange : .secondary)
+            Text(presenter.streakCount > 0 ? " \(presenter.streakCount) day streak" : " No streak")
+                .foregroundStyle(presenter.streakCount > 0 ? .primary : .secondary)
+            Text("  ·  ")
+                .foregroundStyle(.secondary)
+            Text("\(presenter.sessionsThisWeek) this week")
+                .foregroundStyle(.secondary)
+        }
+        .font(.subheadline)
+        .fontWeight(.medium)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
     // MARK: - Upcoming Class
 
     @ViewBuilder
@@ -51,37 +65,11 @@ struct DashboardView: View {
         }
     }
 
-    // MARK: - Weekly Ring
-
-    private var weeklyRingSection: some View {
-        WeeklyAttendanceRingView(
-            current: presenter.weeklyAttendanceCount,
-            target: presenter.weeklyAttendanceTarget
-        )
-        .anyButton(.press) {
-            presenter.onScheduleTapped()
-        }
-    }
-
-    // MARK: - Streak Indicator
-
-    private var streakIndicator: some View {
-        HStack(spacing: 6) {
-            Image(systemName: "flame.fill")
-                .foregroundStyle(presenter.streakCount > 0 ? .orange : .secondary)
-            Text(presenter.streakCount > 0 ? "\(presenter.streakCount) day streak" : "No active streak")
-                .font(.subheadline)
-                .fontWeight(.medium)
-                .foregroundStyle(presenter.streakCount > 0 ? .primary : .secondary)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    // MARK: - Recent Sessions
+    // MARK: - Sessions
 
     @ViewBuilder
-    private var recentSessionsContent: some View {
-        if presenter.recentSessions.isEmpty {
+    private var sessionsSection: some View {
+        if presenter.sessions.isEmpty {
             ContentUnavailableView(
                 "No Sessions Yet",
                 systemImage: "figure.martial.arts",
@@ -89,43 +77,21 @@ struct DashboardView: View {
             )
             .padding(.top, 32)
         } else {
-            recentSessionsSection
+            sessionsList
         }
     }
 
-    private var recentSessionsSection: some View {
+    private var sessionsList: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Recent Sessions")
+            Text("Sessions")
                 .font(.headline)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-            ForEach(presenter.recentSessions, id: \.id) { session in
+            ForEach(presenter.sessions, id: \.id) { session in
                 SessionRowView(session: session)
                     .anyButton(.press) {
                         presenter.onSessionTapped(session)
                     }
-            }
-        }
-    }
-
-    // MARK: - Active Goals
-
-    private var activeGoalsSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack {
-                Text("Active Goals")
-                    .font(.headline)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                Text("See all")
-                    .font(.caption)
-                    .foregroundStyle(.accent)
-                    .anyButton {
-                        presenter.onGoalsTapped()
-                    }
-            }
-
-            ForEach(presenter.activeGoals, id: \.id) { goal in
-                GoalRowView(goal: goal)
             }
         }
     }
@@ -157,34 +123,7 @@ struct DashboardView: View {
             .anyButton {
                 presenter.onDevSettingsTapped()
             }
-    }
-}
-
-// MARK: - Goal Row Component
-
-private struct GoalRowView: View {
-    let goal: TrainingGoalModel
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Image(systemName: goal.goalType.iconName)
-                    .font(.caption)
-                    .foregroundStyle(.accent)
-                Text(goal.title)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                Text("\(goal.progressPercentage)%")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-            ProgressView(value: goal.progress)
-                .tint(.accent)
         }
-        .padding(12)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
-    }
 }
 
 // MARK: - Builder Extension

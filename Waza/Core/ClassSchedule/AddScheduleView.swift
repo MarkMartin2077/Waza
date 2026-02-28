@@ -132,6 +132,9 @@ struct AddScheduleView: View {
                 )
                 try interactor.addSchedule(params)
             }
+            if reminderMinutes > 0 {
+                Task { try? await interactor.requestPushAuthorization() }
+            }
             onSaved?()
             dismiss()
         } catch {

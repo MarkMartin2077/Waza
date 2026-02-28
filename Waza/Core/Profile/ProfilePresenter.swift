@@ -111,6 +111,7 @@ class ProfilePresenter {
     }
 
     func onCancelPromotion() {
+        interactor.trackEvent(event: Event.cancelPromotion)
         showAddPromotionSheet = false
     }
 
@@ -155,6 +156,7 @@ extension ProfilePresenter {
         case settingsPressed
         case setCurrentBeltTapped
         case addPromotionTapped
+        case cancelPromotion
         case savePromotionTapped
         case saveFail(error: Error)
         case manageScheduleTapped
@@ -166,6 +168,7 @@ extension ProfilePresenter {
             case .settingsPressed:      return "ProfileView_Settings_Pressed"
             case .setCurrentBeltTapped: return "ProfileView_SetCurrentBelt_Tap"
             case .addPromotionTapped:   return "ProfileView_AddPromotion_Tap"
+            case .cancelPromotion:      return "ProfileView_CancelPromotion_Tap"
             case .savePromotionTapped:  return "ProfileView_SavePromotion_Tap"
             case .saveFail:             return "ProfileView_Save_Fail"
             case .manageScheduleTapped: return "ProfileView_ManageSchedule_Tap"

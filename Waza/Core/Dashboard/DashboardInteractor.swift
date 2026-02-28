@@ -6,7 +6,6 @@ protocol DashboardInteractor: GlobalInteractor {
     var sessionStats: SessionStats { get }
     var currentBelt: BeltRecordModel? { get }
     var currentBeltEnum: BJJBelt { get }
-    var activeGoals: [TrainingGoalModel] { get }
     var currentStreakData: CurrentStreakData { get }
     var currentExperiencePointsData: CurrentExperiencePointsData { get }
     var isPremium: Bool { get }
@@ -14,7 +13,6 @@ protocol DashboardInteractor: GlobalInteractor {
     var nextUpcomingClass: (ClassScheduleModel, GymLocationModel)? { get }
     var gyms: [GymLocationModel] { get }
     var schedules: [ClassScheduleModel] { get }
-    func weeklyAttendanceCount(weekOf: Date) -> Int
 }
 
 extension CoreInteractor: DashboardInteractor { }

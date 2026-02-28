@@ -39,6 +39,7 @@ class GymSetupPresenter {
     }
 
     func onCancelTapped() {
+        interactor.trackEvent(event: Event.cancelTapped)
         router.dismissScreen()
     }
 
@@ -126,6 +127,7 @@ class GymSetupPresenter {
 extension GymSetupPresenter {
     enum Event: LoggableEvent {
         case onAppear
+        case cancelTapped
         case searchResultSelected
         case mapPinPlaced
         case saveTapped
@@ -135,6 +137,7 @@ extension GymSetupPresenter {
         var eventName: String {
             switch self {
             case .onAppear:             return "GymSetupView_Appear"
+            case .cancelTapped:         return "GymSetupView_Cancel_Tap"
             case .searchResultSelected: return "GymSetupView_SearchResult_Select"
             case .mapPinPlaced:         return "GymSetupView_MapPin_Place"
             case .saveTapped:           return "GymSetupView_Save_Tap"

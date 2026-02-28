@@ -8,6 +8,7 @@ protocol BeltLocalService {
     func getBeltHistory() -> [BeltRecordModel]
     func create(_ model: BeltRecordModel) throws
     func delete(id: String) throws
+    func deleteAll() throws
 }
 
 // MARK: - SwiftData Implementation
@@ -42,6 +43,11 @@ struct SwiftDataBeltPersistence: BeltLocalService {
         )
         guard let entity = (try? container.mainContext.fetch(descriptor))?.first else { return }
         container.mainContext.delete(entity)
+        try container.mainContext.save()
+    }
+
+    func deleteAll() throws {
+        try container.mainContext.delete(model: BeltRecordEntity.self)
         try container.mainContext.save()
     }
 }

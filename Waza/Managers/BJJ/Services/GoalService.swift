@@ -9,6 +9,7 @@ protocol GoalLocalService {
     func create(_ model: TrainingGoalModel) throws
     func update(_ model: TrainingGoalModel) throws
     func delete(id: String) throws
+    func deleteAll() throws
 }
 
 // MARK: - SwiftData Implementation
@@ -53,6 +54,11 @@ struct SwiftDataGoalPersistence: GoalLocalService {
         )
         guard let entity = (try? container.mainContext.fetch(descriptor))?.first else { return }
         container.mainContext.delete(entity)
+        try container.mainContext.save()
+    }
+
+    func deleteAll() throws {
+        try container.mainContext.delete(model: TrainingGoalEntity.self)
         try container.mainContext.save()
     }
 }

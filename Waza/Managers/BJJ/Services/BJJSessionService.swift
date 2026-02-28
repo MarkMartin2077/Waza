@@ -9,6 +9,7 @@ protocol BJJSessionLocalService {
     func create(_ model: BJJSessionModel) throws
     func update(_ model: BJJSessionModel) throws
     func delete(id: String) throws
+    func deleteAll() throws
 }
 
 // MARK: - SwiftData Implementation
@@ -53,6 +54,11 @@ struct SwiftDataBJJSessionPersistence: BJJSessionLocalService {
         )
         guard let entity = (try? container.mainContext.fetch(descriptor))?.first else { return }
         container.mainContext.delete(entity)
+        try container.mainContext.save()
+    }
+
+    func deleteAll() throws {
+        try container.mainContext.delete(model: BJJSessionEntity.self)
         try container.mainContext.save()
     }
 }

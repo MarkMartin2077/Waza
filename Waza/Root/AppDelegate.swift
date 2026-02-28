@@ -54,7 +54,9 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 extension AppDelegate: UNUserNotificationCenterDelegate {
     
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        #if !MOCK
         Messaging.messaging().apnsToken = deviceToken
+        #endif
     }
     
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: any Error) {

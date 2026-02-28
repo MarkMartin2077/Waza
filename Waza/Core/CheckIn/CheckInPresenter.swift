@@ -40,6 +40,7 @@ class CheckInPresenter {
             )
             checkedInRecord = record
             isConfirmed = true
+            interactor.trackEvent(event: Event.checkInSuccess)
             interactor.playHaptic(option: .success)
             streamAIEncouragement()
             delegate.onCheckedIn?(record)
@@ -57,6 +58,7 @@ class CheckInPresenter {
     }
 
     func onDismissTapped() {
+        interactor.trackEvent(event: Event.dismissTapped)
         router.dismissScreen()
     }
 
@@ -71,11 +73,13 @@ class CheckInPresenter {
         let belt = interactor.currentBeltEnum
         let totalAttendance = interactor.classAttendance.count
         let weeklyTarget = 3
+        let userName = interactor.currentUserName
 
         isStreamingAI = true
         aiMessage = ""
 
         let stream = interactor.generateCheckInEncouragement(
+            userName: userName,
             streakCount: streak,
             classesThisWeek: classesThisWeek,
             weeklyTarget: weeklyTarget,
@@ -94,7 +98,7 @@ class CheckInPresenter {
                     try? interactor.updateAttendance(updated)
                 }
             } catch {
-                // AI unavailable — not critical, just skip encouragement
+                interactor.trackEvent(event: Event.aiEncouragementFail(error: error))
             }
             isStreamingAI = false
         }
@@ -106,16 +110,22 @@ extension CheckInPresenter {
         case onAppear
         case moodSelected(rating: Int)
         case confirmTapped
+        case checkInSuccess
         case logSessionTapped
+        case dismissTapped
         case checkInFail(error: Error)
+        case aiEncouragementFail(error: Error)
 
         var eventName: String {
             switch self {
-            case .onAppear:       return "CheckInView_Appear"
-            case .moodSelected:   return "CheckInView_Mood_Select"
-            case .confirmTapped:  return "CheckInView_Confirm_Tap"
-            case .logSessionTapped: return "CheckInView_LogSession_Tap"
-            case .checkInFail:    return "CheckInView_CheckIn_Fail"
+            case .onAppear:             return "CheckInView_Appear"
+            case .moodSelected:         return "CheckInView_Mood_Select"
+            case .confirmTapped:        return "CheckInView_Confirm_Tap"
+            case .checkInSuccess:       return "CheckInView_CheckIn_Success"
+            case .logSessionTapped:     return "CheckInView_LogSession_Tap"
+            case .dismissTapped:        return "CheckInView_Dismiss_Tap"
+            case .checkInFail:          return "CheckInView_CheckIn_Fail"
+            case .aiEncouragementFail:  return "CheckInView_AIEncouragement_Fail"
             }
         }
 
@@ -123,6 +133,7 @@ extension CheckInPresenter {
             switch self {
             case .moodSelected(rating: let rating): return ["mood_rating": rating]
             case .checkInFail(error: let error): return error.eventParameters
+            case .aiEncouragementFail(error: let error): return error.eventParameters
             default: return nil
             }
         }
@@ -130,6 +141,7 @@ extension CheckInPresenter {
         var type: LogType {
             switch self {
             case .checkInFail: return .severe
+            case .aiEncouragementFail: return .warning
             default: return .analytic
             }
         }

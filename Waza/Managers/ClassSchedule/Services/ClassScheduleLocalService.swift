@@ -9,6 +9,7 @@ protocol GymLocationLocalService {
     func create(_ model: GymLocationModel) throws
     func update(_ model: GymLocationModel) throws
     func delete(id: String) throws
+    func deleteAll() throws
 }
 
 @MainActor
@@ -53,6 +54,11 @@ struct SwiftDataGymLocationPersistence: GymLocationLocalService {
         container.mainContext.delete(entity)
         try container.mainContext.save()
     }
+
+    func deleteAll() throws {
+        try container.mainContext.delete(model: GymLocationEntity.self)
+        try container.mainContext.save()
+    }
 }
 
 // MARK: - Class Schedule Local Service
@@ -63,6 +69,7 @@ protocol ClassScheduleLocalService {
     func create(_ model: ClassScheduleModel) throws
     func update(_ model: ClassScheduleModel) throws
     func delete(id: String) throws
+    func deleteAll() throws
 }
 
 @MainActor
@@ -107,6 +114,11 @@ struct SwiftDataClassSchedulePersistence: ClassScheduleLocalService {
         container.mainContext.delete(entity)
         try container.mainContext.save()
     }
+
+    func deleteAll() throws {
+        try container.mainContext.delete(model: ClassScheduleEntity.self)
+        try container.mainContext.save()
+    }
 }
 
 // MARK: - Class Attendance Local Service
@@ -117,6 +129,7 @@ protocol ClassAttendanceLocalService {
     func create(_ model: ClassAttendanceModel) throws
     func update(_ model: ClassAttendanceModel) throws
     func delete(id: String) throws
+    func deleteAll() throws
 }
 
 @MainActor
@@ -159,6 +172,11 @@ struct SwiftDataClassAttendancePersistence: ClassAttendanceLocalService {
         )
         guard let entity = (try? container.mainContext.fetch(descriptor))?.first else { return }
         container.mainContext.delete(entity)
+        try container.mainContext.save()
+    }
+
+    func deleteAll() throws {
+        try container.mainContext.delete(model: ClassAttendanceEntity.self)
         try container.mainContext.save()
     }
 }

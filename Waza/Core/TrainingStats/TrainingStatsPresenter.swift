@@ -10,6 +10,7 @@ class TrainingStatsPresenter {
     var selectedPeriodLabel: String = "Month"
 
     var snapshot: TrainingSnapshot = .empty
+    private(set) var activeGoals: [TrainingGoalModel] = []
 
     let periodOptions: [(label: String, range: DateRange)] = [
         ("Week", .lastWeek),
@@ -26,6 +27,12 @@ class TrainingStatsPresenter {
     func onViewAppear() {
         interactor.trackScreenEvent(event: Event.onAppear)
         loadStats()
+        activeGoals = interactor.activeGoals
+    }
+
+    func onManageGoalsTapped() {
+        interactor.trackEvent(event: Event.manageGoalsTapped)
+        router.showGoalsPlanningView()
     }
 
     func onPeriodSelected(label: String, range: DateRange) {
@@ -44,11 +51,13 @@ extension TrainingStatsPresenter {
     enum Event: LoggableEvent {
         case onAppear
         case periodChanged(label: String)
+        case manageGoalsTapped
 
         var eventName: String {
             switch self {
-            case .onAppear: return "TrainingStats_Appear"
-            case .periodChanged: return "TrainingStats_PeriodChange"
+            case .onAppear:         return "TrainingStats_Appear"
+            case .periodChanged:    return "TrainingStats_PeriodChange"
+            case .manageGoalsTapped: return "TrainingStats_ManageGoals_Tap"
             }
         }
 

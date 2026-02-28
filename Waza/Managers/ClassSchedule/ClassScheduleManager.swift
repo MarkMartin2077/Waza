@@ -156,6 +156,17 @@ class ClassScheduleManager: GeofenceCoordinatorDelegate {
         geofenceCoordinator.startMonitoring(gyms: gyms)
     }
 
+    func clearAll() {
+        geofenceCoordinator.stopAllMonitoring()
+        notificationScheduler.cancelAllReminders()
+        try? gymService.deleteAll()
+        try? scheduleService.deleteAll()
+        try? attendanceService.deleteAll()
+        gyms = []
+        schedules = []
+        attendance = []
+    }
+
     func seedMockDataIfEmpty() {
         guard gyms.isEmpty else { return }
         for gym in GymLocationModel.mocks {

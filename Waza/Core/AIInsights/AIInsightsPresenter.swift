@@ -45,6 +45,7 @@ class AIInsightsPresenter {
     }
 
     func onDismissError() {
+        interactor.trackEvent(event: Event.errorDismissed)
         showErrorModal = false
         errorMessage = ""
     }
@@ -101,16 +102,18 @@ extension AIInsightsPresenter {
         case insightsGenerated(count: Int)
         case streamFailed(error: Error)
         case insightsFailed(error: Error)
+        case errorDismissed
 
         var eventName: String {
             switch self {
-            case .onAppear:              return "AIInsights_Appear"
-            case .streamSummaryTapped:   return "AIInsights_StreamSummary_Tap"
+            case .onAppear:               return "AIInsights_Appear"
+            case .streamSummaryTapped:    return "AIInsights_StreamSummary_Tap"
             case .generateInsightsTapped: return "AIInsights_GenerateInsights_Tap"
-            case .summaryStreamed:        return "AIInsights_Summary_Streamed"
-            case .insightsGenerated:     return "AIInsights_Insights_Generated"
-            case .streamFailed:          return "AIInsights_Stream_Fail"
-            case .insightsFailed:        return "AIInsights_Insights_Fail"
+            case .summaryStreamed:         return "AIInsights_Summary_Streamed"
+            case .insightsGenerated:      return "AIInsights_Insights_Generated"
+            case .streamFailed:           return "AIInsights_Stream_Fail"
+            case .insightsFailed:         return "AIInsights_Insights_Fail"
+            case .errorDismissed:         return "AIInsights_Error_Dismissed"
             }
         }
 
