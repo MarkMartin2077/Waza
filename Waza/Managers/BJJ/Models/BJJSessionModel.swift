@@ -1,12 +1,10 @@
-import SwiftData
 import Foundation
 
-@Model
-final class BJJSessionModel {
-    @Attribute(.unique) var id: String
+struct BJJSessionModel: Codable, Sendable, Identifiable {
+    var sessionId: String
     var date: Date
     var duration: TimeInterval
-    var sessionTypeRaw: String
+    var sessionType: SessionType
     var academy: String?
     var instructor: String?
     var focusAreas: [String]
@@ -18,10 +16,62 @@ final class BJJSessionModel {
     var needsImprovement: String?
     var keyInsights: String?
 
-    var sessionType: SessionType {
-        get { SessionType(rawValue: sessionTypeRaw) ?? .gi }
-        set { sessionTypeRaw = newValue.rawValue }
+    var id: String { sessionId }
+
+    init(
+        sessionId: String = UUID().uuidString,
+        date: Date = Date(),
+        duration: TimeInterval = 5400,
+        sessionType: SessionType = .gi,
+        academy: String? = nil,
+        instructor: String? = nil,
+        focusAreas: [String] = [],
+        notes: String? = nil,
+        preSessionMood: Int? = nil,
+        postSessionMood: Int? = nil,
+        roundsCount: Int = 0,
+        whatWorkedWell: String? = nil,
+        needsImprovement: String? = nil,
+        keyInsights: String? = nil
+    ) {
+        self.sessionId = sessionId
+        self.date = date
+        self.duration = duration
+        self.sessionType = sessionType
+        self.academy = academy
+        self.instructor = instructor
+        self.focusAreas = focusAreas
+        self.notes = notes
+        self.preSessionMood = preSessionMood
+        self.postSessionMood = postSessionMood
+        self.roundsCount = roundsCount
+        self.whatWorkedWell = whatWorkedWell
+        self.needsImprovement = needsImprovement
+        self.keyInsights = keyInsights
     }
+
+    init(entity: BJJSessionEntity) {
+        self.sessionId = entity.sessionId
+        self.date = entity.date
+        self.duration = entity.duration
+        self.sessionType = SessionType(rawValue: entity.sessionTypeRaw) ?? .gi
+        self.academy = entity.academy
+        self.instructor = entity.instructor
+        self.focusAreas = entity.focusAreas
+        self.notes = entity.notes
+        self.preSessionMood = entity.preSessionMood
+        self.postSessionMood = entity.postSessionMood
+        self.roundsCount = entity.roundsCount
+        self.whatWorkedWell = entity.whatWorkedWell
+        self.needsImprovement = entity.needsImprovement
+        self.keyInsights = entity.keyInsights
+    }
+
+    func toEntity() -> BJJSessionEntity {
+        BJJSessionEntity(from: self)
+    }
+
+    // MARK: - Computed Display Properties
 
     var durationFormatted: String {
         let totalMinutes = Int(duration) / 60
@@ -40,43 +90,44 @@ final class BJJSessionModel {
         return formatter.string(from: date)
     }
 
-    init(
-        id: String = UUID().uuidString,
-        date: Date = Date(),
-        duration: TimeInterval = 5400,
-        sessionType: SessionType = .gi,
-        academy: String? = nil,
-        instructor: String? = nil,
-        focusAreas: [String] = [],
-        notes: String? = nil,
-        preSessionMood: Int? = nil,
-        postSessionMood: Int? = nil,
-        roundsCount: Int = 0,
-        whatWorkedWell: String? = nil,
-        needsImprovement: String? = nil,
-        keyInsights: String? = nil
-    ) {
-        self.id = id
-        self.date = date
-        self.duration = duration
-        self.sessionTypeRaw = sessionType.rawValue
-        self.academy = academy
-        self.instructor = instructor
-        self.focusAreas = focusAreas
-        self.notes = notes
-        self.preSessionMood = preSessionMood
-        self.postSessionMood = postSessionMood
-        self.roundsCount = roundsCount
-        self.whatWorkedWell = whatWorkedWell
-        self.needsImprovement = needsImprovement
-        self.keyInsights = keyInsights
+    // MARK: - Codable
+
+    enum CodingKeys: String, CodingKey {
+        case sessionId = "session_id"
+        case date
+        case duration
+        case sessionType = "session_type"
+        case academy
+        case instructor
+        case focusAreas = "focus_areas"
+        case notes
+        case preSessionMood = "pre_session_mood"
+        case postSessionMood = "post_session_mood"
+        case roundsCount = "rounds_count"
+        case whatWorkedWell = "what_worked_well"
+        case needsImprovement = "needs_improvement"
+        case keyInsights = "key_insights"
+    }
+
+    // MARK: - Analytics
+
+    var eventParameters: [String: Any] {
+        let dict: [String: Any?] = [
+            "session_id": sessionId,
+            "session_type": sessionType.rawValue,
+            "duration": duration,
+            "rounds_count": roundsCount
+        ]
+        return dict.compactMapValues { $0 }
     }
 }
+
+// MARK: - Mock Data
 
 extension BJJSessionModel {
     static var mock: BJJSessionModel {
         BJJSessionModel(
-            id: "mock-session-1",
+            sessionId: "mock-session-1",
             date: Calendar.current.date(byAdding: .day, value: -1, to: Date()) ?? Date(),
             duration: 5400,
             sessionType: .gi,
@@ -97,7 +148,7 @@ extension BJJSessionModel {
         [
             mock,
             BJJSessionModel(
-                id: "mock-session-2",
+                sessionId: "mock-session-2",
                 date: Calendar.current.date(byAdding: .day, value: -3, to: Date()) ?? Date(),
                 duration: 3600,
                 sessionType: .noGi,
@@ -107,7 +158,7 @@ extension BJJSessionModel {
                 roundsCount: 4
             ),
             BJJSessionModel(
-                id: "mock-session-3",
+                sessionId: "mock-session-3",
                 date: Calendar.current.date(byAdding: .day, value: -5, to: Date()) ?? Date(),
                 duration: 7200,
                 sessionType: .openMat,
@@ -116,7 +167,7 @@ extension BJJSessionModel {
                 roundsCount: 8
             ),
             BJJSessionModel(
-                id: "mock-session-4",
+                sessionId: "mock-session-4",
                 date: Calendar.current.date(byAdding: .day, value: -7, to: Date()) ?? Date(),
                 duration: 4800,
                 sessionType: .drilling,

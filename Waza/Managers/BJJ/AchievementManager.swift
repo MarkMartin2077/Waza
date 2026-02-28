@@ -1,23 +1,21 @@
-import SwiftData
 import Foundation
 
 @Observable
 @MainActor
 class AchievementManager {
-    private let modelContext: ModelContext
+    private let localService: AchievementLocalService
+    private let remoteService: RemoteAchievementService
 
     private(set) var earnedAchievements: [AchievementEarnedModel] = []
 
-    init(modelContext: ModelContext) {
-        self.modelContext = modelContext
+    init(localService: AchievementLocalService, remoteService: RemoteAchievementService) {
+        self.localService = localService
+        self.remoteService = remoteService
         refresh()
     }
 
     func refresh() {
-        let descriptor = FetchDescriptor<AchievementEarnedModel>(
-            sortBy: [SortDescriptor(\.earnedDate, order: .reverse)]
-        )
-        earnedAchievements = (try? modelContext.fetch(descriptor)) ?? []
+        earnedAchievements = localService.getAchievements()
     }
 
     func isEarned(_ id: AchievementId) -> Bool {
@@ -52,9 +50,8 @@ class AchievementManager {
 
     private func award(_ id: AchievementId) -> [AchievementId] {
         guard !isEarned(id) else { return [] }
-        let achievement = AchievementEarnedModel(achievementId: id.rawValue)
-        modelContext.insert(achievement)
-        try? modelContext.save()
+        let model = AchievementEarnedModel(achievementId: id.rawValue)
+        try? localService.create(model)
         refresh()
         return [id]
     }

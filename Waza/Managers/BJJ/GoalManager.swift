@@ -1,10 +1,10 @@
-import SwiftData
 import Foundation
 
 @Observable
 @MainActor
 class GoalManager {
-    private let modelContext: ModelContext
+    private let localService: GoalLocalService
+    private let remoteService: RemoteGoalService
 
     private(set) var goals: [TrainingGoalModel] = []
 
@@ -16,16 +16,14 @@ class GoalManager {
         goals.filter { $0.isCompleted }
     }
 
-    init(modelContext: ModelContext) {
-        self.modelContext = modelContext
+    init(localService: GoalLocalService, remoteService: RemoteGoalService) {
+        self.localService = localService
+        self.remoteService = remoteService
         refresh()
     }
 
     func refresh() {
-        let descriptor = FetchDescriptor<TrainingGoalModel>(
-            sortBy: [SortDescriptor(\.createdDate, order: .reverse)]
-        )
-        goals = (try? modelContext.fetch(descriptor)) ?? []
+        goals = localService.getGoals()
     }
 
     @discardableResult
@@ -35,55 +33,52 @@ class GoalManager {
         goalType: GoalType = .custom,
         deadline: Date? = nil
     ) throws -> TrainingGoalModel {
-        let goal = TrainingGoalModel(
+        let model = TrainingGoalModel(
             title: title,
             goalDescription: description,
             goalType: goalType,
             deadline: deadline
         )
-        modelContext.insert(goal)
-        try modelContext.save()
+        try localService.create(model)
         refresh()
-        return goal
+        return model
     }
 
     func updateProgress(goalId: String, progress: Double) throws {
-        guard let goal = goals.first(where: { $0.id == goalId }) else { return }
+        guard var goal = goals.first(where: { $0.goalId == goalId }) else { return }
         goal.progress = min(max(progress, 0), 1.0)
         if goal.progress >= 1.0 && !goal.isCompleted {
             goal.isCompleted = true
             goal.completedDate = Date()
         }
-        try modelContext.save()
+        try localService.update(goal)
         refresh()
     }
 
     func completeGoal(goalId: String) throws {
-        guard let goal = goals.first(where: { $0.id == goalId }) else { return }
+        guard var goal = goals.first(where: { $0.goalId == goalId }) else { return }
         goal.isCompleted = true
         goal.progress = 1.0
         goal.completedDate = Date()
-        try modelContext.save()
+        try localService.update(goal)
         refresh()
     }
 
-    func updateGoal(_ goal: TrainingGoalModel) throws {
-        try modelContext.save()
+    func updateGoal(_ model: TrainingGoalModel) throws {
+        try localService.update(model)
         refresh()
     }
 
-    func deleteGoal(_ goal: TrainingGoalModel) throws {
-        modelContext.delete(goal)
-        try modelContext.save()
+    func deleteGoal(_ model: TrainingGoalModel) throws {
+        try localService.delete(id: model.goalId)
         refresh()
     }
 
     func seedMockDataIfEmpty() {
         guard goals.isEmpty else { return }
-        for goal in TrainingGoalModel.mocks {
-            modelContext.insert(goal)
+        for model in TrainingGoalModel.mocks {
+            try? localService.create(model)
         }
-        try? modelContext.save()
         refresh()
     }
 }

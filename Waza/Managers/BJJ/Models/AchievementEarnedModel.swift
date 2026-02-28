@@ -1,23 +1,53 @@
-import SwiftData
 import Foundation
 
-@Model
-final class AchievementEarnedModel {
-    @Attribute(.unique) var id: String
+struct AchievementEarnedModel: Codable, Sendable, Identifiable {
+    var achievementEarnedId: String
     var achievementId: String
     var earnedDate: Date
     var metadata: String?
 
+    var id: String { achievementEarnedId }
+
     init(
-        id: String = UUID().uuidString,
+        achievementEarnedId: String = UUID().uuidString,
         achievementId: String,
         earnedDate: Date = Date(),
         metadata: String? = nil
     ) {
-        self.id = id
+        self.achievementEarnedId = achievementEarnedId
         self.achievementId = achievementId
         self.earnedDate = earnedDate
         self.metadata = metadata
+    }
+
+    init(entity: AchievementEarnedEntity) {
+        self.achievementEarnedId = entity.achievementEarnedId
+        self.achievementId = entity.achievementId
+        self.earnedDate = entity.earnedDate
+        self.metadata = entity.metadata
+    }
+
+    func toEntity() -> AchievementEarnedEntity {
+        AchievementEarnedEntity(from: self)
+    }
+
+    // MARK: - Codable
+
+    enum CodingKeys: String, CodingKey {
+        case achievementEarnedId = "achievement_earned_id"
+        case achievementId = "achievement_id"
+        case earnedDate = "earned_date"
+        case metadata
+    }
+
+    // MARK: - Analytics
+
+    var eventParameters: [String: Any] {
+        let dict: [String: Any?] = [
+            "achievement_earned_id": achievementEarnedId,
+            "achievement_id": achievementId
+        ]
+        return dict.compactMapValues { $0 }
     }
 }
 

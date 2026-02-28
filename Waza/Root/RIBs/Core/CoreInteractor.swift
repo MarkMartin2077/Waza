@@ -20,6 +20,8 @@ struct CoreInteractor: GlobalInteractor {
     let beltManager: BeltManager
     let goalManager: GoalManager
     let achievementManager: AchievementManager
+    let claGameManager: CLAGameManager
+    let trainingStatsManager: TrainingStatsManager
 
     init(container: DependencyContainer) {
         self.appState = container.resolve(AppState.self)!
@@ -38,6 +40,8 @@ struct CoreInteractor: GlobalInteractor {
         self.beltManager = container.resolve(BeltManager.self)!
         self.goalManager = container.resolve(GoalManager.self)!
         self.achievementManager = container.resolve(AchievementManager.self)!
+        self.claGameManager = container.resolve(CLAGameManager.self)!
+        self.trainingStatsManager = container.resolve(TrainingStatsManager.self)!
     }
 
     // MARK: APP STATE
@@ -464,6 +468,90 @@ struct CoreInteractor: GlobalInteractor {
 
     func isAchievementEarned(_ id: AchievementId) -> Bool {
         achievementManager.isEarned(id)
+    }
+
+    // MARK: CLA Games
+
+    var allGames: [CLAGameModel] {
+        claGameManager.games
+    }
+
+    var builtInGames: [CLAGameModel] {
+        claGameManager.builtInGames
+    }
+
+    var userGames: [CLAGameModel] {
+        claGameManager.userGames
+    }
+
+    func getGame(id: String) -> CLAGameModel? {
+        claGameManager.getGame(id: id)
+    }
+
+    func getGames(for position: String) -> [CLAGameModel] {
+        claGameManager.getGames(for: position)
+    }
+
+    @discardableResult
+    func createGame(
+        name: String,
+        objective: String,
+        skillLevel: BeltLevel = .all,
+        position: String,
+        focusArea: String,
+        taskConstraints: [String] = [],
+        environmentConstraints: [String] = [],
+        individualConstraints: [String] = [],
+        expectedDiscoveries: [String] = [],
+        safetyNotes: String? = nil
+    ) throws -> CLAGameModel {
+        try claGameManager.createGame(
+            name: name,
+            objective: objective,
+            skillLevel: skillLevel,
+            position: position,
+            focusArea: focusArea,
+            taskConstraints: taskConstraints,
+            environmentConstraints: environmentConstraints,
+            individualConstraints: individualConstraints,
+            expectedDiscoveries: expectedDiscoveries,
+            safetyNotes: safetyNotes
+        )
+    }
+
+    func deleteGame(_ game: CLAGameModel) throws {
+        try claGameManager.deleteGame(game)
+    }
+
+    @discardableResult
+    func logDiscovery(text: String, successRating: Int, gameId: String, sessionId: String? = nil) throws -> GameDiscoveryModel {
+        try claGameManager.logDiscovery(text: text, successRating: successRating, gameId: gameId, sessionId: sessionId)
+    }
+
+    func markGamePracticed(gameId: String) throws {
+        try claGameManager.markPracticed(gameId: gameId)
+    }
+
+    func getMostPracticedGames(limit: Int = 5) -> [CLAGameModel] {
+        claGameManager.getMostPracticedGames(limit: limit)
+    }
+
+    // MARK: Training Stats
+
+    func getTrainingSnapshot(period: DateRange) -> TrainingSnapshot {
+        trainingStatsManager.getTrainingSnapshot(period: period)
+    }
+
+    func getCLAStatSummary() -> CLAStatSummary {
+        trainingStatsManager.getCLAStatSummary()
+    }
+
+    func getTypeBreakdown() -> [TypeStat] {
+        trainingStatsManager.getTypeBreakdown()
+    }
+
+    func getTypeBreakdown(for period: DateRange) -> [TypeStat] {
+        trainingStatsManager.getTypeBreakdown(for: period)
     }
 
     // MARK: Session + Gamification Combined

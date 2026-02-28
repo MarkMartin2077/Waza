@@ -184,6 +184,62 @@ struct SessionStats {
     )
 }
 
+// MARK: - Belt Level (CLA Game Difficulty)
+
+enum BeltLevel: String, Codable, CaseIterable {
+    case all
+    case beginner
+    case intermediate
+    case advanced
+
+    var displayName: String {
+        switch self {
+        case .all: return "All Levels"
+        case .beginner: return "Beginner"
+        case .intermediate: return "Intermediate"
+        case .advanced: return "Advanced"
+        }
+    }
+}
+
+// MARK: - Training Stat Types
+
+struct TypeStat {
+    let sessionType: SessionType
+    let count: Int
+    let percentage: Double
+}
+
+struct DayCount {
+    let date: Date
+    let count: Int
+}
+
+struct TrainingSnapshot {
+    let period: DateRange
+    let sessionCount: Int
+    let totalHours: Double
+    let avgDurationMinutes: Int
+    let typeBreakdown: [TypeStat]
+    let sessionFrequency: [DayCount]
+
+    static let empty = TrainingSnapshot(
+        period: .lastMonth,
+        sessionCount: 0,
+        totalHours: 0,
+        avgDurationMinutes: 0,
+        typeBreakdown: [],
+        sessionFrequency: []
+    )
+}
+
+struct CLAStatSummary {
+    let totalTimePracticed: Int
+    let uniqueGamesPlayed: Int
+    let totalDiscoveries: Int
+    let mostPlayedGame: CLAGameModel?
+}
+
 // MARK: - Date Range
 
 struct DateRange {

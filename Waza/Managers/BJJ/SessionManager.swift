@@ -1,23 +1,21 @@
-import SwiftData
 import Foundation
 
 @Observable
 @MainActor
 class SessionManager {
-    private let modelContext: ModelContext
+    private let localService: BJJSessionLocalService
+    private let remoteService: RemoteBJJSessionService
 
     private(set) var sessions: [BJJSessionModel] = []
 
-    init(modelContext: ModelContext) {
-        self.modelContext = modelContext
+    init(localService: BJJSessionLocalService, remoteService: RemoteBJJSessionService) {
+        self.localService = localService
+        self.remoteService = remoteService
         refresh()
     }
 
     func refresh() {
-        let descriptor = FetchDescriptor<BJJSessionModel>(
-            sortBy: [SortDescriptor(\.date, order: .reverse)]
-        )
-        sessions = (try? modelContext.fetch(descriptor)) ?? []
+        sessions = localService.getSessions()
     }
 
     @discardableResult
@@ -36,7 +34,7 @@ class SessionManager {
         needsImprovement: String? = nil,
         keyInsights: String? = nil
     ) throws -> BJJSessionModel {
-        let session = BJJSessionModel(
+        let model = BJJSessionModel(
             date: date,
             duration: duration,
             sessionType: sessionType,
@@ -51,25 +49,23 @@ class SessionManager {
             needsImprovement: needsImprovement,
             keyInsights: keyInsights
         )
-        modelContext.insert(session)
-        try modelContext.save()
+        try localService.create(model)
         refresh()
-        return session
+        return model
     }
 
-    func updateSession(_ session: BJJSessionModel) throws {
-        try modelContext.save()
+    func updateSession(_ model: BJJSessionModel) throws {
+        try localService.update(model)
         refresh()
     }
 
-    func deleteSession(_ session: BJJSessionModel) throws {
-        modelContext.delete(session)
-        try modelContext.save()
+    func deleteSession(_ model: BJJSessionModel) throws {
+        try localService.delete(id: model.sessionId)
         refresh()
     }
 
     func getSession(id: String) -> BJJSessionModel? {
-        sessions.first { $0.id == id }
+        sessions.first { $0.sessionId == id }
     }
 
     func getRecentSessions(limit: Int = 5) -> [BJJSessionModel] {
@@ -99,13 +95,11 @@ class SessionManager {
         )
     }
 
-    // Seed mock data for preview contexts
     func seedMockDataIfEmpty() {
         guard sessions.isEmpty else { return }
-        for session in BJJSessionModel.mocks {
-            modelContext.insert(session)
+        for model in BJJSessionModel.mocks {
+            try? localService.create(model)
         }
-        try? modelContext.save()
         refresh()
     }
 }

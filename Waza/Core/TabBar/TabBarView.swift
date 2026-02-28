@@ -44,14 +44,14 @@ extension CoreBuilder {
                     .any()
                 }),
                 TabBarScreen(title: "Games", systemImage: "puzzlepiece.fill", screen: {
-                    RouterView { _ in
-                        gamesPlaceholderView()
+                    RouterView { router in
+                        claGamesLibraryView(router: router)
                     }
                     .any()
                 }),
                 TabBarScreen(title: "Analytics", systemImage: "chart.bar.fill", screen: {
-                    RouterView { _ in
-                        analyticsPlaceholderView()
+                    RouterView { router in
+                        trainingStatsView(router: router)
                     }
                     .any()
                 }),
@@ -69,42 +69,6 @@ extension CoreBuilder {
                 })
             ]
         )
-    }
-
-    // Phase 2 placeholder
-    private func gamesPlaceholderView() -> some View {
-        VStack(spacing: 16) {
-            Image(systemName: "puzzlepiece.fill")
-                .font(.system(size: 48))
-                .foregroundStyle(.accent)
-            Text("CLA Games")
-                .font(.title2)
-                .fontWeight(.bold)
-            Text("Constraint-Led Approach game library coming in Phase 2")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal)
-        }
-        .navigationTitle("Games")
-    }
-
-    // Phase 2 placeholder
-    private func analyticsPlaceholderView() -> some View {
-        VStack(spacing: 16) {
-            Image(systemName: "chart.bar.fill")
-                .font(.system(size: 48))
-                .foregroundStyle(.accent)
-            Text("Analytics")
-                .font(.title2)
-                .fontWeight(.bold)
-            Text("Training analytics and insights coming in Phase 2")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal)
-        }
-        .navigationTitle("Analytics")
     }
 
 }

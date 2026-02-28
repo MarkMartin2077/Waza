@@ -1,0 +1,89 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper: request is from a signed-in user
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Helper: the requested document belongs to the authenticated user
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // -------------------------------------------------------------------------
+    // USER PROFILES
+    // users/{userId}
+    // -------------------------------------------------------------------------
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // -------------------------------------------------------------------------
+    // GAMIFICATION — STREAKS
+    // SwiftfulGamification stores data under st_streaks/{userId}/...
+    // -------------------------------------------------------------------------
+    match /st_streaks/{userId} {
+      allow read, write: if isOwner(userId);
+
+      match /{document=**} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // GAMIFICATION — EXPERIENCE POINTS
+    // -------------------------------------------------------------------------
+    match /st_experience/{userId} {
+      allow read, write: if isOwner(userId);
+
+      match /{document=**} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // GAMIFICATION — PROGRESS
+    // -------------------------------------------------------------------------
+    match /st_progress/{userId} {
+      allow read, write: if isOwner(userId);
+
+      match /{document=**} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+
+    // -------------------------------------------------------------------------
+    // BJJ DATA — subcollections under users/{userId}
+    // These are stubbed in the app (FirebaseXxxService TODOs) but rules
+    // should be in place before the implementation is wired up.
+    // -------------------------------------------------------------------------
+    match /users/{userId}/bjj_sessions/{sessionId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    match /users/{userId}/belt_history/{recordId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    match /users/{userId}/training_goals/{goalId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    match /users/{userId}/achievements_earned/{achievementId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // -------------------------------------------------------------------------
+    // DENY EVERYTHING ELSE
+    // Explicit fallthrough denial (Firestore denies by default, but this
+    // makes intent clear).
+    // -------------------------------------------------------------------------
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+  }
+}

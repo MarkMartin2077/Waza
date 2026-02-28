@@ -1,17 +1,17 @@
-import SwiftData
 import Foundation
 
 @Observable
 @MainActor
 class BeltManager {
-    private let modelContext: ModelContext
+    private let localService: BeltLocalService
+    private let remoteService: RemoteBeltService
 
     private(set) var beltHistory: [BeltRecordModel] = []
 
     var currentBelt: BeltRecordModel? {
         beltHistory.max { lhs, rhs in
-            let lhsScore = (BJJBelt(rawValue: lhs.beltRaw)?.order ?? 0) * 5 + lhs.stripes
-            let rhsScore = (BJJBelt(rawValue: rhs.beltRaw)?.order ?? 0) * 5 + rhs.stripes
+            let lhsScore = lhs.belt.order * 5 + lhs.stripes
+            let rhsScore = rhs.belt.order * 5 + rhs.stripes
             return lhsScore < rhsScore
         }
     }
@@ -20,16 +20,14 @@ class BeltManager {
         currentBelt?.belt ?? .white
     }
 
-    init(modelContext: ModelContext) {
-        self.modelContext = modelContext
+    init(localService: BeltLocalService, remoteService: RemoteBeltService) {
+        self.localService = localService
+        self.remoteService = remoteService
         refresh()
     }
 
     func refresh() {
-        let descriptor = FetchDescriptor<BeltRecordModel>(
-            sortBy: [SortDescriptor(\.promotionDate, order: .reverse)]
-        )
-        beltHistory = (try? modelContext.fetch(descriptor)) ?? []
+        beltHistory = localService.getBeltHistory()
     }
 
     @discardableResult
@@ -40,31 +38,25 @@ class BeltManager {
         academy: String? = nil,
         notes: String? = nil
     ) throws -> BeltRecordModel {
-        let record = BeltRecordModel(
+        let model = BeltRecordModel(
             belt: belt,
             stripes: stripes,
             promotionDate: date,
             academy: academy,
             notes: notes
         )
-        modelContext.insert(record)
-        try modelContext.save()
+        try localService.create(model)
         refresh()
-        return record
+        return model
     }
 
-    func deletePromotion(_ record: BeltRecordModel) throws {
-        modelContext.delete(record)
-        try modelContext.save()
+    func deletePromotion(_ model: BeltRecordModel) throws {
+        try localService.delete(id: model.beltRecordId)
         refresh()
     }
 
     func estimatedTimeToNextBelt(sessionsPerWeek: Double = 3) -> String? {
-        guard let current = currentBelt,
-              let belt = BJJBelt(rawValue: current.beltRaw),
-              let years = belt.typicalYearsToNext else {
-            return nil
-        }
+        guard let years = currentBeltEnum.typicalYearsToNext else { return nil }
         let adjustedYears = years * (3.0 / max(sessionsPerWeek, 0.5))
         if adjustedYears < 1 {
             let months = Int(adjustedYears * 12)
@@ -75,10 +67,9 @@ class BeltManager {
 
     func seedMockDataIfEmpty() {
         guard beltHistory.isEmpty else { return }
-        for record in BeltRecordModel.mocks {
-            modelContext.insert(record)
+        for model in BeltRecordModel.mocks {
+            try? localService.create(model)
         }
-        try? modelContext.save()
         refresh()
     }
 }

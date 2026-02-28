@@ -5,16 +5,14 @@ import Foundation
 class BJJDataManager {
     let modelContainer: ModelContainer
 
-    var modelContext: ModelContext {
-        modelContainer.mainContext
-    }
-
     init(inMemory: Bool = false) {
         let schema = Schema([
-            BJJSessionModel.self,
-            BeltRecordModel.self,
-            TrainingGoalModel.self,
-            AchievementEarnedModel.self
+            BJJSessionEntity.self,
+            BeltRecordEntity.self,
+            TrainingGoalEntity.self,
+            AchievementEarnedEntity.self,
+            CLAGameEntity.self,
+            GameDiscoveryEntity.self
         ])
         let configuration = ModelConfiguration(
             schema: schema,
