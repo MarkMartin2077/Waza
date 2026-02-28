@@ -4,42 +4,35 @@ struct SessionEntryView: View {
     @State var presenter: SessionEntryPresenter
     let delegate: SessionEntryDelegate
 
-    @State private var locationExpanded = false
     @State private var focusAreasExpanded = true
+    @State private var locationExpanded = false
     @State private var reflectionExpanded = false
     @State private var statsExpanded = false
 
+    private let moodEmojis = ["😞", "😕", "😐", "🙂", "😄"]
+
     var body: some View {
         NavigationStack {
-            Form {
-                dateSection
-                typeAndDurationSection
-                locationSection
-                focusAreasSection
-                reflectionSection
-                moodSection
-                statsSection
+            ScrollView {
+                VStack(spacing: 16) {
+                    typeCard
+                    dateAndDurationCard
+                    focusAreasCard
+                    locationCard
+                    reflectionCard
+                    statsCard
+                    saveButton
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
+                .padding(.bottom, 32)
             }
             .navigationTitle("Log Session")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button("Cancel") {
-                        presenter.onCancelPressed()
-                    }
-                    .foregroundStyle(.secondary)
-                }
-                ToolbarItem(placement: .topBarTrailing) {
-                    Group {
-                        if presenter.isLoading {
-                            ProgressView()
-                        } else {
-                            Button("Save") {
-                                presenter.onSavePressed()
-                            }
-                            .fontWeight(.semibold)
-                        }
-                    }
+                    Button("Cancel") { presenter.onCancelPressed() }
+                        .foregroundStyle(.secondary)
                 }
             }
             .alert("Error", isPresented: Binding(
@@ -56,183 +49,304 @@ struct SessionEntryView: View {
         }
     }
 
-    // MARK: - Sections
+    // MARK: - Session Type Card
 
-    private var dateSection: some View {
-        Section("Date & Time") {
-            DatePicker("Date", selection: $presenter.date, displayedComponents: [.date, .hourAndMinute])
-        }
-    }
+    private var typeCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Session Type")
+                .font(.subheadline)
+                .fontWeight(.semibold)
 
-    private var typeAndDurationSection: some View {
-        Section("Session") {
-            Picker("Type", selection: $presenter.sessionType) {
-                ForEach(SessionType.allCases, id: \.self) { type in
-                    Label(type.displayName, systemImage: type.iconName).tag(type)
-                }
-            }
-
-            HStack {
-                Text("Duration")
-                Spacer()
-                Text(presenter.durationText)
-                    .foregroundStyle(.secondary)
-                Stepper("", value: $presenter.durationMinutes, in: 15...300, step: 15)
-                    .labelsHidden()
-            }
-        }
-    }
-
-    private var locationSection: some View {
-        Section {
-            if locationExpanded {
-                TextField("Academy", text: $presenter.academy)
-                TextField("Instructor", text: $presenter.instructor)
-            }
-        } header: {
-            collapsibleHeader(
-                title: "Location",
-                isExpanded: $locationExpanded,
-                badge: presenter.academy.isEmpty && presenter.instructor.isEmpty ? nil : "•"
-            )
-        }
-    }
-
-    private var focusAreasSection: some View {
-        Section {
-            if focusAreasExpanded {
-                if presenter.selectedFocusAreas.isEmpty {
-                    Text("Tap to add focus areas")
-                        .foregroundStyle(.secondary)
-                        .font(.subheadline)
-                } else {
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 8) {
-                            ForEach(presenter.selectedFocusAreas, id: \.self) { area in
-                                Text(area)
-                                    .font(.caption)
-                                    .padding(.horizontal, 10)
-                                    .padding(.vertical, 5)
-                                    .background(.accent.opacity(0.15), in: Capsule())
-                                    .foregroundStyle(.accent)
-                            }
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 10) {
+                    ForEach(SessionType.allCases, id: \.self) { sessionType in
+                        let isSelected = presenter.sessionType == sessionType
+                        VStack(spacing: 6) {
+                            Image(systemName: sessionType.iconName)
+                                .font(.title3)
+                            Text(sessionType.displayName)
+                                .font(.caption)
+                                .fontWeight(.medium)
+                                .multilineTextAlignment(.center)
+                        }
+                        .frame(width: 76, height: 70)
+                        .background(
+                            isSelected ? presenter.beltAccentColor : Color(.systemGray6),
+                            in: RoundedRectangle(cornerRadius: 12)
+                        )
+                        .foregroundStyle(isSelected ? .white : .primary)
+                        .anyButton(.press) {
+                            presenter.onSessionTypeSelected(sessionType)
                         }
                     }
                 }
+            }
+        }
+        .padding(16)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+    }
 
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 100))], spacing: 8) {
+    // MARK: - Date & Duration Card
+
+    private var dateAndDurationCard: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            DatePicker("Date & Time", selection: $presenter.date, displayedComponents: [.date, .hourAndMinute])
+
+            Divider()
+
+            VStack(spacing: 8) {
+                Text("Duration")
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                HStack(spacing: 28) {
+                    Button {
+                        presenter.onDurationDecreased()
+                    } label: {
+                        Image(systemName: "minus.circle.fill")
+                            .font(.title)
+                            .foregroundStyle(presenter.beltAccentColor)
+                    }
+
+                    Text(presenter.durationText)
+                        .font(.wazaStat)
+                        .foregroundStyle(presenter.beltAccentColor)
+                        .frame(minWidth: 90, alignment: .center)
+
+                    Button {
+                        presenter.onDurationIncreased()
+                    } label: {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.title)
+                            .foregroundStyle(presenter.beltAccentColor)
+                    }
+                }
+                .frame(maxWidth: .infinity)
+            }
+        }
+        .padding(16)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+    }
+
+    // MARK: - Focus Areas Card
+
+    private var focusAreasCard: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            collapsibleCardHeader(
+                title: "Focus Areas",
+                badge: presenter.selectedFocusAreas.isEmpty ? nil : "\(presenter.selectedFocusAreas.count)",
+                isExpanded: $focusAreasExpanded
+            )
+
+            if focusAreasExpanded {
+                Divider()
+                    .padding(.horizontal, 16)
+
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 92))], spacing: 8) {
                     ForEach(presenter.availableFocusAreas, id: \.self) { area in
                         let isSelected = presenter.selectedFocusAreas.contains(area)
                         Text(area)
                             .font(.caption)
+                            .fontWeight(.medium)
                             .padding(.horizontal, 10)
-                            .padding(.vertical, 6)
+                            .padding(.vertical, 7)
                             .frame(maxWidth: .infinity)
-                            .background(isSelected ? .accent : .secondary.opacity(0.1), in: RoundedRectangle(cornerRadius: 8))
+                            .background(
+                                isSelected ? presenter.beltAccentColor : Color(.systemGray6),
+                                in: RoundedRectangle(cornerRadius: 8)
+                            )
                             .foregroundStyle(isSelected ? .white : .primary)
                             .anyButton(.press) {
-                                presenter.toggleFocusArea(area)
+                                presenter.onFocusAreaTapped(area)
                             }
                     }
                 }
-                .padding(.vertical, 4)
+                .padding(16)
             }
-        } header: {
-            collapsibleHeader(
-                title: "Focus Areas",
-                isExpanded: $focusAreasExpanded,
-                badge: presenter.selectedFocusAreas.isEmpty ? nil : "\(presenter.selectedFocusAreas.count)"
-            )
         }
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .clipped()
     }
 
-    private var reflectionSection: some View {
-        Section {
-            if reflectionExpanded {
-                TextField("General notes", text: $presenter.notes, axis: .vertical)
-                    .lineLimit(3...6)
-                TextField("What worked well?", text: $presenter.whatWorkedWell, axis: .vertical)
-                    .lineLimit(2...4)
-                TextField("Needs improvement", text: $presenter.needsImprovement, axis: .vertical)
-                    .lineLimit(2...4)
-                TextField("Key insights", text: $presenter.keyInsights, axis: .vertical)
-                    .lineLimit(2...4)
+    // MARK: - Location Card
+
+    private var locationCard: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            let hasData = !presenter.academy.isEmpty || !presenter.instructor.isEmpty
+            collapsibleCardHeader(
+                title: "Location",
+                badge: hasData ? "•" : nil,
+                isExpanded: $locationExpanded
+            )
+
+            if locationExpanded {
+                Divider()
+                    .padding(.horizontal, 16)
+
+                VStack(spacing: 10) {
+                    TextField("Academy (optional)", text: $presenter.academy)
+                        .padding(12)
+                        .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 10))
+                    TextField("Instructor (optional)", text: $presenter.instructor)
+                        .padding(12)
+                        .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 10))
+                }
+                .padding(16)
             }
-        } header: {
-            collapsibleHeader(
+        }
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .clipped()
+    }
+
+    // MARK: - Reflection Card
+
+    private var reflectionCard: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            let hasData = [presenter.notes, presenter.whatWorkedWell, presenter.needsImprovement, presenter.keyInsights].contains { !$0.isEmpty }
+            collapsibleCardHeader(
                 title: "Reflection",
-                isExpanded: $reflectionExpanded,
-                badge: [presenter.notes, presenter.whatWorkedWell, presenter.needsImprovement, presenter.keyInsights].allSatisfy(\.isEmpty) ? nil : "•"
+                badge: hasData ? "•" : nil,
+                isExpanded: $reflectionExpanded
             )
-        }
-    }
 
-    private var moodSection: some View {
-        Section {
-            Toggle("Track mood", isOn: $presenter.showMoodSection)
-            if presenter.showMoodSection {
-                moodPicker(label: "Before training", value: $presenter.preSessionMood)
-                moodPicker(label: "After training", value: $presenter.postSessionMood)
+            if reflectionExpanded {
+                Divider()
+                    .padding(.horizontal, 16)
+
+                VStack(spacing: 10) {
+                    reflectionField("Notes", text: $presenter.notes, lines: 3...6)
+                    reflectionField("What worked well?", text: $presenter.whatWorkedWell, lines: 2...4)
+                    reflectionField("Needs improvement", text: $presenter.needsImprovement, lines: 2...4)
+                    reflectionField("Key insights", text: $presenter.keyInsights, lines: 2...4)
+                }
+                .padding(16)
             }
-        } header: {
-            Text("Mood")
         }
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .clipped()
     }
 
-    private func moodPicker(label: String, value: Binding<Int>) -> some View {
-        HStack {
+    private func reflectionField(_ label: String, text: Binding<String>, lines: ClosedRange<Int>) -> some View {
+        TextField(label, text: text, axis: .vertical)
+            .lineLimit(lines)
+            .padding(12)
+            .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 10))
+    }
+
+    // MARK: - Stats Card (Mood + Rounds)
+
+    private var statsCard: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            let hasStat = presenter.showMoodSection || presenter.roundsCount > 0
+            collapsibleCardHeader(
+                title: "Stats",
+                badge: hasStat ? "•" : nil,
+                isExpanded: $statsExpanded
+            )
+
+            if statsExpanded {
+                Divider()
+                    .padding(.horizontal, 16)
+
+                VStack(alignment: .leading, spacing: 16) {
+                    Toggle("Track mood", isOn: $presenter.showMoodSection)
+
+                    if presenter.showMoodSection {
+                        moodRow(label: "Before", isBefore: true, value: $presenter.preSessionMood)
+                        moodRow(label: "After", isBefore: false, value: $presenter.postSessionMood)
+
+                        Divider()
+                    }
+
+                    HStack {
+                        Text("Rounds")
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        Stepper("\(presenter.roundsCount)", value: $presenter.roundsCount, in: 0...20)
+                    }
+                }
+                .padding(16)
+            }
+        }
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .clipped()
+    }
+
+    private func moodRow(label: String, isBefore: Bool, value: Binding<Int>) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
             Text(label)
-            Spacer()
-            Picker("", selection: value) {
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            HStack(spacing: 8) {
                 ForEach(1...5, id: \.self) { rating in
-                    Text(moodEmoji(rating)).tag(rating)
+                    Text(moodEmojis[rating - 1])
+                        .font(.title3)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 6)
+                        .background(
+                            value.wrappedValue == rating ? presenter.beltAccentColor.opacity(0.15) : Color.clear,
+                            in: RoundedRectangle(cornerRadius: 8)
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(value.wrappedValue == rating ? presenter.beltAccentColor : Color.clear, lineWidth: 1.5)
+                        )
+                        .anyButton {
+                            presenter.onMoodSelected(isBefore: isBefore, rating: rating)
+                        }
                 }
             }
-            .pickerStyle(.segmented)
-            .frame(maxWidth: 160)
         }
     }
 
-    private func moodEmoji(_ value: Int) -> String {
-        switch value {
-        case 1: return "😞"
-        case 2: return "😕"
-        case 3: return "😐"
-        case 4: return "🙂"
-        case 5: return "😄"
-        default: return "😐"
-        }
-    }
+    // MARK: - Save Button
 
-    private var statsSection: some View {
-        Section {
-            if statsExpanded {
-                Stepper("Rounds: \(presenter.roundsCount)", value: $presenter.roundsCount, in: 0...20)
+    private var saveButton: some View {
+        ZStack {
+            Text("Save Session")
+                .font(.headline)
+                .foregroundStyle(.white)
+                .opacity(presenter.isLoading ? 0 : 1)
+
+            if presenter.isLoading {
+                ProgressView()
+                    .tint(.white)
             }
-        } header: {
-            collapsibleHeader(
-                title: "Rounds",
-                isExpanded: $statsExpanded,
-                badge: presenter.roundsCount > 0 ? "\(presenter.roundsCount)" : nil
-            )
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 16)
+        .background(presenter.beltAccentColor, in: RoundedRectangle(cornerRadius: 14))
+        .anyButton(.press) {
+            presenter.onSavePressed()
         }
     }
 
-    // MARK: - Collapsible Header
+    // MARK: - Collapsible Card Header
 
-    private func collapsibleHeader(title: String, isExpanded: Binding<Bool>, badge: String?) -> some View {
+    private func collapsibleCardHeader(title: String, badge: String?, isExpanded: Binding<Bool>) -> some View {
         Button {
+            presenter.onSectionHeaderTapped()
             withAnimation(.easeInOut(duration: 0.2)) {
                 isExpanded.wrappedValue.toggle()
             }
         } label: {
-            HStack(spacing: 4) {
+            HStack {
                 Text(title)
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
                 if let badge {
                     Text(badge)
-                        .foregroundStyle(.accent)
+                        .font(.caption)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(presenter.beltAccentColor)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background(presenter.beltAccentColor.opacity(0.12), in: Capsule())
                 }
-                Spacer()
+
                 Image(systemName: "chevron.right")
                     .font(.caption2)
                     .fontWeight(.semibold)
@@ -240,8 +354,8 @@ struct SessionEntryView: View {
                     .rotationEffect(.degrees(isExpanded.wrappedValue ? 90 : 0))
                     .animation(.easeInOut(duration: 0.2), value: isExpanded.wrappedValue)
             }
-            .foregroundStyle(.secondary)
-            .textCase(nil)
+            .padding(16)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }

@@ -44,11 +44,44 @@ class SessionEntryPresenter {
         interactor.trackScreenEvent(event: Event.onAppear)
     }
 
-    func toggleFocusArea(_ area: String) {
+    func onSessionTypeSelected(_ type: SessionType) {
+        interactor.trackEvent(event: Event.sessionTypeSelected(type: type))
+        interactor.playHaptic(option: .selection)
+        sessionType = type
+    }
+
+    func onFocusAreaTapped(_ area: String) {
+        interactor.trackEvent(event: Event.focusAreaToggled(area: area))
+        interactor.playHaptic(option: .selection)
         if selectedFocusAreas.contains(area) {
             selectedFocusAreas.removeAll { $0 == area }
         } else {
             selectedFocusAreas.append(area)
+        }
+    }
+
+    func onDurationIncreased() {
+        guard durationMinutes < 300 else { return }
+        durationMinutes += 15
+        interactor.playHaptic(option: .selection)
+    }
+
+    func onDurationDecreased() {
+        guard durationMinutes > 15 else { return }
+        durationMinutes -= 15
+        interactor.playHaptic(option: .selection)
+    }
+
+    func onSectionHeaderTapped() {
+        interactor.playHaptic(option: .selection)
+    }
+
+    func onMoodSelected(isBefore: Bool, rating: Int) {
+        interactor.playHaptic(option: .selection)
+        if isBefore {
+            preSessionMood = rating
+        } else {
+            postSessionMood = rating
         }
     }
 
@@ -96,6 +129,10 @@ class SessionEntryPresenter {
         isLoading = false
     }
 
+    var beltAccentColor: Color {
+        interactor.currentBeltEnum.accentColor
+    }
+
     var durationText: String {
         let hours = durationMinutes / 60
         let mins = durationMinutes % 60
@@ -113,14 +150,18 @@ extension SessionEntryPresenter {
         case saveSuccess(sessionId: String)
         case saveFail(error: Error)
         case cancelTapped
+        case sessionTypeSelected(type: SessionType)
+        case focusAreaToggled(area: String)
 
         var eventName: String {
             switch self {
-            case .onAppear:     return "SessionEntryView_Appear"
-            case .saveTapped:   return "SessionEntryView_Save_Tap"
-            case .saveSuccess:  return "SessionEntryView_Save_Success"
-            case .saveFail:     return "SessionEntryView_Save_Fail"
-            case .cancelTapped: return "SessionEntryView_Cancel_Tap"
+            case .onAppear:             return "SessionEntryView_Appear"
+            case .saveTapped:           return "SessionEntryView_Save_Tap"
+            case .saveSuccess:          return "SessionEntryView_Save_Success"
+            case .saveFail:             return "SessionEntryView_Save_Fail"
+            case .cancelTapped:         return "SessionEntryView_Cancel_Tap"
+            case .sessionTypeSelected:  return "SessionEntryView_SessionType_Select"
+            case .focusAreaToggled:     return "SessionEntryView_FocusArea_Toggle"
             }
         }
 
@@ -130,6 +171,10 @@ extension SessionEntryPresenter {
                 return ["session_id": sessionId]
             case .saveFail(error: let error):
                 return error.eventParameters
+            case .sessionTypeSelected(type: let type):
+                return ["session_type": type.rawValue]
+            case .focusAreaToggled(area: let area):
+                return ["focus_area": area]
             default:
                 return nil
             }
