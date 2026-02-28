@@ -37,21 +37,21 @@ extension CoreBuilder {
     func tabbarView() -> some View {
         TabBarView(
             tabs: [
-                TabBarScreen(title: "Dashboard", systemImage: "house.fill", screen: {
+                TabBarScreen(title: "Home", systemImage: "house.fill", screen: {
                     RouterView { router in
                         dashboardView(router: router, delegate: DashboardDelegate())
                     }
                     .any()
                 }),
-                TabBarScreen(title: "Analytics", systemImage: "chart.bar.fill", screen: {
+                TabBarScreen(title: "Sessions", systemImage: "figure.martial.arts", screen: {
                     RouterView { router in
-                        trainingStatsView(router: router)
+                        sessionsView(router: router)
                     }
                     .any()
                 }),
-                TabBarScreen(title: "Goals", systemImage: "target", screen: {
+                TabBarScreen(title: "Progress", systemImage: "chart.line.uptrend.xyaxis", screen: {
                     RouterView { router in
-                        goalsPlanningView(router: router, delegate: GoalsPlanningDelegate())
+                        trainingStatsView(router: router)
                     }
                     .any()
                 }),
@@ -69,13 +69,13 @@ extension CoreBuilder {
 
 #Preview("Fake tabs") {
     TabBarView(tabs: [
-        TabBarScreen(title: "Dashboard", systemImage: "house.fill", screen: {
+        TabBarScreen(title: "Home", systemImage: "house.fill", screen: {
             Color.red.any()
         }),
-        TabBarScreen(title: "Analytics", systemImage: "chart.bar.fill", screen: {
+        TabBarScreen(title: "Sessions", systemImage: "figure.martial.arts", screen: {
             Color.blue.any()
         }),
-        TabBarScreen(title: "Goals", systemImage: "target", screen: {
+        TabBarScreen(title: "Progress", systemImage: "chart.line.uptrend.xyaxis", screen: {
             Color.orange.any()
         }),
         TabBarScreen(title: "Profile", systemImage: "person.fill", screen: {
