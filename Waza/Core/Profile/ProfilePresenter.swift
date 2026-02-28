@@ -1,10 +1,5 @@
 import SwiftUI
 
-// Allow AchievementId to be used with .sheet(item:)
-extension AchievementId: Identifiable {
-    public var id: String { rawValue }
-}
-
 @Observable
 @MainActor
 class ProfilePresenter {
@@ -23,7 +18,6 @@ class ProfilePresenter {
 
     var showAddPromotionSheet: Bool = false
     var errorMessage: String?
-    var selectedAchievement: AchievementId?
 
     // Sheet mode — true = initial belt setup (no achievement), false = promotion (triggers achievement)
     private(set) var isInitialBeltSetup: Bool = false
@@ -63,17 +57,9 @@ class ProfilePresenter {
 
     // MARK: - Achievement actions
 
-    func isAchievementEarned(_ id: AchievementId) -> Bool {
-        earnedAchievements.contains { $0.achievementId == id.rawValue }
-    }
-
-    func earnedDate(for id: AchievementId) -> Date? {
-        earnedAchievements.first { $0.achievementId == id.rawValue }?.earnedDate
-    }
-
-    func onAchievementTapped(_ id: AchievementId) {
-        interactor.trackEvent(event: Event.achievementTapped)
-        selectedAchievement = id
+    func onAchievementsTapped() {
+        interactor.trackEvent(event: Event.achievementsTapped)
+        router.showAchievementsView()
     }
 
     // MARK: - Computed display values
@@ -189,7 +175,7 @@ extension ProfilePresenter {
         case savePromotionTapped
         case saveFail(error: Error)
         case manageScheduleTapped
-        case achievementTapped
+        case achievementsTapped
 
         var eventName: String {
             switch self {
@@ -202,7 +188,7 @@ extension ProfilePresenter {
             case .savePromotionTapped:  return "ProfileView_SavePromotion_Tap"
             case .saveFail:             return "ProfileView_Save_Fail"
             case .manageScheduleTapped: return "ProfileView_ManageSchedule_Tap"
-            case .achievementTapped:    return "ProfileView_Achievement_Tap"
+            case .achievementsTapped:   return "ProfileView_Achievements_Tap"
             }
         }
 

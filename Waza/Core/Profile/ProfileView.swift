@@ -48,55 +48,6 @@ struct ProfileView: View {
         .onDisappear {
             presenter.onViewDisappear(delegate: delegate)
         }
-        .sheet(item: $presenter.selectedAchievement) { achievementId in
-            achievementDetailSheet(achievementId: achievementId)
-        }
-    }
-
-    // MARK: - Achievement Detail Sheet
-
-    private func achievementDetailSheet(achievementId: AchievementId) -> some View {
-        VStack(spacing: 24) {
-            Spacer()
-
-            Image(systemName: achievementId.iconName)
-                .font(.system(size: 56, weight: .semibold))
-                .foregroundStyle(presenter.beltAccentColor)
-                .frame(width: 110, height: 110)
-                .background(presenter.beltAccentColor.opacity(0.12), in: Circle())
-                .overlay(Circle().stroke(presenter.beltAccentColor.opacity(0.3), lineWidth: 1.5))
-
-            VStack(spacing: 8) {
-                Text(achievementId.displayName)
-                    .font(.wazaTitle)
-                    .multilineTextAlignment(.center)
-
-                Text(achievementId.achievementDescription)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-            }
-
-            if let earnedDate = presenter.earnedDate(for: achievementId) {
-                Label(earnedDate.formatted(date: .long, time: .omitted), systemImage: "checkmark.seal.fill")
-                    .font(.caption)
-                    .foregroundStyle(presenter.beltAccentColor)
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 8)
-                    .background(presenter.beltAccentColor.opacity(0.1), in: Capsule())
-            } else {
-                Label("Not yet earned", systemImage: "lock.fill")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 8)
-                    .background(Color(.systemGray6), in: Capsule())
-            }
-
-            Spacer()
-        }
-        .padding(.horizontal, 32)
-        .presentationDetents([.medium])
     }
 
     // MARK: - Header
@@ -218,29 +169,34 @@ struct ProfileView: View {
     // MARK: - Achievements
 
     private var achievementsSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
+        HStack(spacing: 14) {
+            Image(systemName: "trophy.fill")
+                .font(.title3)
+                .foregroundStyle(presenter.beltAccentColor)
+                .frame(width: 44, height: 44)
+                .background(presenter.beltAccentColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
+
+            VStack(alignment: .leading, spacing: 2) {
                 Text("Achievements")
-                    .font(.headline)
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                Text(presenter.achievementsProgress)
+                Text(presenter.achievementsProgress + " unlocked")
                     .font(.caption)
                     .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
 
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 72))], spacing: 16) {
-                ForEach(AchievementId.allCases, id: \.self) { achievementId in
-                    AchievementBadgeView(
-                        achievementId: achievementId,
-                        isEarned: presenter.isAchievementEarned(achievementId),
-                        accentColor: presenter.beltAccentColor,
-                        onTap: { presenter.onAchievementTapped(achievementId) }
-                    )
-                }
-            }
+            Image(systemName: "chevron.right")
+                .font(.caption)
+                .fontWeight(.semibold)
+                .foregroundStyle(.tertiary)
         }
         .padding(16)
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .anyButton(.press) {
+            presenter.onAchievementsTapped()
+        }
     }
 
     // MARK: - Training Schedule

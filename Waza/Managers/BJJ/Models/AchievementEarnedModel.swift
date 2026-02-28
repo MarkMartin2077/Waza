@@ -53,6 +53,42 @@ struct AchievementEarnedModel: Codable, Sendable, Identifiable, StringIdentifiab
     }
 }
 
+// MARK: - Achievement Identifiable
+
+extension AchievementId: Identifiable {
+    public var id: String { rawValue }
+}
+
+// MARK: - Achievement Category
+
+enum AchievementCategory: String, CaseIterable {
+    case sessions
+    case streaks
+    case attendance
+    case goals
+    case promotions
+
+    var displayName: String {
+        switch self {
+        case .sessions:   return "Sessions"
+        case .streaks:    return "Streaks"
+        case .attendance: return "Attendance"
+        case .goals:      return "Goals"
+        case .promotions: return "Promotions"
+        }
+    }
+
+    var iconName: String {
+        switch self {
+        case .sessions:   return "figure.wrestling"
+        case .streaks:    return "flame.fill"
+        case .attendance: return "location.fill"
+        case .goals:      return "checkmark.seal.fill"
+        case .promotions: return "star.fill"
+        }
+    }
+}
+
 // MARK: - Achievement Rarity
 
 enum AchievementRarity {
@@ -173,6 +209,21 @@ enum AchievementId: String, CaseIterable {
         case .twentyFiveClassAttendance: return .rare
         case .perfectWeek:              return .rare
         case .fourWeekConsistency:      return .epic
+        }
+    }
+
+    var category: AchievementCategory {
+        switch self {
+        case .firstSession, .tenSessions, .fiftySessions, .hundredSessions:
+            return .sessions
+        case .threeDayStreak, .sevenDayStreak, .thirtyDayStreak:
+            return .streaks
+        case .firstClassCheckedIn, .fiveClassAttendance, .twentyFiveClassAttendance, .perfectWeek, .fourWeekConsistency:
+            return .attendance
+        case .firstGoalCompleted:
+            return .goals
+        case .firstBeltPromotion:
+            return .promotions
         }
     }
 }

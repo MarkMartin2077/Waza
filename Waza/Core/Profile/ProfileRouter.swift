@@ -4,6 +4,15 @@ import SwiftUI
 protocol ProfileRouter: GlobalRouter {
     func showSettingsView()
     func showClassScheduleView()
+    func showAchievementsView()
 }
 
-extension CoreRouter: ProfileRouter { }
+extension CoreRouter: ProfileRouter {
+
+    func showAchievementsView() {
+        router.showScreen(.push) { router in
+            self.builder.achievementsView(router: router)
+        }
+    }
+
+}
