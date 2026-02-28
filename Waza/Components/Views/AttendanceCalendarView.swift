@@ -3,8 +3,8 @@ import SwiftUI
 struct AttendanceCalendarView: View {
     let attendance: [ClassAttendanceModel]
 
-    private let cellSize: CGFloat = 11
-    private let cellSpacing: CGFloat = 3
+    private let cellSize: CGFloat = 16
+    private let cellSpacing: CGFloat = 4
     private let daySymbols = ["S", "M", "T", "W", "T", "F", "S"]
 
     // Count of check-ins per day, keyed by "yyyy-MM-dd"
@@ -65,9 +65,9 @@ struct AttendanceCalendarView: View {
                 VStack(alignment: .trailing, spacing: cellSpacing) {
                     ForEach(0..<7, id: \.self) { symbolIndex in
                         Text([1, 3, 5].contains(symbolIndex) ? daySymbols[symbolIndex] : "")
-                            .font(.system(size: 8))
+                            .font(.system(size: 10))
                             .foregroundStyle(.secondary)
-                            .frame(width: 9, height: cellSize)
+                            .frame(width: 12, height: cellSize)
                     }
                 }
 

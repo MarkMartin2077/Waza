@@ -14,8 +14,9 @@ struct SessionsView: View {
                     )
                     .padding(.top, 60)
                 } else {
+                    sessionCountHeader
                     ForEach(presenter.sessions, id: \.id) { session in
-                        SessionRowView(session: session)
+                        SessionRowView(session: session, accentColor: presenter.beltAccentColor)
                             .anyButton(.press) {
                                 presenter.onSessionTapped(session)
                             }
@@ -31,7 +32,7 @@ struct SessionsView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 Image(systemName: "plus")
                     .font(.headline)
-                    .foregroundStyle(.accent)
+                    .foregroundStyle(presenter.beltAccentColor)
                     .anyButton {
                         presenter.onLogSessionTapped()
                     }
@@ -40,6 +41,16 @@ struct SessionsView: View {
         .onAppear {
             presenter.onViewAppear()
         }
+    }
+
+    private var sessionCountHeader: some View {
+        HStack {
+            Text("\(presenter.sessionCount) sessions logged")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(.bottom, 2)
     }
 }
 

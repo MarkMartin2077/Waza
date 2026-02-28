@@ -69,6 +69,10 @@ class SessionDetailPresenter {
         showDeleteConfirm = true
     }
 
+    var beltAccentColor: Color {
+        interactor.currentBeltEnum.accentColor
+    }
+
     func onDeleteConfirmed() {
         interactor.trackEvent(event: Event.deleteConfirmed)
         do {

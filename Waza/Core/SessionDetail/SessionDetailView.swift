@@ -26,6 +26,7 @@ struct SessionDetailView: View {
                         presenter.onSaveEditPressed()
                     }
                     .fontWeight(.semibold)
+                    .foregroundStyle(presenter.beltAccentColor)
                 } else {
                     Menu {
                         Button("Edit Notes") {
@@ -37,7 +38,7 @@ struct SessionDetailView: View {
                         }
                     } label: {
                         Image(systemName: "ellipsis.circle")
-                            .foregroundStyle(.accent)
+                            .foregroundStyle(presenter.beltAccentColor)
                     }
                 }
             }
@@ -78,13 +79,14 @@ struct SessionDetailView: View {
     // MARK: - Header Card
 
     private var headerCard: some View {
-        VStack(spacing: 12) {
-            HStack {
+        VStack(spacing: 16) {
+            HStack(alignment: .center, spacing: 14) {
                 Image(systemName: presenter.session.sessionType.iconName)
-                    .font(.title2)
-                    .foregroundStyle(.accent)
-                    .frame(width: 48, height: 48)
-                    .background(.accent.opacity(0.1), in: RoundedRectangle(cornerRadius: 12))
+                    .font(.title)
+                    .foregroundStyle(presenter.beltAccentColor)
+                    .frame(width: 60, height: 60)
+                    .background(presenter.beltAccentColor.opacity(0.1), in: RoundedRectangle(cornerRadius: 16))
+                    .overlay(RoundedRectangle(cornerRadius: 16).stroke(presenter.beltAccentColor.opacity(0.2), lineWidth: 1))
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(presenter.session.sessionType.displayName)
@@ -98,7 +100,7 @@ struct SessionDetailView: View {
                 }
             }
 
-            HStack(spacing: 0) {
+            HStack(spacing: 8) {
                 detailPill(icon: "clock", value: presenter.session.durationFormatted)
                 if presenter.session.roundsCount > 0 {
                     detailPill(icon: "repeat", value: "\(presenter.session.roundsCount) rounds")
@@ -106,6 +108,7 @@ struct SessionDetailView: View {
                 if let academy = presenter.session.academy {
                     detailPill(icon: "mappin", value: academy)
                 }
+                Spacer(minLength: 0)
             }
         }
         .padding(16)
@@ -119,11 +122,10 @@ struct SessionDetailView: View {
             Text(value)
                 .font(.caption)
         }
-        .foregroundStyle(.secondary)
+        .foregroundStyle(presenter.beltAccentColor)
         .padding(.horizontal, 10)
         .padding(.vertical, 6)
-        .background(.secondary.opacity(0.1), in: Capsule())
-        .padding(.trailing, 6)
+        .background(presenter.beltAccentColor.opacity(0.1), in: Capsule())
     }
 
     // MARK: - Focus Areas
@@ -138,10 +140,11 @@ struct SessionDetailView: View {
                 ForEach(presenter.session.focusAreas, id: \.self) { area in
                     Text(area)
                         .font(.caption)
+                        .fontWeight(.medium)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 5)
-                        .background(.accent.opacity(0.12), in: Capsule())
-                        .foregroundStyle(.accent)
+                        .background(presenter.beltAccentColor.opacity(0.12), in: Capsule())
+                        .foregroundStyle(presenter.beltAccentColor)
                 }
             }
         }
@@ -196,7 +199,7 @@ struct SessionDetailView: View {
         HStack(alignment: .top, spacing: 10) {
             Image(systemName: icon)
                 .font(.subheadline)
-                .foregroundStyle(.accent)
+                .foregroundStyle(presenter.beltAccentColor)
                 .frame(width: 20)
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)

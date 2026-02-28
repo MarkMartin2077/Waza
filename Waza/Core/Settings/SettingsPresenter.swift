@@ -22,9 +22,22 @@ class SettingsPresenter {
         self.router = router
     }
     
+    var beltAccentColor: Color {
+        interactor.currentBeltEnum.accentColor
+    }
+
+    var userName: String {
+        interactor.currentUserName
+    }
+
+    var beltDisplayName: String {
+        interactor.currentBeltEnum.displayName
+    }
+
     func onViewAppear() {
         interactor.trackScreenEvent(event: Event.onAppear)
         setAnonymousAccountStatus()
+        isPremium = interactor.isPremium
     }
     
     func onViewDisappear() {

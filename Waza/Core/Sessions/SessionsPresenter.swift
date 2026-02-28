@@ -15,6 +15,12 @@ class SessionsPresenter {
         interactor.allSessions
     }
 
+    var beltAccentColor: Color {
+        interactor.currentBeltEnum.accentColor
+    }
+
+    var sessionCount: Int { sessions.count }
+
     func onViewAppear() {
         interactor.trackScreenEvent(event: Event.onAppear)
     }

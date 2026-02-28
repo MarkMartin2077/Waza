@@ -144,7 +144,7 @@ struct DashboardView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             ForEach(Array(presenter.sessions.enumerated()), id: \.element.id) { sessionIndex, session in
-                SessionRowView(session: session)
+                SessionRowView(session: session, accentColor: presenter.beltAccentColor)
                     .anyButton(.press) {
                         presenter.onSessionTapped(session)
                     }
