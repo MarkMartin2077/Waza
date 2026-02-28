@@ -5,14 +5,32 @@ import Foundation
 class AchievementManager {
     private let localService: AchievementLocalService
     private let remoteService: RemoteAchievementService
+    private let logger: LogManager?
+    private var userId: String?
 
     private(set) var earnedAchievements: [AchievementEarnedModel] = []
 
-    init(services: AchievementServices) {
+    init(services: AchievementServices, logger: LogManager? = nil) {
         self.localService = services.local
         self.remoteService = services.remote
+        self.logger = logger
         refresh()
     }
+
+    // MARK: - Lifecycle
+
+    /// Synchronous — returns immediately; merges remote-only records in the background.
+    func logIn(userId: String) {
+        self.userId = userId
+        guard BJJSyncHelper.shouldSync(key: BJJSyncHelper.achievementsSyncKey) else { return }
+        Task { await syncFromRemote(userId: userId) }
+    }
+
+    func logOut() {
+        userId = nil
+    }
+
+    // MARK: - Read
 
     func refresh() {
         earnedAchievements = localService.getAchievements()
@@ -21,6 +39,8 @@ class AchievementManager {
     func isEarned(_ id: AchievementId) -> Bool {
         earnedAchievements.contains { $0.achievementId == id.rawValue }
     }
+
+    // MARK: - Write
 
     @discardableResult
     func checkAndAward(event: AchievementEvent, sessionStats: SessionStats, streakCount: Int) -> [AchievementId] {
@@ -35,6 +55,33 @@ class AchievementManager {
             return checkAttendanceAchievements(totalCount: totalCount, isPerfectWeek: isPerfectWeek, consecutivePerfectWeeks: consecutivePerfectWeeks)
         default:
             return []
+        }
+    }
+
+    // MARK: - Wipe
+
+    func clearAll() {
+        logOut()
+        try? localService.deleteAll()
+        earnedAchievements = []
+        BJJSyncHelper.clearSyncTimestamp(key: BJJSyncHelper.achievementsSyncKey)
+    }
+
+    // MARK: - Private
+
+    private func syncFromRemote(userId: String) async {
+        do {
+            let remoteModels = try await remoteService.getAchievements(userId: userId)
+            let localIds = Set(earnedAchievements.map { $0.achievementEarnedId })
+            var changed = false
+            for model in remoteModels where !localIds.contains(model.achievementEarnedId) {
+                try? localService.create(model)
+                changed = true
+            }
+            if changed { refresh() }
+            BJJSyncHelper.markSynced(key: BJJSyncHelper.achievementsSyncKey)
+        } catch {
+            logger?.trackEvent(event: BJJSyncErrorEvent(managerName: "AchievementManager", context: "Sync", error: error))
         }
     }
 
@@ -65,6 +112,18 @@ class AchievementManager {
         let model = AchievementEarnedModel(achievementId: id.rawValue)
         try? localService.create(model)
         refresh()
+        syncToRemote(model)
         return [id]
+    }
+
+    private func syncToRemote(_ model: AchievementEarnedModel) {
+        guard let userId else { return }
+        Task {
+            do {
+                try await remoteService.saveAchievement(model, userId: userId)
+            } catch {
+                logger?.trackEvent(event: BJJSyncErrorEvent(managerName: "AchievementManager", context: "Save", error: error))
+            }
+        }
     }
 }

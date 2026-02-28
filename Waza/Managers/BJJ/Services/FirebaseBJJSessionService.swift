@@ -9,8 +9,12 @@ struct FirebaseBJJSessionService: RemoteBJJSessionService {
         Firestore.firestore().collection("users").document(userId).collection(collectionPath)
     }
 
-    func getSessions(userId: String) async throws -> [BJJSessionModel] {
-        try await collection(for: userId).getAllDocuments()
+    func getSessions(userId: String, limit: Int) async throws -> [BJJSessionModel] {
+        let snapshot = try await collection(for: userId)
+            .order(by: "date", descending: true)
+            .limit(to: limit)
+            .getDocuments()
+        return try snapshot.documents.map { try $0.data(as: BJJSessionModel.self) }
     }
 
     func saveSession(_ model: BJJSessionModel, userId: String) async throws {

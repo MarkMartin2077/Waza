@@ -8,8 +8,8 @@ final class MockRemoteBJJSessionService: RemoteBJJSessionService {
         self.sessions = sessions
     }
 
-    func getSessions(userId: String) async throws -> [BJJSessionModel] {
-        sessions
+    func getSessions(userId: String, limit: Int) async throws -> [BJJSessionModel] {
+        Array(sessions.sorted { $0.date > $1.date }.prefix(limit))
     }
 
     func saveSession(_ model: BJJSessionModel, userId: String) async throws {
