@@ -10,7 +10,6 @@ struct TrainingStatsView: View {
                 periodPicker
                 sessionStatsSection
                 typeBreakdownSection
-                claStatsSection
             }
             .padding(16)
         }
@@ -111,50 +110,6 @@ struct TrainingStatsView: View {
                 }
             }
             .frame(height: 6)
-        }
-    }
-
-    private var claStatsSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("CLA Games")
-                .font(.headline)
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-            HStack(spacing: 12) {
-                statCard(
-                    value: "\(presenter.claStats.uniqueGamesPlayed)",
-                    label: "Games Played",
-                    icon: "puzzlepiece.fill"
-                )
-                statCard(
-                    value: "\(presenter.claStats.totalTimePracticed)",
-                    label: "Total Sessions",
-                    icon: "repeat.circle.fill"
-                )
-                statCard(
-                    value: "\(presenter.claStats.totalDiscoveries)",
-                    label: "Discoveries",
-                    icon: "lightbulb.fill"
-                )
-            }
-
-            if let topGame = presenter.claStats.mostPlayedGame {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Most Practiced")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    Text(topGame.name)
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
-                    Text("\(topGame.focusArea) · \(topGame.timePracticed) sessions")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                .padding(12)
-                .background(Color(.systemGray6))
-                .clipShape(RoundedRectangle(cornerRadius: 10))
-                .frame(maxWidth: .infinity, alignment: .leading)
-            }
         }
     }
 

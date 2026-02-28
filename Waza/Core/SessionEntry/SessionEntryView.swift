@@ -4,6 +4,11 @@ struct SessionEntryView: View {
     @State var presenter: SessionEntryPresenter
     let delegate: SessionEntryDelegate
 
+    @State private var locationExpanded = false
+    @State private var focusAreasExpanded = true
+    @State private var reflectionExpanded = false
+    @State private var statsExpanded = false
+
     var body: some View {
         NavigationStack {
             Form {
@@ -79,64 +84,86 @@ struct SessionEntryView: View {
     }
 
     private var locationSection: some View {
-        Section("Location (Optional)") {
-            TextField("Academy", text: $presenter.academy)
-            TextField("Instructor", text: $presenter.instructor)
+        Section {
+            if locationExpanded {
+                TextField("Academy", text: $presenter.academy)
+                TextField("Instructor", text: $presenter.instructor)
+            }
+        } header: {
+            collapsibleHeader(
+                title: "Location",
+                isExpanded: $locationExpanded,
+                badge: presenter.academy.isEmpty && presenter.instructor.isEmpty ? nil : "•"
+            )
         }
     }
 
     private var focusAreasSection: some View {
         Section {
-            if presenter.selectedFocusAreas.isEmpty {
-                Text("Tap to add focus areas")
-                    .foregroundStyle(.secondary)
-                    .font(.subheadline)
-            } else {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
-                        ForEach(presenter.selectedFocusAreas, id: \.self) { area in
-                            Text(area)
-                                .font(.caption)
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 5)
-                                .background(.accent.opacity(0.15), in: Capsule())
-                                .foregroundStyle(.accent)
+            if focusAreasExpanded {
+                if presenter.selectedFocusAreas.isEmpty {
+                    Text("Tap to add focus areas")
+                        .foregroundStyle(.secondary)
+                        .font(.subheadline)
+                } else {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            ForEach(presenter.selectedFocusAreas, id: \.self) { area in
+                                Text(area)
+                                    .font(.caption)
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 5)
+                                    .background(.accent.opacity(0.15), in: Capsule())
+                                    .foregroundStyle(.accent)
+                            }
                         }
                     }
                 }
-            }
 
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 100))], spacing: 8) {
-                ForEach(presenter.availableFocusAreas, id: \.self) { area in
-                    let isSelected = presenter.selectedFocusAreas.contains(area)
-                    Text(area)
-                        .font(.caption)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 6)
-                        .frame(maxWidth: .infinity)
-                        .background(isSelected ? .accent : .secondary.opacity(0.1), in: RoundedRectangle(cornerRadius: 8))
-                        .foregroundStyle(isSelected ? .white : .primary)
-                        .anyButton(.press) {
-                            presenter.toggleFocusArea(area)
-                        }
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 100))], spacing: 8) {
+                    ForEach(presenter.availableFocusAreas, id: \.self) { area in
+                        let isSelected = presenter.selectedFocusAreas.contains(area)
+                        Text(area)
+                            .font(.caption)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .frame(maxWidth: .infinity)
+                            .background(isSelected ? .accent : .secondary.opacity(0.1), in: RoundedRectangle(cornerRadius: 8))
+                            .foregroundStyle(isSelected ? .white : .primary)
+                            .anyButton(.press) {
+                                presenter.toggleFocusArea(area)
+                            }
+                    }
                 }
+                .padding(.vertical, 4)
             }
-            .padding(.vertical, 4)
         } header: {
-            Text("Focus Areas")
+            collapsibleHeader(
+                title: "Focus Areas",
+                isExpanded: $focusAreasExpanded,
+                badge: presenter.selectedFocusAreas.isEmpty ? nil : "\(presenter.selectedFocusAreas.count)"
+            )
         }
     }
 
     private var reflectionSection: some View {
-        Section("Reflection (Optional)") {
-            TextField("General notes", text: $presenter.notes, axis: .vertical)
-                .lineLimit(3...6)
-            TextField("What worked well?", text: $presenter.whatWorkedWell, axis: .vertical)
-                .lineLimit(2...4)
-            TextField("Needs improvement", text: $presenter.needsImprovement, axis: .vertical)
-                .lineLimit(2...4)
-            TextField("Key insights", text: $presenter.keyInsights, axis: .vertical)
-                .lineLimit(2...4)
+        Section {
+            if reflectionExpanded {
+                TextField("General notes", text: $presenter.notes, axis: .vertical)
+                    .lineLimit(3...6)
+                TextField("What worked well?", text: $presenter.whatWorkedWell, axis: .vertical)
+                    .lineLimit(2...4)
+                TextField("Needs improvement", text: $presenter.needsImprovement, axis: .vertical)
+                    .lineLimit(2...4)
+                TextField("Key insights", text: $presenter.keyInsights, axis: .vertical)
+                    .lineLimit(2...4)
+            }
+        } header: {
+            collapsibleHeader(
+                title: "Reflection",
+                isExpanded: $reflectionExpanded,
+                badge: [presenter.notes, presenter.whatWorkedWell, presenter.needsImprovement, presenter.keyInsights].allSatisfy(\.isEmpty) ? nil : "•"
+            )
         }
     }
 
@@ -178,9 +205,45 @@ struct SessionEntryView: View {
     }
 
     private var statsSection: some View {
-        Section("Rounds") {
-            Stepper("Rounds: \(presenter.roundsCount)", value: $presenter.roundsCount, in: 0...20)
+        Section {
+            if statsExpanded {
+                Stepper("Rounds: \(presenter.roundsCount)", value: $presenter.roundsCount, in: 0...20)
+            }
+        } header: {
+            collapsibleHeader(
+                title: "Rounds",
+                isExpanded: $statsExpanded,
+                badge: presenter.roundsCount > 0 ? "\(presenter.roundsCount)" : nil
+            )
         }
+    }
+
+    // MARK: - Collapsible Header
+
+    private func collapsibleHeader(title: String, isExpanded: Binding<Bool>, badge: String?) -> some View {
+        Button {
+            withAnimation(.easeInOut(duration: 0.2)) {
+                isExpanded.wrappedValue.toggle()
+            }
+        } label: {
+            HStack(spacing: 4) {
+                Text(title)
+                if let badge {
+                    Text(badge)
+                        .foregroundStyle(.accent)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.caption2)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.tertiary)
+                    .rotationEffect(.degrees(isExpanded.wrappedValue ? 90 : 0))
+                    .animation(.easeInOut(duration: 0.2), value: isExpanded.wrappedValue)
+            }
+            .foregroundStyle(.secondary)
+            .textCase(nil)
+        }
+        .buttonStyle(.plain)
     }
 }
 

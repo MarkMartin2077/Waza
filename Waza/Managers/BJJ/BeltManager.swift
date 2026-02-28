@@ -20,9 +20,9 @@ class BeltManager {
         currentBelt?.belt ?? .white
     }
 
-    init(localService: BeltLocalService, remoteService: RemoteBeltService) {
-        self.localService = localService
-        self.remoteService = remoteService
+    init(services: BeltServices) {
+        self.localService = services.local
+        self.remoteService = services.remote
         refresh()
     }
 

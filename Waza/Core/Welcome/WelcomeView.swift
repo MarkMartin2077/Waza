@@ -1,9 +1,3 @@
-//
-//  WelcomeView.swift
-//  
-//
-//  
-//
 import SwiftUI
 
 struct WelcomeDelegate {
@@ -13,23 +7,50 @@ struct WelcomeDelegate {
 }
 
 struct WelcomeView: View {
-    
+
     @State var presenter: WelcomePresenter
     let delegate: WelcomeDelegate
 
     var body: some View {
-        VStack(spacing: 8) {
-            ImageLoaderView(urlString: presenter.imageName)
+        ZStack {
+            // Slightly lifted base so the bottom half isn't pure black
+            Color(white: 0.04).ignoresSafeArea()
+
+            // Diffuse glow centred on where the logo sits (~35% down the screen)
+            Circle()
+                .fill(
+                    RadialGradient(
+                        colors: [.accent.opacity(0.22), .clear],
+                        center: .center,
+                        startRadius: 0,
+                        endRadius: 280
+                    )
+                )
+                .frame(width: 560, height: 560)
+                .blur(radius: 40)
+                .offset(y: -120)
                 .ignoresSafeArea()
-            
-            titleSection
-                .padding(.top, 24)
-            
-            ctaButtons
-                .padding(16)
-            
-            policyLinks
+
+            // frame(maxWidth: .infinity) anchors the VStack to full screen width
+            // so all children are laid out against real screen edges
+            VStack(spacing: 0) {
+                Spacer(minLength: 0)
+
+                heroSection
+                    .padding(.top, 100)
+
+                Spacer()
+
+                ctaSection
+                    .padding(.horizontal, 24)
+
+                policyLinks
+                    .padding(.top, 12)
+                    .padding(.bottom, 20)
+            }
+            .frame(maxWidth: .infinity)
         }
+        .preferredColorScheme(.dark)
         .onAppear {
             presenter.onViewAppear(delegate: delegate)
         }
@@ -37,48 +58,65 @@ struct WelcomeView: View {
             presenter.onViewDisappear(delegate: delegate)
         }
     }
-    
-    private var titleSection: some View {
-        VStack(spacing: 8) {
-            Text("App Name")
-                .font(.largeTitle)
-                .fontWeight(.semibold)
-                .lineLimit(1)
-                .minimumScaleFactor(0.5)
-            
-            Text("Add subtitle here")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .lineLimit(1)
-                .minimumScaleFactor(0.5)
+
+    // MARK: - Hero
+
+    private var heroSection: some View {
+        VStack(spacing: 24) {
+            // App icon with glow
+            ZStack {
+                Circle()
+                    .fill(.accent.opacity(0.35))
+                    .frame(width: 140, height: 140)
+                    .blur(radius: 36)
+
+                Image("waza-logo-white")
+                    .resizable()
+                    .frame(width: 90, height: 90)
+                    .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+            }
+
+            VStack(spacing: 10) {
+                Text("Waza")
+                    .font(.system(size: 48, weight: .bold))
+                    .foregroundStyle(.white)
+                    .tracking(3)
+
+                Text("Your BJJ journey, tracked.")
+                    .font(.subheadline)
+                    .foregroundStyle(.white.opacity(0.5))
+                    .tracking(0.4)
+            }
         }
     }
-    
-    private var ctaButtons: some View {
-        VStack(spacing: 8) {
+
+    // MARK: - CTA
+
+    private var ctaSection: some View {
+        VStack(spacing: 14) {
             Text("Get Started")
-                .callToActionButton()
-                .lineLimit(1)
-                .minimumScaleFactor(0.5)
-                .anyButton(.press, action: {
+                .font(.headline)
+                .fontWeight(.semibold)
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 15)
+                .background(.accent, in: Capsule())
+                .anyButton(.press) {
                     presenter.onGetStartedPressed()
-                })
+                }
                 .accessibilityIdentifier("StartButton")
                 .frame(maxWidth: 500)
-            
-            Text("Already have an account? Sign in!")
-                .underline()
-                .font(.body)
-                .padding(8)
-                .tappableBackground()
-                .onTapGesture {
-                    presenter.onSignInPressed()
-                }
-                .lineLimit(1)
-                .minimumScaleFactor(0.3)
+
+            Button("Already have an account? Sign In") {
+                presenter.onSignInPressed()
+            }
+            .font(.subheadline)
+            .foregroundStyle(.white.opacity(0.45))
         }
     }
-        
+
+    // MARK: - Policy
+
     private var policyLinks: some View {
         HStack(spacing: 8) {
             Link(destination: URL(string: Constants.termsOfServiceUrlString)!) {
@@ -87,32 +125,34 @@ struct WelcomeView: View {
                     .minimumScaleFactor(0.5)
             }
             Circle()
-                .fill(.accent)
-                .frame(width: 4, height: 4)
+                .fill(.white.opacity(0.25))
+                .frame(width: 3, height: 3)
             Link(destination: URL(string: Constants.privacyPolicyUrlString)!) {
                 Text("Privacy Policy")
                     .lineLimit(1)
                     .minimumScaleFactor(0.5)
             }
         }
+        .font(.caption2)
+        .foregroundStyle(.white.opacity(0.25))
     }
 }
 
 #Preview {
     let container = DevPreview.shared.container()
     let builder = CoreBuilder(interactor: CoreInteractor(container: container))
-    
+
     return builder.onboardingFlow()
 }
 
 extension CoreBuilder {
-    
+
     func onboardingFlow() -> some View {
         RouterView { router in
             welcomeView(router: router)
         }
     }
-    
+
     private func welcomeView(router: AnyRouter, delegate: WelcomeDelegate = WelcomeDelegate()) -> some View {
         WelcomeView(
             presenter: WelcomePresenter(
@@ -126,5 +166,5 @@ extension CoreBuilder {
 }
 
 extension CoreRouter {
-    
+
 }

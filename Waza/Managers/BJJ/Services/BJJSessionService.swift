@@ -15,7 +15,13 @@ protocol BJJSessionLocalService {
 
 @MainActor
 struct SwiftDataBJJSessionPersistence: BJJSessionLocalService {
-    let container: ModelContainer
+    private let container: ModelContainer
+
+    init(inMemory: Bool = false) {
+        let config = ModelConfiguration("BJJSessions", isStoredInMemoryOnly: inMemory)
+        // swiftlint:disable:next force_try
+        self.container = try! ModelContainer(for: BJJSessionEntity.self, configurations: config)
+    }
 
     func getSessions() -> [BJJSessionModel] {
         let descriptor = FetchDescriptor<BJJSessionEntity>(

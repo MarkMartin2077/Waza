@@ -41,13 +41,12 @@ struct Dependencies {
         let streakManager: StreakManager
         let xpManager: ExperiencePointsManager
         let progressManager: ProgressManager
-        let bjjDataManager: BJJDataManager
         let sessionManager: SessionManager
         let beltManager: BeltManager
         let goalManager: GoalManager
         let achievementManager: AchievementManager
-        let claGameManager: CLAGameManager
         let trainingStatsManager: TrainingStatsManager
+        let aiInsightsManager: AIInsightsManager
 
         switch config {
         case .mock(isSignedIn: let isSignedIn):
@@ -64,34 +63,17 @@ struct Dependencies {
             xpManager = ExperiencePointsManager(services: MockExperiencePointsServices(), configuration: Dependencies.xpConfiguration, logger: logManager)
             progressManager = ProgressManager(services: MockProgressServices(), configuration: Dependencies.progressConfiguration, logger: logManager)
 
-            bjjDataManager = BJJDataManager(inMemory: true)
-            sessionManager = SessionManager(
-                localService: SwiftDataBJJSessionPersistence(container: bjjDataManager.modelContainer),
-                remoteService: MockRemoteBJJSessionService()
-            )
-            beltManager = BeltManager(
-                localService: SwiftDataBeltPersistence(container: bjjDataManager.modelContainer),
-                remoteService: MockRemoteBeltService()
-            )
-            goalManager = GoalManager(
-                localService: SwiftDataGoalPersistence(container: bjjDataManager.modelContainer),
-                remoteService: MockRemoteGoalService()
-            )
-            achievementManager = AchievementManager(
-                localService: SwiftDataAchievementPersistence(container: bjjDataManager.modelContainer),
-                remoteService: MockRemoteAchievementService()
-            )
-            claGameManager = CLAGameManager(
-                localService: SwiftDataCLAGamePersistence(container: bjjDataManager.modelContainer),
-                remoteService: MockRemoteCLAGameService()
-            )
-            trainingStatsManager = TrainingStatsManager(sessionManager: sessionManager, claGameManager: claGameManager)
+            sessionManager = SessionManager(services: MockBJJSessionServices())
+            beltManager = BeltManager(services: MockBeltServices())
+            goalManager = GoalManager(services: MockGoalServices())
+            achievementManager = AchievementManager(services: MockAchievementServices())
+            trainingStatsManager = TrainingStatsManager(sessionManager: sessionManager)
+            aiInsightsManager = AIInsightsManager()
 
             if isSignedIn {
                 sessionManager.seedMockDataIfEmpty()
                 beltManager.seedMockDataIfEmpty()
                 goalManager.seedMockDataIfEmpty()
-                claGameManager.seedBuiltInGamesIfEmpty()
             }
 
         case .dev:
@@ -111,29 +93,12 @@ struct Dependencies {
             xpManager = ExperiencePointsManager(services: ProdExperiencePointsServices(), configuration: Dependencies.xpConfiguration, logger: logManager)
             progressManager = ProgressManager(services: ProdProgressServices(), configuration: Dependencies.progressConfiguration, logger: logManager)
 
-            bjjDataManager = BJJDataManager(inMemory: false)
-            sessionManager = SessionManager(
-                localService: SwiftDataBJJSessionPersistence(container: bjjDataManager.modelContainer),
-                remoteService: FirebaseBJJSessionService()
-            )
-            beltManager = BeltManager(
-                localService: SwiftDataBeltPersistence(container: bjjDataManager.modelContainer),
-                remoteService: FirebaseBeltService()
-            )
-            goalManager = GoalManager(
-                localService: SwiftDataGoalPersistence(container: bjjDataManager.modelContainer),
-                remoteService: FirebaseGoalService()
-            )
-            achievementManager = AchievementManager(
-                localService: SwiftDataAchievementPersistence(container: bjjDataManager.modelContainer),
-                remoteService: FirebaseAchievementService()
-            )
-            claGameManager = CLAGameManager(
-                localService: SwiftDataCLAGamePersistence(container: bjjDataManager.modelContainer),
-                remoteService: FirebaseCLAGameService()
-            )
-            claGameManager.seedBuiltInGamesIfEmpty()
-            trainingStatsManager = TrainingStatsManager(sessionManager: sessionManager, claGameManager: claGameManager)
+            sessionManager = SessionManager(services: ProductionBJJSessionServices())
+            beltManager = BeltManager(services: ProductionBeltServices())
+            goalManager = GoalManager(services: ProductionGoalServices())
+            achievementManager = AchievementManager(services: ProductionAchievementServices())
+            trainingStatsManager = TrainingStatsManager(sessionManager: sessionManager)
+            aiInsightsManager = AIInsightsManager()
 
         case .prod:
             logManager = LogManager(services: [
@@ -151,29 +116,12 @@ struct Dependencies {
             xpManager = ExperiencePointsManager(services: ProdExperiencePointsServices(), configuration: Dependencies.xpConfiguration, logger: logManager)
             progressManager = ProgressManager(services: ProdProgressServices(), configuration: Dependencies.progressConfiguration, logger: logManager)
 
-            bjjDataManager = BJJDataManager(inMemory: false)
-            sessionManager = SessionManager(
-                localService: SwiftDataBJJSessionPersistence(container: bjjDataManager.modelContainer),
-                remoteService: FirebaseBJJSessionService()
-            )
-            beltManager = BeltManager(
-                localService: SwiftDataBeltPersistence(container: bjjDataManager.modelContainer),
-                remoteService: FirebaseBeltService()
-            )
-            goalManager = GoalManager(
-                localService: SwiftDataGoalPersistence(container: bjjDataManager.modelContainer),
-                remoteService: FirebaseGoalService()
-            )
-            achievementManager = AchievementManager(
-                localService: SwiftDataAchievementPersistence(container: bjjDataManager.modelContainer),
-                remoteService: FirebaseAchievementService()
-            )
-            claGameManager = CLAGameManager(
-                localService: SwiftDataCLAGamePersistence(container: bjjDataManager.modelContainer),
-                remoteService: FirebaseCLAGameService()
-            )
-            claGameManager.seedBuiltInGamesIfEmpty()
-            trainingStatsManager = TrainingStatsManager(sessionManager: sessionManager, claGameManager: claGameManager)
+            sessionManager = SessionManager(services: ProductionBJJSessionServices())
+            beltManager = BeltManager(services: ProductionBeltServices())
+            goalManager = GoalManager(services: ProductionGoalServices())
+            achievementManager = AchievementManager(services: ProductionAchievementServices())
+            trainingStatsManager = TrainingStatsManager(sessionManager: sessionManager)
+            aiInsightsManager = AIInsightsManager()
         }
 
         pushManager = PushManager(logManager: logManager)
@@ -192,13 +140,12 @@ struct Dependencies {
         container.register(StreakManager.self, key: Dependencies.streakConfiguration.streakKey, service: streakManager)
         container.register(ExperiencePointsManager.self, key: Dependencies.xpConfiguration.experienceKey, service: xpManager)
         container.register(ProgressManager.self, key: Dependencies.progressConfiguration.progressKey, service: progressManager)
-        container.register(BJJDataManager.self, service: bjjDataManager)
         container.register(SessionManager.self, service: sessionManager)
         container.register(BeltManager.self, service: beltManager)
         container.register(GoalManager.self, service: goalManager)
         container.register(AchievementManager.self, service: achievementManager)
-        container.register(CLAGameManager.self, service: claGameManager)
         container.register(TrainingStatsManager.self, service: trainingStatsManager)
+        container.register(AIInsightsManager.self, service: aiInsightsManager)
 
         self.container = container
 
@@ -224,13 +171,12 @@ class DevPreview {
         container.register(StreakManager.self, key: Dependencies.streakConfiguration.streakKey, service: streakManager)
         container.register(ExperiencePointsManager.self, key: Dependencies.xpConfiguration.experienceKey, service: xpManager)
         container.register(ProgressManager.self, key: Dependencies.progressConfiguration.progressKey, service: progressManager)
-        container.register(BJJDataManager.self, service: bjjDataManager)
         container.register(SessionManager.self, service: sessionManager)
         container.register(BeltManager.self, service: beltManager)
         container.register(GoalManager.self, service: goalManager)
         container.register(AchievementManager.self, service: achievementManager)
-        container.register(CLAGameManager.self, service: claGameManager)
         container.register(TrainingStatsManager.self, service: trainingStatsManager)
+        container.register(AIInsightsManager.self, service: aiInsightsManager)
         return container
     }
 
@@ -246,13 +192,12 @@ class DevPreview {
     let streakManager: StreakManager
     let xpManager: ExperiencePointsManager
     let progressManager: ProgressManager
-    let bjjDataManager: BJJDataManager
     let sessionManager: SessionManager
     let beltManager: BeltManager
     let goalManager: GoalManager
     let achievementManager: AchievementManager
-    let claGameManager: CLAGameManager
     let trainingStatsManager: TrainingStatsManager
+    let aiInsightsManager: AIInsightsManager
 
     init(isSignedIn: Bool = true) {
         self.authManager = AuthManager(service: MockAuthService(user: isSignedIn ? .mock() : nil))
@@ -267,36 +212,17 @@ class DevPreview {
         self.streakManager = StreakManager(services: MockStreakServices(), configuration: StreakConfiguration.mockDefault())
         self.xpManager = ExperiencePointsManager(services: MockExperiencePointsServices(), configuration: ExperiencePointsConfiguration.mockDefault())
         self.progressManager = ProgressManager(services: MockProgressServices(), configuration: ProgressConfiguration.mockDefault())
-        self.bjjDataManager = BJJDataManager(inMemory: true)
-
-        self.sessionManager = SessionManager(
-            localService: SwiftDataBJJSessionPersistence(container: bjjDataManager.modelContainer),
-            remoteService: MockRemoteBJJSessionService()
-        )
-        self.beltManager = BeltManager(
-            localService: SwiftDataBeltPersistence(container: bjjDataManager.modelContainer),
-            remoteService: MockRemoteBeltService()
-        )
-        self.goalManager = GoalManager(
-            localService: SwiftDataGoalPersistence(container: bjjDataManager.modelContainer),
-            remoteService: MockRemoteGoalService()
-        )
-        self.achievementManager = AchievementManager(
-            localService: SwiftDataAchievementPersistence(container: bjjDataManager.modelContainer),
-            remoteService: MockRemoteAchievementService()
-        )
-
-        self.claGameManager = CLAGameManager(
-            localService: SwiftDataCLAGamePersistence(container: bjjDataManager.modelContainer),
-            remoteService: MockRemoteCLAGameService()
-        )
-        self.trainingStatsManager = TrainingStatsManager(sessionManager: sessionManager, claGameManager: claGameManager)
+        self.sessionManager = SessionManager(services: MockBJJSessionServices())
+        self.beltManager = BeltManager(services: MockBeltServices())
+        self.goalManager = GoalManager(services: MockGoalServices())
+        self.achievementManager = AchievementManager(services: MockAchievementServices())
+        self.trainingStatsManager = TrainingStatsManager(sessionManager: sessionManager)
+        self.aiInsightsManager = AIInsightsManager()
 
         if isSignedIn {
             sessionManager.seedMockDataIfEmpty()
             beltManager.seedMockDataIfEmpty()
             goalManager.seedMockDataIfEmpty()
-            claGameManager.seedBuiltInGamesIfEmpty()
         }
     }
 }

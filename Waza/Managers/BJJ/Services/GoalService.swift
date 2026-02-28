@@ -15,7 +15,13 @@ protocol GoalLocalService {
 
 @MainActor
 struct SwiftDataGoalPersistence: GoalLocalService {
-    let container: ModelContainer
+    private let container: ModelContainer
+
+    init(inMemory: Bool = false) {
+        let config = ModelConfiguration("TrainingGoals", isStoredInMemoryOnly: inMemory)
+        // swiftlint:disable:next force_try
+        self.container = try! ModelContainer(for: TrainingGoalEntity.self, configurations: config)
+    }
 
     func getGoals() -> [TrainingGoalModel] {
         let descriptor = FetchDescriptor<TrainingGoalEntity>(

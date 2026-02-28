@@ -10,12 +10,6 @@ class TrainingStatsPresenter {
     var selectedPeriodLabel: String = "Month"
 
     var snapshot: TrainingSnapshot = .empty
-    var claStats: CLAStatSummary = CLAStatSummary(
-        totalTimePracticed: 0,
-        uniqueGamesPlayed: 0,
-        totalDiscoveries: 0,
-        mostPlayedGame: nil
-    )
 
     let periodOptions: [(label: String, range: DateRange)] = [
         ("Week", .lastWeek),
@@ -43,7 +37,6 @@ class TrainingStatsPresenter {
 
     private func loadStats() {
         snapshot = interactor.getTrainingSnapshot(period: selectedPeriod)
-        claStats = interactor.getCLAStatSummary()
     }
 }
 

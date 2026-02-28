@@ -10,6 +10,7 @@ protocol DashboardInteractor: GlobalInteractor {
     var currentStreakData: CurrentStreakData { get }
     var currentExperiencePointsData: CurrentExperiencePointsData { get }
     var isPremium: Bool { get }
+    var isAIAvailable: Bool { get }
 }
 
 extension CoreInteractor: DashboardInteractor { }

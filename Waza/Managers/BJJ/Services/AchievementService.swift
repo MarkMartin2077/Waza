@@ -13,7 +13,13 @@ protocol AchievementLocalService {
 
 @MainActor
 struct SwiftDataAchievementPersistence: AchievementLocalService {
-    let container: ModelContainer
+    private let container: ModelContainer
+
+    init(inMemory: Bool = false) {
+        let config = ModelConfiguration("Achievements", isStoredInMemoryOnly: inMemory)
+        // swiftlint:disable:next force_try
+        self.container = try! ModelContainer(for: AchievementEarnedEntity.self, configurations: config)
+    }
 
     func getAchievements() -> [AchievementEarnedModel] {
         let descriptor = FetchDescriptor<AchievementEarnedEntity>(

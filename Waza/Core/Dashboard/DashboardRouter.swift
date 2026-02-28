@@ -7,6 +7,7 @@ protocol DashboardRouter: GlobalRouter {
     func showGoalsPlanningView()
     func showPaywallView()
     func showDevSettingsView()
+    func showAIInsightsView()
 }
 
 extension CoreRouter: DashboardRouter { }

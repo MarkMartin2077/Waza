@@ -86,10 +86,10 @@ struct ProfileView: View {
     // MARK: - Stats
 
     private var statsSection: some View {
-        HStack(spacing: 12) {
+        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
             profileStat(value: "\(presenter.sessionStats.totalSessions)", label: "Sessions")
-            profileStat(value: presenter.totalTrainingHoursText, label: "Hours")
-            profileStat(value: "\(presenter.earnedAchievements.count)", label: "Achievements")
+            profileStat(value: "\(presenter.sessionStats.thisWeekSessions)", label: "This Week")
+            profileStat(value: presenter.totalTrainingHoursText, label: "Hrs Trained")
         }
     }
 
@@ -125,10 +125,18 @@ struct ProfileView: View {
             }
 
             if presenter.beltHistory.isEmpty {
-                Text("No belt promotions recorded yet.")
+                VStack(spacing: 8) {
+                    Text("No belt history recorded yet.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                    Button("Set your current belt") {
+                        presenter.onSetCurrentBeltTapped()
+                    }
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .padding(.vertical, 8)
+                    .foregroundStyle(.accent)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.vertical, 8)
             } else {
                 ForEach(presenter.beltHistory, id: \.id) { record in
                     beltHistoryRow(record: record)
@@ -211,7 +219,7 @@ struct ProfileView: View {
                         .lineLimit(2...4)
                 }
             }
-            .navigationTitle("Record Promotion")
+            .navigationTitle(presenter.sheetTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {

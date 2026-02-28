@@ -16,9 +16,9 @@ class GoalManager {
         goals.filter { $0.isCompleted }
     }
 
-    init(localService: GoalLocalService, remoteService: RemoteGoalService) {
-        self.localService = localService
-        self.remoteService = remoteService
+    init(services: GoalServices) {
+        self.localService = services.local
+        self.remoteService = services.remote
         refresh()
     }
 

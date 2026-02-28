@@ -184,24 +184,6 @@ struct SessionStats {
     )
 }
 
-// MARK: - Belt Level (CLA Game Difficulty)
-
-enum BeltLevel: String, Codable, CaseIterable {
-    case all
-    case beginner
-    case intermediate
-    case advanced
-
-    var displayName: String {
-        switch self {
-        case .all: return "All Levels"
-        case .beginner: return "Beginner"
-        case .intermediate: return "Intermediate"
-        case .advanced: return "Advanced"
-        }
-    }
-}
-
 // MARK: - Training Stat Types
 
 struct TypeStat {
@@ -231,13 +213,6 @@ struct TrainingSnapshot {
         typeBreakdown: [],
         sessionFrequency: []
     )
-}
-
-struct CLAStatSummary {
-    let totalTimePracticed: Int
-    let uniqueGamesPlayed: Int
-    let totalDiscoveries: Int
-    let mostPlayedGame: CLAGameModel?
 }
 
 // MARK: - Date Range

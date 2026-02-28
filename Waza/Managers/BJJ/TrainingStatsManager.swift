@@ -4,11 +4,9 @@ import Foundation
 @MainActor
 class TrainingStatsManager {
     private let sessionManager: SessionManager
-    private let claGameManager: CLAGameManager
 
-    init(sessionManager: SessionManager, claGameManager: CLAGameManager) {
+    init(sessionManager: SessionManager) {
         self.sessionManager = sessionManager
-        self.claGameManager = claGameManager
     }
 
     func getTrainingSnapshot(period: DateRange) -> TrainingSnapshot {
@@ -23,19 +21,6 @@ class TrainingStatsManager {
             avgDurationMinutes: Int(avgDuration / 60),
             typeBreakdown: getTypeBreakdown(sessions: periodSessions),
             sessionFrequency: getSessionFrequency(sessions: periodSessions, period: period)
-        )
-    }
-
-    func getCLAStatSummary() -> CLAStatSummary {
-        let practicedGames = claGameManager.games.filter { $0.timePracticed > 0 }
-        let totalDiscoveries = claGameManager.games.reduce(0) { $0 + $1.discoveries.count }
-        let totalTimePracticed = practicedGames.reduce(0) { $0 + $1.timePracticed }
-
-        return CLAStatSummary(
-            totalTimePracticed: totalTimePracticed,
-            uniqueGamesPlayed: practicedGames.count,
-            totalDiscoveries: totalDiscoveries,
-            mostPlayedGame: claGameManager.getMostPracticedGames(limit: 1).first
         )
     }
 

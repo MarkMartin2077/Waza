@@ -11,8 +11,6 @@ class WelcomePresenter {
     private let interactor: WelcomeInteractor
     private let router: WelcomeRouter
 
-    private(set) var imageName: String = Constants.randomImage
-
     init(interactor: WelcomeInteractor, router: WelcomeRouter) {
         self.interactor = interactor
         self.router = router
@@ -28,12 +26,20 @@ class WelcomePresenter {
 
     func onGetStartedPressed() {
         interactor.trackEvent(event: Event.getStartedPressed)
-        router.switchToCoreModule()
+        if interactor.hasCompletedOnboarding {
+            router.switchToCoreModule()
+        } else {
+            router.showOnboardingView()
+        }
     }
 
     private func handleDidSignIn(isNewUser: Bool) {
         interactor.trackEvent(event: Event.didSignIn(isNewUser: isNewUser))
-        router.switchToCoreModule()
+        if interactor.hasCompletedOnboarding {
+            router.switchToCoreModule()
+        } else {
+            router.showOnboardingView()
+        }
     }
 
     func onSignInPressed() {

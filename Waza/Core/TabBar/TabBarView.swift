@@ -43,12 +43,6 @@ extension CoreBuilder {
                     }
                     .any()
                 }),
-                TabBarScreen(title: "Games", systemImage: "puzzlepiece.fill", screen: {
-                    RouterView { router in
-                        claGamesLibraryView(router: router)
-                    }
-                    .any()
-                }),
                 TabBarScreen(title: "Analytics", systemImage: "chart.bar.fill", screen: {
                     RouterView { router in
                         trainingStatsView(router: router)
@@ -78,8 +72,11 @@ extension CoreBuilder {
         TabBarScreen(title: "Dashboard", systemImage: "house.fill", screen: {
             Color.red.any()
         }),
-        TabBarScreen(title: "Games", systemImage: "puzzlepiece.fill", screen: {
+        TabBarScreen(title: "Analytics", systemImage: "chart.bar.fill", screen: {
             Color.blue.any()
+        }),
+        TabBarScreen(title: "Goals", systemImage: "target", screen: {
+            Color.orange.any()
         }),
         TabBarScreen(title: "Profile", systemImage: "person.fill", screen: {
             Color.green.any()

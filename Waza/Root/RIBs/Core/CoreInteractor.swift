@@ -20,8 +20,8 @@ struct CoreInteractor: GlobalInteractor {
     let beltManager: BeltManager
     let goalManager: GoalManager
     let achievementManager: AchievementManager
-    let claGameManager: CLAGameManager
     let trainingStatsManager: TrainingStatsManager
+    private let aiInsightsManager: AIInsightsManager
 
     init(container: DependencyContainer) {
         self.appState = container.resolve(AppState.self)!
@@ -40,8 +40,8 @@ struct CoreInteractor: GlobalInteractor {
         self.beltManager = container.resolve(BeltManager.self)!
         self.goalManager = container.resolve(GoalManager.self)!
         self.achievementManager = container.resolve(AchievementManager.self)!
-        self.claGameManager = container.resolve(CLAGameManager.self)!
         self.trainingStatsManager = container.resolve(TrainingStatsManager.self)!
+        self.aiInsightsManager = container.resolve(AIInsightsManager.self)!
     }
 
     // MARK: APP STATE
@@ -85,7 +85,15 @@ struct CoreInteractor: GlobalInteractor {
         try await userManager.getUser(userId: userId)
     }
 
+    var hasCompletedOnboarding: Bool {
+        currentUser?.didCompleteOnboarding == true
+    }
+
     func saveOnboardingComplete() async throws {
+        try await userManager.saveOnboardingCompleteForCurrentUser()
+    }
+
+    func markOnboardingComplete() async throws {
         try await userManager.saveOnboardingCompleteForCurrentUser()
     }
 
@@ -339,6 +347,10 @@ struct CoreInteractor: GlobalInteractor {
         sessionManager.getRecentSessions(limit: 5)
     }
 
+    var allSessions: [BJJSessionModel] {
+        sessionManager.getRecentSessions(limit: 50)
+    }
+
     var sessionStats: SessionStats {
         sessionManager.getSessionStats()
     }
@@ -415,6 +427,17 @@ struct CoreInteractor: GlobalInteractor {
         return record
     }
 
+    func setInitialBelt(
+        belt: BJJBelt,
+        stripes: Int = 0,
+        date: Date = Date(),
+        academy: String? = nil,
+        notes: String? = nil
+    ) throws {
+        try beltManager.addPromotion(belt: belt, stripes: stripes, date: date, academy: academy, notes: notes)
+        // No achievement check — this is an initial belt setup, not a promotion
+    }
+
     func estimatedTimeToNextBelt() -> String? {
         beltManager.estimatedTimeToNextBelt(sessionsPerWeek: Double(sessionStats.thisWeekSessions))
     }
@@ -470,80 +493,28 @@ struct CoreInteractor: GlobalInteractor {
         achievementManager.isEarned(id)
     }
 
-    // MARK: CLA Games
+    // MARK: AI Insights
 
-    var allGames: [CLAGameModel] {
-        claGameManager.games
+    var isAIAvailable: Bool {
+        aiInsightsManager.isAvailable
     }
 
-    var builtInGames: [CLAGameModel] {
-        claGameManager.builtInGames
+    var aiUnavailabilityMessage: String {
+        aiInsightsManager.unavailabilityMessage
     }
 
-    var userGames: [CLAGameModel] {
-        claGameManager.userGames
+    func streamWeeklySummary(sessions: [BJJSessionModel], belt: BJJBelt) -> AsyncThrowingStream<String, Error> {
+        aiInsightsManager.streamWeeklySummary(sessions: sessions, belt: belt)
     }
 
-    func getGame(id: String) -> CLAGameModel? {
-        claGameManager.getGame(id: id)
-    }
-
-    func getGames(for position: String) -> [CLAGameModel] {
-        claGameManager.getGames(for: position)
-    }
-
-    @discardableResult
-    func createGame(
-        name: String,
-        objective: String,
-        skillLevel: BeltLevel = .all,
-        position: String,
-        focusArea: String,
-        taskConstraints: [String] = [],
-        environmentConstraints: [String] = [],
-        individualConstraints: [String] = [],
-        expectedDiscoveries: [String] = [],
-        safetyNotes: String? = nil
-    ) throws -> CLAGameModel {
-        try claGameManager.createGame(
-            name: name,
-            objective: objective,
-            skillLevel: skillLevel,
-            position: position,
-            focusArea: focusArea,
-            taskConstraints: taskConstraints,
-            environmentConstraints: environmentConstraints,
-            individualConstraints: individualConstraints,
-            expectedDiscoveries: expectedDiscoveries,
-            safetyNotes: safetyNotes
-        )
-    }
-
-    func deleteGame(_ game: CLAGameModel) throws {
-        try claGameManager.deleteGame(game)
-    }
-
-    @discardableResult
-    func logDiscovery(text: String, successRating: Int, gameId: String, sessionId: String? = nil) throws -> GameDiscoveryModel {
-        try claGameManager.logDiscovery(text: text, successRating: successRating, gameId: gameId, sessionId: sessionId)
-    }
-
-    func markGamePracticed(gameId: String) throws {
-        try claGameManager.markPracticed(gameId: gameId)
-    }
-
-    func getMostPracticedGames(limit: Int = 5) -> [CLAGameModel] {
-        claGameManager.getMostPracticedGames(limit: limit)
+    func generateInsights(sessions: [BJJSessionModel], belt: BJJBelt) async throws -> [AITrainingInsight] {
+        try await aiInsightsManager.generateInsights(sessions: sessions, belt: belt)
     }
 
     // MARK: Training Stats
 
     func getTrainingSnapshot(period: DateRange) -> TrainingSnapshot {
         trainingStatsManager.getTrainingSnapshot(period: period)
-    }
-
-    func getCLAStatSummary() -> CLAStatSummary {
-        trainingStatsManager.getCLAStatSummary()
     }
 
     func getTypeBreakdown() -> [TypeStat] {

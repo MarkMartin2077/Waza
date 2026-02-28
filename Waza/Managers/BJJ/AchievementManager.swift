@@ -8,9 +8,9 @@ class AchievementManager {
 
     private(set) var earnedAchievements: [AchievementEarnedModel] = []
 
-    init(localService: AchievementLocalService, remoteService: RemoteAchievementService) {
-        self.localService = localService
-        self.remoteService = remoteService
+    init(services: AchievementServices) {
+        self.localService = services.local
+        self.remoteService = services.remote
         refresh()
     }
 

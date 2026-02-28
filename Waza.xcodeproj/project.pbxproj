@@ -29,6 +29,7 @@
 		02B62BB02E662E60008FB7FF /* FirebaseRemoteConfig in Frameworks */ = {isa = PBXBuildFile; productRef = 02B62BAF2E662E60008FB7FF /* FirebaseRemoteConfig */; };
 		02B62BB22E662E85008FB7FF /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 02B62BB12E662E85008FB7FF /* FirebaseStorage */; };
 		9FA6D6C52F52601E00BDB28B /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9FA6D6C42F52601E00BDB28B /* StoreKit.framework */; };
+		9FA6D8722F528BE000BDB28B /* SwiftfulOnboarding in Frameworks */ = {isa = PBXBuildFile; productRef = 9FA6D8712F528BE000BDB28B /* SwiftfulOnboarding */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -106,6 +107,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				028F9BDF2CED1617009B9F48 /* SwiftfulUI in Frameworks */,
+				9FA6D8722F528BE000BDB28B /* SwiftfulOnboarding in Frameworks */,
 				028744422D3396FC00C2C3E1 /* SwiftfulHaptics in Frameworks */,
 				028F9BCE2CED152A009B9F48 /* SwiftfulLoggingMixpanel in Frameworks */,
 				02B62BAB2E662DF3008FB7FF /* SwiftfulLoggingFirebaseCrashlytics in Frameworks */,
@@ -251,6 +253,7 @@
 				02B62BB12E662E85008FB7FF /* FirebaseStorage */,
 				0207BD942EA0958200E46D93 /* SwiftfulGamificationFirebase */,
 				0207BD972EA0958B00E46D93 /* SwiftfulGamification */,
+				9FA6D8712F528BE000BDB28B /* SwiftfulOnboarding */,
 			);
 			productName = Waza;
 			productReference = 028F9B532CECF2C2009B9F48 /* Waza.app */;
@@ -307,6 +310,7 @@
 				02B62BAC2E662E14008FB7FF /* XCRemoteSwiftPackageReference "SwiftfulFirestore" */,
 				0207BD932EA0958200E46D93 /* XCRemoteSwiftPackageReference "SwiftfulGamificationFirebase" */,
 				0207BD962EA0958B00E46D93 /* XCRemoteSwiftPackageReference "SwiftfulGamification" */,
+				9FA6D8702F528BE000BDB28B /* XCRemoteSwiftPackageReference "SwiftfulOnboarding" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 028F9B542CECF2C2009B9F48 /* Products */;
@@ -511,6 +515,7 @@
 				INFOPLIST_FILE = Waza/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Waza;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -522,10 +527,10 @@
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 14.5;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 1.0;
 				OTHER_SWIFT_FLAGS = "-DMOCK";
 				PRODUCT_BUNDLE_IDENTIFIER = com.markmartin89.Waza.mock;
@@ -535,7 +540,7 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2,7";
-				XROS_DEPLOYMENT_TARGET = 2.0;
+				XROS_DEPLOYMENT_TARGET = 26.0;
 			};
 			name = Mock;
 		};
@@ -805,6 +810,7 @@
 				INFOPLIST_FILE = Waza/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Waza;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -816,10 +822,10 @@
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 14.5;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 1.0;
 				OTHER_SWIFT_FLAGS = "-DDEV";
 				PRODUCT_BUNDLE_IDENTIFIER = com.markmartin89.Waza.dev;
@@ -829,7 +835,7 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2,7";
-				XROS_DEPLOYMENT_TARGET = 2.0;
+				XROS_DEPLOYMENT_TARGET = 26.0;
 			};
 			name = Debug;
 		};
@@ -854,6 +860,7 @@
 				INFOPLIST_FILE = Waza/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Waza;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -865,10 +872,10 @@
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 14.5;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.markmartin89Waza;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -877,7 +884,7 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2,7";
-				XROS_DEPLOYMENT_TARGET = 2.0;
+				XROS_DEPLOYMENT_TARGET = 26.0;
 			};
 			name = Release;
 		};
@@ -1071,6 +1078,14 @@
 				minimumVersion = 11.0.0;
 			};
 		};
+		9FA6D8702F528BE000BDB28B /* XCRemoteSwiftPackageReference "SwiftfulOnboarding" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SwiftfulThinking/SwiftfulOnboarding.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.4;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -1178,6 +1193,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 02B62BA02E662DC3008FB7FF /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseStorage;
+		};
+		9FA6D8712F528BE000BDB28B /* SwiftfulOnboarding */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9FA6D8702F528BE000BDB28B /* XCRemoteSwiftPackageReference "SwiftfulOnboarding" */;
+			productName = SwiftfulOnboarding;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

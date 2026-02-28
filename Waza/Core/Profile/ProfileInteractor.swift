@@ -9,6 +9,7 @@ protocol ProfileInteractor: GlobalInteractor {
     var sessionStats: SessionStats { get }
     var earnedAchievements: [AchievementEarnedModel] { get }
     var isPremium: Bool { get }
+    func setInitialBelt(belt: BJJBelt, stripes: Int, date: Date, academy: String?, notes: String?) throws
     func addBeltPromotion(belt: BJJBelt, stripes: Int, date: Date, academy: String?, notes: String?) throws -> BeltRecordModel
 }
 

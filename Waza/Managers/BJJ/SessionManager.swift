@@ -8,9 +8,9 @@ class SessionManager {
 
     private(set) var sessions: [BJJSessionModel] = []
 
-    init(localService: BJJSessionLocalService, remoteService: RemoteBJJSessionService) {
-        self.localService = localService
-        self.remoteService = remoteService
+    init(services: BJJSessionServices) {
+        self.localService = services.local
+        self.remoteService = services.remote
         refresh()
     }
 

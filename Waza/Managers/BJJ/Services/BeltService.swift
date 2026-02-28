@@ -14,7 +14,13 @@ protocol BeltLocalService {
 
 @MainActor
 struct SwiftDataBeltPersistence: BeltLocalService {
-    let container: ModelContainer
+    private let container: ModelContainer
+
+    init(inMemory: Bool = false) {
+        let config = ModelConfiguration("BeltHistory", isStoredInMemoryOnly: inMemory)
+        // swiftlint:disable:next force_try
+        self.container = try! ModelContainer(for: BeltRecordEntity.self, configurations: config)
+    }
 
     func getBeltHistory() -> [BeltRecordModel] {
         let descriptor = FetchDescriptor<BeltRecordEntity>(

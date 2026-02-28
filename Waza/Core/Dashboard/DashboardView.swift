@@ -5,28 +5,28 @@ struct DashboardView: View {
     let delegate: DashboardDelegate
 
     var body: some View {
-        ZStack(alignment: .bottomTrailing) {
-            ScrollView {
-                VStack(spacing: 20) {
-                    headerSection
-                    statsRow
-                    if !presenter.recentSessions.isEmpty {
-                        recentSessionsSection
-                    }
-                    if !presenter.activeGoals.isEmpty {
-                        activeGoalsSection
-                    }
-                    Spacer(minLength: 80)
+        ScrollView {
+            VStack(spacing: 20) {
+                streakIndicator
+                recentSessionsContent
+                if !presenter.activeGoals.isEmpty {
+                    activeGoalsSection
                 }
-                .padding(.horizontal, 16)
-                .padding(.top, 8)
             }
-            logSessionButton
+            .padding(.horizontal, 16)
+            .padding(.top, 8)
+            .padding(.bottom, 16)
         }
         .navigationTitle("Waza")
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItem(placement: .topBarLeading) {
                 devSettingsButton
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                aiInsightsButton
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                addSessionButton
             }
         }
         .onAppear {
@@ -34,91 +34,35 @@ struct DashboardView: View {
         }
     }
 
-    // MARK: - Header
+    // MARK: - Streak Indicator
 
-    private var headerSection: some View {
-        HStack(spacing: 16) {
-            beltCard
-            streakCard
-        }
-    }
-
-    private var beltCard: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text("Belt")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-            Text(presenter.beltDisplayName)
-                .font(.headline)
-                .fontWeight(.semibold)
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
-            Text("\(presenter.totalXP) XP")
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(14)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14))
-    }
-
-    private var streakCard: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text("Streak")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-            HStack(alignment: .firstTextBaseline, spacing: 2) {
-                Text("\(presenter.streakCount)")
-                    .font(.title2)
-                    .fontWeight(.bold)
-                Text("days")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
+    private var streakIndicator: some View {
+        HStack(spacing: 6) {
             Image(systemName: "flame.fill")
-                .font(.caption2)
                 .foregroundStyle(presenter.streakCount > 0 ? .orange : .secondary)
+            Text(presenter.streakCount > 0 ? "\(presenter.streakCount) day streak" : "No active streak")
+                .font(.subheadline)
+                .fontWeight(.medium)
+                .foregroundStyle(presenter.streakCount > 0 ? .primary : .secondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(14)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14))
-    }
-
-    // MARK: - Stats
-
-    private var statsRow: some View {
-        HStack(spacing: 12) {
-            statCell(
-                value: "\(presenter.sessionStats.totalSessions)",
-                label: "Total Sessions"
-            )
-            statCell(
-                value: "\(presenter.sessionStats.thisWeekSessions)",
-                label: "This Week"
-            )
-            statCell(
-                value: String(format: "%.0f", presenter.sessionStats.totalTrainingHours),
-                label: "Hrs Trained"
-            )
-        }
-    }
-
-    private func statCell(value: String, label: String) -> some View {
-        VStack(spacing: 4) {
-            Text(value)
-                .font(.title3)
-                .fontWeight(.bold)
-            Text(label)
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 12)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
     }
 
     // MARK: - Recent Sessions
+
+    @ViewBuilder
+    private var recentSessionsContent: some View {
+        if presenter.recentSessions.isEmpty {
+            ContentUnavailableView(
+                "No Sessions Yet",
+                systemImage: "figure.martial.arts",
+                description: Text("Tap + to log your first training session.")
+            )
+            .padding(.top, 32)
+        } else {
+            recentSessionsSection
+        }
+    }
 
     private var recentSessionsSection: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -157,27 +101,30 @@ struct DashboardView: View {
         }
     }
 
-    // MARK: - Log Session FAB
+    // MARK: - Toolbar Buttons
 
-    private var logSessionButton: some View {
-        Text("Log Session")
+    private var aiInsightsButton: some View {
+        Image(systemName: "apple.intelligence")
             .font(.headline)
-            .foregroundStyle(.white)
-            .padding(.horizontal, 20)
-            .padding(.vertical, 14)
-            .background(.accent, in: Capsule())
-            .shadow(color: .black.opacity(0.15), radius: 8, y: 4)
-            .padding(.trailing, 20)
-            .padding(.bottom, 20)
-            .anyButton(.press) {
+            .foregroundStyle(.accent)
+            .anyButton {
+                presenter.onAIInsightsTapped()
+            }
+    }
+
+    private var addSessionButton: some View {
+        Image(systemName: "plus")
+            .font(.headline)
+            .foregroundStyle(.accent)
+            .anyButton {
                 presenter.onLogSessionTapped()
             }
     }
 
     private var devSettingsButton: some View {
         Image(systemName: "gearshape")
-            .font(.headline)
-            .foregroundStyle(.accent)
+            .font(.subheadline)
+            .foregroundStyle(.secondary)
             .anyButton {
                 presenter.onDevSettingsTapped()
             }

@@ -14,6 +14,7 @@ class DashboardPresenter {
     private(set) var streakCount: Int = 0
     private(set) var totalXP: Int = 0
     private(set) var isPremium: Bool = false
+    private(set) var isAIAvailable: Bool = false
 
     init(interactor: DashboardInteractor, router: DashboardRouter, delegate: DashboardDelegate) {
         self.interactor = interactor
@@ -34,6 +35,7 @@ class DashboardPresenter {
         streakCount = interactor.currentStreakData.currentStreak ?? 0
         totalXP = interactor.currentExperiencePointsData.pointsAllTime ?? 0
         isPremium = interactor.isPremium
+        isAIAvailable = interactor.isAIAvailable
     }
 
     func onLogSessionTapped() {
@@ -62,6 +64,11 @@ class DashboardPresenter {
         router.showPaywallView()
     }
 
+    func onAIInsightsTapped() {
+        interactor.trackEvent(event: Event.aiInsightsTapped)
+        router.showAIInsightsView()
+    }
+
     var beltDisplayName: String {
         guard let belt = currentBelt else {
             return interactor.currentBeltEnum.displayName
@@ -77,6 +84,7 @@ extension DashboardPresenter {
         case sessionTapped
         case goalsTapped
         case upgradeTapped
+        case aiInsightsTapped
 
         var eventName: String {
             switch self {
@@ -85,6 +93,7 @@ extension DashboardPresenter {
             case .sessionTapped:    return "DashboardView_Session_Tap"
             case .goalsTapped:      return "DashboardView_Goals_Tap"
             case .upgradeTapped:    return "DashboardView_Upgrade_Tap"
+            case .aiInsightsTapped: return "DashboardView_AIInsights_Tap"
             }
         }
 
