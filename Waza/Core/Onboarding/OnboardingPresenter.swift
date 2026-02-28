@@ -63,88 +63,9 @@ class OnboardingPresenter {
 
     private static func buildConfiguration(interactor: any OnboardingInteractor) -> OnbConfiguration {
         let accent = Color.accentColor
-
-        // Duolingo-style CTA — tactile 3D shadow for a premium feel
-        let ctaStyle = OnbButtonStyleType.duolingo(
-            backgroundColor: accent,
-            textColor: .white,
-            shadowColor: accent.opacity(0.5)
-        )
-        let ctaFormat = OnbButtonFormatData(
-            pressStyle: .press,
-            font: .subheadline.weight(.semibold),
-            height: .fixed(48),
-            cornerRadius: 14
-        )
-
-        // Belt options — frosted glass card, accent border on selection
-        let beltOptionStyle = OnbButtonStyleType.solidOutline(
-            backgroundColor: .white.opacity(0.07),
-            textColor: .white,
-            borderColor: .white.opacity(0.15),
-            selectedBackgroundColor: accent.opacity(0.2),
-            selectedTextColor: .white,
-            selectedBorderColor: accent
-        )
-        let optionFormat = OnbButtonFormatData(
-            pressStyle: .press,
-            font: .subheadline,
-            height: .fixed(46),
-            cornerRadius: 12
-        )
-
-        // Skip / secondary — ghost outline
-        let skipStyle = OnbButtonStyleType.outline(
-            textColor: .white.opacity(0.45),
-            borderColor: .white.opacity(0.15)
-        )
-        let skipFormat = OnbButtonFormatData(
-            pressStyle: .press,
-            font: .subheadline,
-            height: .fixed(44),
-            cornerRadius: 14
-        )
-
-        // Warm dark amber gradient — brand hero slides (track + ready)
-        let warmGradient = OnbBackgroundType.gradient(
-            Gradient(colors: [
-                Color(white: 0.08),
-                Color(red: 0.07, green: 0.04, blue: 0.01)
-            ]),
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-
-        // Navy gradient — belt selection
-        let navyGradient = OnbBackgroundType.gradient(
-            Gradient(colors: [
-                Color(white: 0.06),
-                Color(red: 0.02, green: 0.04, blue: 0.10)
-            ]),
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-
-        // Purple gradient — notifications
-        let purpleGradient = OnbBackgroundType.gradient(
-            Gradient(colors: [
-                Color(white: 0.06),
-                Color(red: 0.05, green: 0.02, blue: 0.10)
-            ]),
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-
-        // Teal gradient — location
-        let tealGradient = OnbBackgroundType.gradient(
-            Gradient(colors: [
-                Color(white: 0.06),
-                Color(red: 0.01, green: 0.07, blue: 0.06)
-            ]),
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-
+        let ctaStyle = makeCTAStyle(accent: accent)
+        let beltOptionStyle = makeBeltOptionStyle(accent: accent)
+        let skipStyle = makeSkipStyle()
         return OnbConfiguration(
             headerConfiguration: OnbHeaderConfiguration(
                 headerStyle: .progressBar,
@@ -154,11 +75,11 @@ class OnboardingPresenter {
                 progressBarAccentColor: accent
             ),
             slides: [
-                trackSlide(ctaStyle: ctaStyle, background: warmGradient),
-                beltSlide(optionStyle: beltOptionStyle, background: navyGradient),
-                notificationsSlide(interactor: interactor, ctaStyle: ctaStyle, skipStyle: skipStyle, background: purpleGradient),
-                locationSlide(interactor: interactor, ctaStyle: ctaStyle, skipStyle: skipStyle, background: tealGradient),
-                readySlide(ctaStyle: ctaStyle, background: warmGradient)
+                trackSlide(ctaStyle: ctaStyle, background: makeWarmGradient()),
+                beltSlide(optionStyle: beltOptionStyle, background: makeNavyGradient()),
+                notificationsSlide(interactor: interactor, ctaStyle: ctaStyle, skipStyle: skipStyle, background: makePurpleGradient()),
+                locationSlide(interactor: interactor, ctaStyle: ctaStyle, skipStyle: skipStyle, background: makeTealGradient()),
+                readySlide(ctaStyle: ctaStyle, background: makeWarmGradient())
             ],
             slideDefaults: OnbSlideDefaults(
                 titleFont: .title2.weight(.bold),
@@ -167,12 +88,75 @@ class OnboardingPresenter {
                 contentSpacing: 36,
                 ctaText: "Continue",
                 ctaButtonStyle: ctaStyle,
-                ctaButtonFormatData: ctaFormat,
-                optionsButtonFormatData: optionFormat,
-                secondaryButtonFormatData: skipFormat,
+                ctaButtonFormatData: makeCTAFormat(),
+                optionsButtonFormatData: makeOptionFormat(),
+                secondaryButtonFormatData: makeSkipFormat(),
                 background: .solidColor(Color(white: 0.05)),
                 transitionStyle: .fade
             )
+        )
+    }
+
+    // MARK: - Style factories
+
+    private static func makeCTAStyle(accent: Color) -> OnbButtonStyleType {
+        .duolingo(backgroundColor: accent, textColor: .white, shadowColor: accent.opacity(0.5))
+    }
+
+    private static func makeCTAFormat() -> OnbButtonFormatData {
+        OnbButtonFormatData(pressStyle: .press, font: .subheadline.weight(.semibold), height: .fixed(48), cornerRadius: 14)
+    }
+
+    private static func makeBeltOptionStyle(accent: Color) -> OnbButtonStyleType {
+        .solidOutline(
+            backgroundColor: .white.opacity(0.07),
+            textColor: .white,
+            borderColor: .white.opacity(0.15),
+            selectedBackgroundColor: accent.opacity(0.2),
+            selectedTextColor: .white,
+            selectedBorderColor: accent
+        )
+    }
+
+    private static func makeOptionFormat() -> OnbButtonFormatData {
+        OnbButtonFormatData(pressStyle: .press, font: .subheadline, height: .fixed(46), cornerRadius: 12)
+    }
+
+    private static func makeSkipStyle() -> OnbButtonStyleType {
+        .outline(textColor: .white.opacity(0.45), borderColor: .white.opacity(0.15))
+    }
+
+    private static func makeSkipFormat() -> OnbButtonFormatData {
+        OnbButtonFormatData(pressStyle: .press, font: .subheadline, height: .fixed(44), cornerRadius: 14)
+    }
+
+    // MARK: - Gradient factories
+
+    private static func makeWarmGradient() -> OnbBackgroundType {
+        .gradient(
+            Gradient(colors: [Color(white: 0.08), Color(red: 0.07, green: 0.04, blue: 0.01)]),
+            startPoint: .topLeading, endPoint: .bottomTrailing
+        )
+    }
+
+    private static func makeNavyGradient() -> OnbBackgroundType {
+        .gradient(
+            Gradient(colors: [Color(white: 0.06), Color(red: 0.02, green: 0.04, blue: 0.10)]),
+            startPoint: .topLeading, endPoint: .bottomTrailing
+        )
+    }
+
+    private static func makePurpleGradient() -> OnbBackgroundType {
+        .gradient(
+            Gradient(colors: [Color(white: 0.06), Color(red: 0.05, green: 0.02, blue: 0.10)]),
+            startPoint: .topLeading, endPoint: .bottomTrailing
+        )
+    }
+
+    private static func makeTealGradient() -> OnbBackgroundType {
+        .gradient(
+            Gradient(colors: [Color(white: 0.06), Color(red: 0.01, green: 0.07, blue: 0.06)]),
+            startPoint: .topLeading, endPoint: .bottomTrailing
         )
     }
 

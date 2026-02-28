@@ -1,6 +1,15 @@
 import Foundation
 import FoundationModels
 
+struct AIEncouragementContext {
+    let userName: String
+    let streakCount: Int
+    let classesThisWeek: Int
+    let weeklyTarget: Int
+    let belt: BJJBelt
+    let totalAttendance: Int
+}
+
 @available(iOS 26.0, *)
 @Observable
 @MainActor
@@ -32,14 +41,7 @@ class AIInsightsManager {
 
     // MARK: - Check-In Encouragement (Streaming)
 
-    func generateCheckInEncouragement(
-        userName: String,
-        streakCount: Int,
-        classesThisWeek: Int,
-        weeklyTarget: Int,
-        belt: BJJBelt,
-        totalAttendance: Int
-    ) -> AsyncThrowingStream<String, Error> {
+    func generateCheckInEncouragement(context: AIEncouragementContext) -> AsyncThrowingStream<String, Error> {
         return AsyncThrowingStream { continuation in
             Task { @MainActor in
                 guard SystemLanguageModel.default.availability == .available else {
@@ -48,12 +50,14 @@ class AIInsightsManager {
                 }
                 do {
                     let aiSession = LanguageModelSession()
-                    let progressText = weeklyTarget > 0 ? "\(classesThisWeek)/\(weeklyTarget) classes this week" : "\(classesThisWeek) classes this week"
+                    let progressText = context.weeklyTarget > 0
+                        ? "\(context.classesThisWeek)/\(context.weeklyTarget) classes this week"
+                        : "\(context.classesThisWeek) classes this week"
                     let prompt = """
                     You are a warm, encouraging BJJ coach. Write a 1–2 sentence personalised \
-                    check-in message addressed to \(userName), a \(belt.displayName) belt athlete who just arrived at the gym. \
+                    check-in message addressed to \(context.userName), a \(context.belt.displayName) belt athlete who just arrived at the gym. \
                     Use their name naturally in the message. \
-                    Details: \(progressText), \(streakCount) day training streak, \(totalAttendance) total classes attended. \
+                    Details: \(progressText), \(context.streakCount) day training streak, \(context.totalAttendance) total classes attended. \
                     Be specific, upbeat and brief.
                     """
                     for try await partial in aiSession.streamResponse(to: prompt) {

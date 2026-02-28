@@ -38,6 +38,18 @@ class DashboardPresenter {
         isPremium = interactor.isPremium
         isAIAvailable = interactor.isAIAvailable
         nextUpcomingClass = interactor.nextUpcomingClass
+
+        WidgetDataStore.shared.update(WazaWidgetData(
+            streakCount: streakCount,
+            accentColorHex: interactor.currentBeltEnum.accentColorHex,
+            beltDisplayName: interactor.currentBeltEnum.displayName,
+            sessionsThisWeek: sessionStats.thisWeekSessions,
+            nextClassTypeDisplayName: nextUpcomingClass?.0.sessionType.displayName,
+            nextClassGymName: nextUpcomingClass?.1.name,
+            nextClassDayOfWeek: nextUpcomingClass?.0.dayOfWeek,
+            nextClassStartHour: nextUpcomingClass?.0.startHour,
+            nextClassStartMinute: nextUpcomingClass?.0.startMinute
+        ))
     }
 
     // MARK: - Computed display values
@@ -82,6 +94,9 @@ class DashboardPresenter {
     func onLogSessionTapped() {
         interactor.trackEvent(event: Event.logSessionTapped)
         router.showSessionEntryView(onDismiss: { [weak self] in
+            Task { @MainActor [weak self] in
+                await self?.interactor.endTrainingLiveActivity()
+            }
             self?.loadData()
         })
     }

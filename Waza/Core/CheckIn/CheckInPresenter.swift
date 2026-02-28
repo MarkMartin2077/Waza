@@ -41,6 +41,11 @@ class CheckInPresenter {
             checkedInRecord = record
             isConfirmed = true
             interactor.trackEvent(event: Event.checkInSuccess)
+            interactor.startTrainingLiveActivity(
+                sessionTypeDisplayName: delegate.matchedSchedule?.sessionType.displayName ?? delegate.gym.name,
+                gymName: delegate.gym.name,
+                beltAccentColorHex: interactor.currentBeltEnum.accentColorHex
+            )
             Task {
                 interactor.playHaptic(option: .medium)
                 try? await Task.sleep(nanoseconds: 120_000_000)
@@ -89,12 +94,14 @@ class CheckInPresenter {
         aiMessage = ""
 
         let stream = interactor.generateCheckInEncouragement(
-            userName: userName,
-            streakCount: streak,
-            classesThisWeek: classesThisWeek,
-            weeklyTarget: weeklyTarget,
-            belt: belt,
-            totalAttendance: totalAttendance
+            context: AIEncouragementContext(
+                userName: userName,
+                streakCount: streak,
+                classesThisWeek: classesThisWeek,
+                weeklyTarget: weeklyTarget,
+                belt: belt,
+                totalAttendance: totalAttendance
+            )
         )
 
         Task {

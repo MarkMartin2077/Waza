@@ -28,6 +28,9 @@
 		02B62BAE2E662E14008FB7FF /* SwiftfulFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 02B62BAD2E662E14008FB7FF /* SwiftfulFirestore */; };
 		02B62BB02E662E60008FB7FF /* FirebaseRemoteConfig in Frameworks */ = {isa = PBXBuildFile; productRef = 02B62BAF2E662E60008FB7FF /* FirebaseRemoteConfig */; };
 		02B62BB22E662E85008FB7FF /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 02B62BB12E662E85008FB7FF /* FirebaseStorage */; };
+		9F72A5D62F538DE1009EA87E /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F72A5D52F538DE1009EA87E /* WidgetKit.framework */; };
+		9F72A5D82F538DE1009EA87E /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F72A5D72F538DE1009EA87E /* SwiftUI.framework */; };
+		9F72A5E52F538DE2009EA87E /* WazaWidgetsExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 9F72A5D42F538DE1009EA87E /* WazaWidgetsExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		9FA6D6C52F52601E00BDB28B /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9FA6D6C42F52601E00BDB28B /* StoreKit.framework */; };
 		9FA6D8722F528BE000BDB28B /* SwiftfulOnboarding in Frameworks */ = {isa = PBXBuildFile; productRef = 9FA6D8712F528BE000BDB28B /* SwiftfulOnboarding */; };
 /* End PBXBuildFile section */
@@ -47,12 +50,37 @@
 			remoteGlobalIDString = 028F9B522CECF2C2009B9F48;
 			remoteInfo = Waza;
 		};
+		9F72A5E32F538DE2009EA87E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 028F9B4B2CECF2C2009B9F48 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 9F72A5D32F538DE1009EA87E;
+			remoteInfo = WazaWidgetsExtension;
+		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		9F72A5EB2F538DE2009EA87E /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				9F72A5E52F538DE2009EA87E /* WazaWidgetsExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		0229582F2CEE7FEF00765488 /* WazaUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WazaUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		0229583F2CEE7FF900765488 /* WazaUnitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WazaUnitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		028F9B532CECF2C2009B9F48 /* Waza.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Waza.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		9F72A5D42F538DE1009EA87E /* WazaWidgetsExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = WazaWidgetsExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		9F72A5D52F538DE1009EA87E /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		9F72A5D72F538DE1009EA87E /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		9F72A5F22F538E8D009EA87E /* WazaWidgetsExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WazaWidgetsExtension.entitlements; sourceTree = "<group>"; };
 		9FA6D6C42F52601E00BDB28B /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -63,6 +91,13 @@
 				Info.plist,
 			);
 			target = 028F9B522CECF2C2009B9F48 /* Waza */;
+		};
+		9F72A5EA2F538DE2009EA87E /* Exceptions for "WazaWidgets" folder in "WazaWidgetsExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 9F72A5D32F538DE1009EA87E /* WazaWidgetsExtension */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -83,6 +118,14 @@
 				028743182D336F3800C2C3E1 /* Exceptions for "Waza" folder in "Waza" target */,
 			);
 			path = Waza;
+			sourceTree = "<group>";
+		};
+		9F72A5D92F538DE1009EA87E /* WazaWidgets */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				9F72A5EA2F538DE2009EA87E /* Exceptions for "WazaWidgets" folder in "WazaWidgetsExtension" target */,
+			);
+			path = WazaWidgets;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -132,15 +175,26 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		9F72A5D12F538DE1009EA87E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9F72A5D82F538DE1009EA87E /* SwiftUI.framework in Frameworks */,
+				9F72A5D62F538DE1009EA87E /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		028F9B4A2CECF2C2009B9F48 = {
 			isa = PBXGroup;
 			children = (
+				9F72A5F22F538E8D009EA87E /* WazaWidgetsExtension.entitlements */,
 				028F9B552CECF2C2009B9F48 /* Waza */,
 				022958302CEE7FEF00765488 /* WazaUITests */,
 				022958402CEE7FF900765488 /* WazaUnitTests */,
+				9F72A5D92F538DE1009EA87E /* WazaWidgets */,
 				028F9C2B2CED2D0D009B9F48 /* Frameworks */,
 				028F9B542CECF2C2009B9F48 /* Products */,
 			);
@@ -152,6 +206,7 @@
 				028F9B532CECF2C2009B9F48 /* Waza.app */,
 				0229582F2CEE7FEF00765488 /* WazaUITests.xctest */,
 				0229583F2CEE7FF900765488 /* WazaUnitTests.xctest */,
+				9F72A5D42F538DE1009EA87E /* WazaWidgetsExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -160,6 +215,8 @@
 			isa = PBXGroup;
 			children = (
 				9FA6D6C42F52601E00BDB28B /* StoreKit.framework */,
+				9F72A5D52F538DE1009EA87E /* WidgetKit.framework */,
+				9F72A5D72F538DE1009EA87E /* SwiftUI.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -222,10 +279,12 @@
 				028F9B512CECF2C2009B9F48 /* Resources */,
 				022958C32CEFA29900765488 /* ShellScript */,
 				022958C42CEFA2DB00765488 /* ShellScript */,
+				9F72A5EB2F538DE2009EA87E /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				9F72A5E42F538DE2009EA87E /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				028F9B552CECF2C2009B9F48 /* Waza */,
@@ -259,6 +318,28 @@
 			productReference = 028F9B532CECF2C2009B9F48 /* Waza.app */;
 			productType = "com.apple.product-type.application";
 		};
+		9F72A5D32F538DE1009EA87E /* WazaWidgetsExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9F72A5E62F538DE2009EA87E /* Build configuration list for PBXNativeTarget "WazaWidgetsExtension" */;
+			buildPhases = (
+				9F72A5D02F538DE1009EA87E /* Sources */,
+				9F72A5D12F538DE1009EA87E /* Frameworks */,
+				9F72A5D22F538DE1009EA87E /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				9F72A5D92F538DE1009EA87E /* WazaWidgets */,
+			);
+			name = WazaWidgetsExtension;
+			packageProductDependencies = (
+			);
+			productName = WazaWidgetsExtension;
+			productReference = 9F72A5D42F538DE1009EA87E /* WazaWidgetsExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -266,7 +347,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1600;
+				LastSwiftUpdateCheck = 2630;
 				LastUpgradeCheck = 2630;
 				TargetAttributes = {
 					0229582E2CEE7FEF00765488 = {
@@ -279,6 +360,9 @@
 					};
 					028F9B522CECF2C2009B9F48 = {
 						CreatedOnToolsVersion = 16.0;
+					};
+					9F72A5D32F538DE1009EA87E = {
+						CreatedOnToolsVersion = 26.3;
 					};
 				};
 			};
@@ -320,6 +404,7 @@
 				028F9B522CECF2C2009B9F48 /* Waza */,
 				0229582E2CEE7FEF00765488 /* WazaUITests */,
 				0229583E2CEE7FF900765488 /* WazaUnitTests */,
+				9F72A5D32F538DE1009EA87E /* WazaWidgetsExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -340,6 +425,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		028F9B512CECF2C2009B9F48 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9F72A5D22F538DE1009EA87E /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -415,6 +507,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		9F72A5D02F538DE1009EA87E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -427,6 +526,11 @@
 			isa = PBXTargetDependency;
 			target = 028F9B522CECF2C2009B9F48 /* Waza */;
 			targetProxy = 022958432CEE7FF900765488 /* PBXContainerItemProxy */;
+		};
+		9F72A5E42F538DE2009EA87E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 9F72A5D32F538DE1009EA87E /* WazaWidgetsExtension */;
+			targetProxy = 9F72A5E32F538DE2009EA87E /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -535,6 +639,7 @@
 				OTHER_SWIFT_FLAGS = "-DMOCK";
 				PRODUCT_BUNDLE_IDENTIFIER = com.markmartin89.Waza.mock;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -830,6 +935,7 @@
 				OTHER_SWIFT_FLAGS = "-DDEV";
 				PRODUCT_BUNDLE_IDENTIFIER = com.markmartin89.Waza.dev;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -879,12 +985,114 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.markmartin89.Waza;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2,7";
 				XROS_DEPLOYMENT_TARGET = 26.0;
+			};
+			name = Release;
+		};
+		9F72A5E72F538DE2009EA87E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = WazaWidgetsExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 4BPQ98Z5QY;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = WazaWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = WazaWidgets;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.markmartin89.Waza.dev.widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		9F72A5E82F538DE2009EA87E /* Mock */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = WazaWidgetsExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 4BPQ98Z5QY;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = WazaWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = WazaWidgets;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.markmartin89.Waza.mock.widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Mock;
+		};
+		9F72A5E92F538DE2009EA87E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = WazaWidgetsExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 4BPQ98Z5QY;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = WazaWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = WazaWidgets;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.markmartin89.Waza.widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
 		};
@@ -927,6 +1135,16 @@
 				028F9B792CECF2C4009B9F48 /* Debug */,
 				022958182CEE4BB000765488 /* Mock */,
 				028F9B7A2CECF2C4009B9F48 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		9F72A5E62F538DE2009EA87E /* Build configuration list for PBXNativeTarget "WazaWidgetsExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9F72A5E72F538DE2009EA87E /* Debug */,
+				9F72A5E82F538DE2009EA87E /* Mock */,
+				9F72A5E92F538DE2009EA87E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

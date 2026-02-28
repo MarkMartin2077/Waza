@@ -14,6 +14,7 @@ protocol DashboardInteractor: GlobalInteractor {
     var nextUpcomingClass: (ClassScheduleModel, GymLocationModel)? { get }
     var gyms: [GymLocationModel] { get }
     var schedules: [ClassScheduleModel] { get }
+    func endTrainingLiveActivity() async
 }
 
 extension CoreInteractor: DashboardInteractor { }

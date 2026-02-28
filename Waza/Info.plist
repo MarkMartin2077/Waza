@@ -46,5 +46,7 @@
 	<string>Waza uses your location to automatically check you in when you arrive at your gym.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>Waza uses background location to detect when you arrive at your gym for automatic check-in.</string>
+	<key>NSSupportsLiveActivities</key>
+	<true/>
 </dict>
 </plist>

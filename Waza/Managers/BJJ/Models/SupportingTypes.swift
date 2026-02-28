@@ -91,7 +91,17 @@ enum BJJBelt: String, Codable, CaseIterable {
         case .blue:   return Color(hex: "1E56A0")
         case .purple: return Color(hex: "7B2D8B")
         case .brown:  return Color(hex: "795548")
-        case .black:  return Color(hex: "C9A84C")   // gold — readable in light & dark mode
+        case .black:  return Color(hex: "C9A84C")
+        }
+    }
+
+    var accentColorHex: String {
+        switch self {
+        case .white:  return "5A6A7A"
+        case .blue:   return "1E56A0"
+        case .purple: return "7B2D8B"
+        case .brown:  return "795548"
+        case .black:  return "C9A84C"
         }
     }
 }

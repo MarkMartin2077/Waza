@@ -48,6 +48,7 @@ struct Dependencies {
         let trainingStatsManager: TrainingStatsManager
         let aiInsightsManager: AIInsightsManager
         let classScheduleManager: ClassScheduleManager
+        let liveActivityManager: LiveActivityManager
 
         switch config {
         case .mock(isSignedIn: let isSignedIn):
@@ -129,6 +130,7 @@ struct Dependencies {
             classScheduleManager = ClassScheduleManager(services: ProductionClassScheduleServices())
         }
 
+        liveActivityManager = LiveActivityManager()
         pushManager = PushManager(logManager: logManager)
         soundEffectManager = SoundEffectManager(logger: logManager)
 
@@ -152,6 +154,7 @@ struct Dependencies {
         container.register(TrainingStatsManager.self, service: trainingStatsManager)
         container.register(AIInsightsManager.self, service: aiInsightsManager)
         container.register(ClassScheduleManager.self, service: classScheduleManager)
+        container.register(LiveActivityManager.self, service: liveActivityManager)
 
         self.container = container
 
@@ -184,6 +187,7 @@ class DevPreview {
         container.register(TrainingStatsManager.self, service: trainingStatsManager)
         container.register(AIInsightsManager.self, service: aiInsightsManager)
         container.register(ClassScheduleManager.self, service: classScheduleManager)
+        container.register(LiveActivityManager.self, service: liveActivityManager)
         return container
     }
 
@@ -206,6 +210,7 @@ class DevPreview {
     let trainingStatsManager: TrainingStatsManager
     let aiInsightsManager: AIInsightsManager
     let classScheduleManager: ClassScheduleManager
+    let liveActivityManager: LiveActivityManager
 
     init(isSignedIn: Bool = true) {
         self.authManager = AuthManager(service: MockAuthService(user: isSignedIn ? .mock() : nil))
@@ -227,6 +232,7 @@ class DevPreview {
         self.trainingStatsManager = TrainingStatsManager(sessionManager: sessionManager)
         self.aiInsightsManager = AIInsightsManager()
         self.classScheduleManager = ClassScheduleManager(services: MockClassScheduleServices())
+        self.liveActivityManager = LiveActivityManager()
 
         if isSignedIn {
             sessionManager.seedMockDataIfEmpty()

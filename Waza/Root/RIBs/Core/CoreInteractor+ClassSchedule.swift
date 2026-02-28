@@ -77,22 +77,8 @@ extension CoreInteractor {
         currentUser?.commonNameCalculated ?? currentUser?.displayName ?? "Grappler"
     }
 
-    func generateCheckInEncouragement(
-        userName: String,
-        streakCount: Int,
-        classesThisWeek: Int,
-        weeklyTarget: Int,
-        belt: BJJBelt,
-        totalAttendance: Int
-    ) -> AsyncThrowingStream<String, Error> {
-        aiInsightsManager.generateCheckInEncouragement(
-            userName: userName,
-            streakCount: streakCount,
-            classesThisWeek: classesThisWeek,
-            weeklyTarget: weeklyTarget,
-            belt: belt,
-            totalAttendance: totalAttendance
-        )
+    func generateCheckInEncouragement(context: AIEncouragementContext) -> AsyncThrowingStream<String, Error> {
+        aiInsightsManager.generateCheckInEncouragement(context: context)
     }
 
 }
