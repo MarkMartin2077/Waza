@@ -37,8 +37,8 @@ class CreateAccountPresenter {
                 try await interactor.logIn(user: result.user, isNewUser: result.isNewUser)
                 interactor.trackEvent(event: Event.appleAuthLoginSuccess(user: result.user, isNewUser: result.isNewUser))
 
-                delegate.onDidSignIn?(result.isNewUser)
                 router.dismissScreen()
+                delegate.onDidSignIn?(result.isNewUser)
             } catch {
                 interactor.trackEvent(event: Event.appleAuthFail(error: error))
             }
@@ -56,8 +56,8 @@ class CreateAccountPresenter {
                 try await interactor.logIn(user: result.user, isNewUser: result.isNewUser)
                 interactor.trackEvent(event: Event.googleAuthLoginSuccess(user: result.user, isNewUser: result.isNewUser))
 
-                delegate.onDidSignIn?(result.isNewUser)
                 router.dismissScreen()
+                delegate.onDidSignIn?(result.isNewUser)
             } catch {
                 interactor.trackEvent(event: Event.googleAuthFail(error: error))
             }

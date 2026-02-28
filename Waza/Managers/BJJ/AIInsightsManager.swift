@@ -30,6 +30,41 @@ class AIInsightsManager {
         }
     }
 
+    // MARK: - Check-In Encouragement (Streaming)
+
+    func generateCheckInEncouragement(
+        streakCount: Int,
+        classesThisWeek: Int,
+        weeklyTarget: Int,
+        belt: BJJBelt,
+        totalAttendance: Int
+    ) -> AsyncThrowingStream<String, Error> {
+        return AsyncThrowingStream { continuation in
+            Task { @MainActor in
+                guard SystemLanguageModel.default.availability == .available else {
+                    continuation.finish(throwing: AIInsightsError.notAvailable)
+                    return
+                }
+                do {
+                    let aiSession = LanguageModelSession()
+                    let progressText = weeklyTarget > 0 ? "\(classesThisWeek)/\(weeklyTarget) classes this week" : "\(classesThisWeek) classes this week"
+                    let prompt = """
+                    You are a warm, encouraging BJJ coach. Write a 1–2 sentence personalised \
+                    check-in message for a \(belt.displayName) belt athlete who just arrived at the gym. \
+                    Details: \(progressText), \(streakCount) day training streak, \(totalAttendance) total classes attended. \
+                    Be specific, upbeat and brief.
+                    """
+                    for try await partial in aiSession.streamResponse(to: prompt) {
+                        continuation.yield(partial.content)
+                    }
+                    continuation.finish()
+                } catch {
+                    continuation.finish(throwing: AIInsightsError.generationFailed(error))
+                }
+            }
+        }
+    }
+
     // MARK: - Weekly Summary (Streaming with Tools)
 
     func streamWeeklySummary(

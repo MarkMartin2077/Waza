@@ -8,6 +8,8 @@ protocol DashboardRouter: GlobalRouter {
     func showPaywallView()
     func showDevSettingsView()
     func showAIInsightsView()
+    func showClassScheduleView()
+    func showCheckInView(gym: GymLocationModel, schedule: ClassScheduleModel?, onDismiss: (() -> Void)?)
 }
 
 extension CoreRouter: DashboardRouter { }

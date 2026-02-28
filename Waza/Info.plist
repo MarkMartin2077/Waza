@@ -23,7 +23,7 @@
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>CFBundleURLName</key>
-			<string>Prod</string>
+			<string></string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>com.googleusercontent.apps.218542271939-10dg9b8eb0mm3m1eu1jmfrhrth67qiuj</string>
@@ -33,7 +33,7 @@
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>CFBundleURLName</key>
-			<string>Dev</string>
+			<string></string>
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>com.googleusercontent.apps.218542271939-r4vj53qjr5dnamic0m4plkojsnvnc4ed</string>
@@ -42,5 +42,9 @@
 	</array>
 	<key>FirebaseAppDelegateProxyEnabled</key>
 	<false/>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Waza uses your location to automatically check you in when you arrive at your gym.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Waza uses background location to detect when you arrive at your gym for automatic check-in.</string>
 </dict>
 </plist>

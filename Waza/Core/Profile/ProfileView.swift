@@ -20,9 +20,12 @@ struct ProfileView: View {
                 if !presenter.earnedAchievements.isEmpty {
                     achievementsSection
                 }
+                trainingScheduleSection
+                AttendanceCalendarView(attendance: presenter.classAttendance)
             }
             .padding(.horizontal, 16)
             .padding(.top, 8)
+            .padding(.bottom, 24)
         }
         .navigationTitle("Profile")
         .toolbar {
@@ -197,6 +200,48 @@ struct ProfileView: View {
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
         }
+    }
+
+    // MARK: - Training Schedule
+
+    private var trainingScheduleSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("Training Schedule")
+                    .font(.headline)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Text("Manage")
+                    .font(.caption)
+                    .foregroundStyle(.accent)
+                    .anyButton {
+                        presenter.onManageScheduleTapped()
+                    }
+            }
+
+            if presenter.gyms.isEmpty {
+                Text("No gyms added yet. Tap Manage to set up your training schedule.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            } else {
+                ForEach(presenter.gyms, id: \.gymId) { gym in
+                    HStack(spacing: 10) {
+                        Image(systemName: "mappin.circle.fill")
+                            .foregroundStyle(.accent)
+                        Text(gym.name)
+                            .font(.subheadline)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                }
+                if presenter.scheduleCount > 0 {
+                    Text("\(presenter.scheduleCount) class\(presenter.scheduleCount == 1 ? "" : "es") scheduled")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+        }
+        .padding(16)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
     }
 
     // MARK: - Add Promotion Sheet

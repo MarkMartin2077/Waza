@@ -64,10 +64,22 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
     }
     
     nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
-        // Firebase push notifications put the payload within "aps" sub-dictionary.
-        // This may not be the case for other push notification services
-        let userInfo = response.notification.request.content.userInfo["aps"] as? [String: Any]
-        NotificationCenter.default.post(name: .pushNotification, object: nil, userInfo: userInfo)
+        let identifier = response.notification.request.identifier
+
+        if identifier.hasPrefix("waza-geofence-") {
+            if let gymId = response.notification.request.content.userInfo["gymId"] as? String {
+                NotificationCenter.default.post(name: .gymArrival, object: nil, userInfo: ["gymId": gymId])
+            }
+        } else if identifier.hasPrefix("waza-reminder-") {
+            let scheduleId = String(identifier.dropFirst("waza-reminder-".count))
+            NotificationCenter.default.post(name: .classReminder, object: nil, userInfo: ["scheduleId": scheduleId])
+        } else {
+            // Firebase push notifications put the payload within "aps" sub-dictionary.
+            let userInfo = response.notification.request.content.userInfo["aps"] as? [String: Any]
+            NotificationCenter.default.post(name: .pushNotification, object: nil, userInfo: userInfo)
+        }
+
+        completionHandler()
     }
 }
 

@@ -1,6 +1,7 @@
 import Foundation
+import IdentifiableByString
 
-struct BeltRecordModel: Codable, Sendable, Identifiable {
+struct BeltRecordModel: Codable, Sendable, Identifiable, StringIdentifiable {
     var beltRecordId: String
     var belt: BJJBelt
     var stripes: Int

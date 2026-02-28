@@ -1,36 +1,23 @@
-import Foundation
-#if !MOCK
 import FirebaseFirestore
-#endif
+import SwiftfulFirestore
 
 @MainActor
 struct FirebaseGoalService: RemoteGoalService {
     private let collectionPath = "training_goals"
 
+    private func collection(for userId: String) -> CollectionReference {
+        Firestore.firestore().collection("users").document(userId).collection(collectionPath)
+    }
+
     func getGoals(userId: String) async throws -> [TrainingGoalModel] {
-        #if !MOCK
-        let snapshot = try await Firestore.firestore()
-            .collection("users").document(userId).collection(collectionPath)
-            .getDocuments()
-        return try snapshot.documents.compactMap { try $0.data(as: TrainingGoalModel.self) }
-        #else
-        return []
-        #endif
+        try await collection(for: userId).getAllDocuments()
     }
 
     func saveGoal(_ model: TrainingGoalModel, userId: String) async throws {
-        #if !MOCK
-        try await Firestore.firestore()
-            .collection("users").document(userId).collection(collectionPath)
-            .document(model.goalId).setData(from: model, merge: true)
-        #endif
+        try await collection(for: userId).setDocument(id: model.goalId, document: model)
     }
 
     func deleteGoal(id: String, userId: String) async throws {
-        #if !MOCK
-        try await Firestore.firestore()
-            .collection("users").document(userId).collection(collectionPath)
-            .document(id).delete()
-        #endif
+        try await collection(for: userId).deleteDocument(id: id)
     }
 }

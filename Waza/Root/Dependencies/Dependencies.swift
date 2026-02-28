@@ -47,6 +47,7 @@ struct Dependencies {
         let achievementManager: AchievementManager
         let trainingStatsManager: TrainingStatsManager
         let aiInsightsManager: AIInsightsManager
+        let classScheduleManager: ClassScheduleManager
 
         switch config {
         case .mock(isSignedIn: let isSignedIn):
@@ -69,11 +70,13 @@ struct Dependencies {
             achievementManager = AchievementManager(services: MockAchievementServices())
             trainingStatsManager = TrainingStatsManager(sessionManager: sessionManager)
             aiInsightsManager = AIInsightsManager()
+            classScheduleManager = ClassScheduleManager(services: MockClassScheduleServices())
 
             if isSignedIn {
                 sessionManager.seedMockDataIfEmpty()
                 beltManager.seedMockDataIfEmpty()
                 goalManager.seedMockDataIfEmpty()
+                classScheduleManager.seedMockDataIfEmpty()
             }
 
         case .dev:
@@ -86,7 +89,7 @@ struct Dependencies {
             authManager = AuthManager(service: FirebaseAuthService(), logger: logManager)
             userManager = UserManager(services: ProductionUserServices(), logManager: logManager)
             abTestManager = ABTestManager(service: LocalABTestService(), logManager: logManager)
-            purchaseManager = PurchaseManager(service: RevenueCatPurchaseService(apiKey: Keys.revenueCatAPIKey), logger: logManager)
+            purchaseManager = PurchaseManager(service: StoreKitPurchaseService(), logger: logManager)
             hapticManager = HapticManager(logger: logManager)
             appState = AppState()
             streakManager = StreakManager(services: ProdStreakServices(), configuration: Dependencies.streakConfiguration, logger: logManager)
@@ -99,6 +102,7 @@ struct Dependencies {
             achievementManager = AchievementManager(services: ProductionAchievementServices())
             trainingStatsManager = TrainingStatsManager(sessionManager: sessionManager)
             aiInsightsManager = AIInsightsManager()
+            classScheduleManager = ClassScheduleManager(services: ProductionClassScheduleServices())
 
         case .prod:
             logManager = LogManager(services: [
@@ -122,6 +126,7 @@ struct Dependencies {
             achievementManager = AchievementManager(services: ProductionAchievementServices())
             trainingStatsManager = TrainingStatsManager(sessionManager: sessionManager)
             aiInsightsManager = AIInsightsManager()
+            classScheduleManager = ClassScheduleManager(services: ProductionClassScheduleServices())
         }
 
         pushManager = PushManager(logManager: logManager)
@@ -146,6 +151,7 @@ struct Dependencies {
         container.register(AchievementManager.self, service: achievementManager)
         container.register(TrainingStatsManager.self, service: trainingStatsManager)
         container.register(AIInsightsManager.self, service: aiInsightsManager)
+        container.register(ClassScheduleManager.self, service: classScheduleManager)
 
         self.container = container
 
@@ -177,6 +183,7 @@ class DevPreview {
         container.register(AchievementManager.self, service: achievementManager)
         container.register(TrainingStatsManager.self, service: trainingStatsManager)
         container.register(AIInsightsManager.self, service: aiInsightsManager)
+        container.register(ClassScheduleManager.self, service: classScheduleManager)
         return container
     }
 
@@ -198,6 +205,7 @@ class DevPreview {
     let achievementManager: AchievementManager
     let trainingStatsManager: TrainingStatsManager
     let aiInsightsManager: AIInsightsManager
+    let classScheduleManager: ClassScheduleManager
 
     init(isSignedIn: Bool = true) {
         self.authManager = AuthManager(service: MockAuthService(user: isSignedIn ? .mock() : nil))
@@ -218,11 +226,13 @@ class DevPreview {
         self.achievementManager = AchievementManager(services: MockAchievementServices())
         self.trainingStatsManager = TrainingStatsManager(sessionManager: sessionManager)
         self.aiInsightsManager = AIInsightsManager()
+        self.classScheduleManager = ClassScheduleManager(services: MockClassScheduleServices())
 
         if isSignedIn {
             sessionManager.seedMockDataIfEmpty()
             beltManager.seedMockDataIfEmpty()
             goalManager.seedMockDataIfEmpty()
+            classScheduleManager.seedMockDataIfEmpty()
         }
     }
 }

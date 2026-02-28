@@ -104,8 +104,8 @@ extension CoreRouter {
             dragIndicator: .hidden
         )
                 
-        router.showScreen(.sheetConfig(config: config)) { _ in
-            builder.createAccountView(router: router, delegate: delegate)
+        router.showScreen(.sheetConfig(config: config)) { sheetRouter in
+            builder.createAccountView(router: sheetRouter, delegate: delegate)
         }
     }
 

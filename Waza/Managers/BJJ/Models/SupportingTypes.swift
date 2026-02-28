@@ -148,6 +148,27 @@ enum ProgressionStage: String, Codable, CaseIterable {
     }
 }
 
+// MARK: - Check-In Method
+
+enum CheckInMethod: String, Codable, CaseIterable {
+    case geofence
+    case manual
+
+    var displayName: String {
+        switch self {
+        case .geofence: return "Auto Check-In"
+        case .manual: return "Manual"
+        }
+    }
+
+    var iconName: String {
+        switch self {
+        case .geofence: return "location.fill"
+        case .manual: return "hand.tap.fill"
+        }
+    }
+}
+
 // MARK: - Achievement Event
 
 enum AchievementEvent {
@@ -156,6 +177,7 @@ enum AchievementEvent {
     case goalCompleted(goalId: String)
     case beltPromoted(belt: BJJBelt)
     case xpMilestone(points: Int)
+    case classCheckedIn(totalCount: Int, isPerfectWeek: Bool, consecutivePerfectWeeks: Int)
 }
 
 // MARK: - Stats

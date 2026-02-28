@@ -1,6 +1,7 @@
 import Foundation
+import IdentifiableByString
 
-struct BJJSessionModel: Codable, Sendable, Identifiable {
+struct BJJSessionModel: Codable, Sendable, Identifiable, StringIdentifiable {
     var sessionId: String
     var date: Date
     var duration: TimeInterval

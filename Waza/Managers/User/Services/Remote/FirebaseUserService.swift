@@ -18,7 +18,7 @@ struct FirebaseUserService: RemoteUserService {
     }
     
     func saveUser(user: UserModel) async throws {
-        try collection.document(user.userId).setData(from: user, merge: true)
+        try await collection.setDocument(id: user.userId, document: user)
     }
     
     func saveUserName(userId: String, name: String) async throws {
@@ -51,7 +51,7 @@ struct FirebaseUserService: RemoteUserService {
     }
     
     func markOnboardingCompleted(userId: String) async throws {
-        try await collection.document(userId).updateData([
+        try await collection.updateDocument(id: userId, dict: [
             UserModel.CodingKeys.didCompleteOnboarding.rawValue: true
         ])
     }
@@ -61,6 +61,6 @@ struct FirebaseUserService: RemoteUserService {
     }
     
     func deleteUser(userId: String) async throws {
-        try await collection.document(userId).delete()
+        try await collection.deleteDocument(id: userId)
     }
 }

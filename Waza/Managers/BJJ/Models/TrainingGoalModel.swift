@@ -1,6 +1,7 @@
 import Foundation
+import IdentifiableByString
 
-struct TrainingGoalModel: Codable, Sendable, Identifiable {
+struct TrainingGoalModel: Codable, Sendable, Identifiable, StringIdentifiable {
     var goalId: String
     var title: String
     var goalDescription: String?

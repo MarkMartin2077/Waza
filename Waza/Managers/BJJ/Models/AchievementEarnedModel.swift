@@ -1,6 +1,7 @@
 import Foundation
+import IdentifiableByString
 
-struct AchievementEarnedModel: Codable, Sendable, Identifiable {
+struct AchievementEarnedModel: Codable, Sendable, Identifiable, StringIdentifiable {
     var achievementEarnedId: String
     var achievementId: String
     var earnedDate: Date
@@ -63,6 +64,11 @@ enum AchievementId: String, CaseIterable {
     case thirtyDayStreak = "thirty_day_streak"
     case firstGoalCompleted = "first_goal"
     case firstBeltPromotion = "first_belt"
+    case firstClassCheckedIn = "first_class_check_in"
+    case fiveClassAttendance = "five_class_attendance"
+    case twentyFiveClassAttendance = "twenty_five_class_attendance"
+    case perfectWeek = "perfect_week"
+    case fourWeekConsistency = "four_week_streak"
 
     var displayName: String {
         switch self {
@@ -75,6 +81,11 @@ enum AchievementId: String, CaseIterable {
         case .thirtyDayStreak: return "30-Day Streak"
         case .firstGoalCompleted: return "Goal Crusher"
         case .firstBeltPromotion: return "Promoted"
+        case .firstClassCheckedIn: return "First Check-In"
+        case .fiveClassAttendance: return "Consistent"
+        case .twentyFiveClassAttendance: return "Dedicated"
+        case .perfectWeek: return "Perfect Week"
+        case .fourWeekConsistency: return "On a Roll"
         }
     }
 
@@ -89,6 +100,11 @@ enum AchievementId: String, CaseIterable {
         case .thirtyDayStreak: return "Trained 30 days in a row"
         case .firstGoalCompleted: return "Completed your first goal"
         case .firstBeltPromotion: return "Recorded your first belt promotion"
+        case .firstClassCheckedIn: return "Checked into your first class"
+        case .fiveClassAttendance: return "Attended 5 classes"
+        case .twentyFiveClassAttendance: return "Attended 25 classes"
+        case .perfectWeek: return "Hit your weekly training target"
+        case .fourWeekConsistency: return "Hit your weekly target 4 weeks in a row"
         }
     }
 
@@ -99,6 +115,11 @@ enum AchievementId: String, CaseIterable {
         case .threeDayStreak, .sevenDayStreak, .thirtyDayStreak: return "flame.fill"
         case .firstGoalCompleted: return "checkmark.seal.fill"
         case .firstBeltPromotion: return "star.fill"
+        case .firstClassCheckedIn: return "location.fill"
+        case .fiveClassAttendance: return "checkmark.circle.fill"
+        case .twentyFiveClassAttendance: return "figure.martial.arts"
+        case .perfectWeek: return "calendar.badge.checkmark"
+        case .fourWeekConsistency: return "flame.fill"
         }
     }
 }

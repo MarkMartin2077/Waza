@@ -31,6 +31,8 @@ class AchievementManager {
             return award(.firstGoalCompleted)
         case .beltPromoted:
             return award(.firstBeltPromotion)
+        case .classCheckedIn(let totalCount, let isPerfectWeek, let consecutivePerfectWeeks):
+            return checkAttendanceAchievements(totalCount: totalCount, isPerfectWeek: isPerfectWeek, consecutivePerfectWeeks: consecutivePerfectWeeks)
         default:
             return []
         }
@@ -45,6 +47,16 @@ class AchievementManager {
         if streak >= 3 { achievements += award(.threeDayStreak) }
         if streak >= 7 { achievements += award(.sevenDayStreak) }
         if streak >= 30 { achievements += award(.thirtyDayStreak) }
+        return achievements
+    }
+
+    private func checkAttendanceAchievements(totalCount: Int, isPerfectWeek: Bool, consecutivePerfectWeeks: Int) -> [AchievementId] {
+        var achievements: [AchievementId] = []
+        if totalCount == 1 { achievements += award(.firstClassCheckedIn) }
+        if totalCount == 5 { achievements += award(.fiveClassAttendance) }
+        if totalCount == 25 { achievements += award(.twentyFiveClassAttendance) }
+        if isPerfectWeek { achievements += award(.perfectWeek) }
+        if consecutivePerfectWeeks >= 4 { achievements += award(.fourWeekConsistency) }
         return achievements
     }
 

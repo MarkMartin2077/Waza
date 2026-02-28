@@ -1,36 +1,23 @@
-import Foundation
-#if !MOCK
 import FirebaseFirestore
-#endif
+import SwiftfulFirestore
 
 @MainActor
 struct FirebaseBeltService: RemoteBeltService {
     private let collectionPath = "belt_history"
 
+    private func collection(for userId: String) -> CollectionReference {
+        Firestore.firestore().collection("users").document(userId).collection(collectionPath)
+    }
+
     func getBeltHistory(userId: String) async throws -> [BeltRecordModel] {
-        #if !MOCK
-        let snapshot = try await Firestore.firestore()
-            .collection("users").document(userId).collection(collectionPath)
-            .getDocuments()
-        return try snapshot.documents.compactMap { try $0.data(as: BeltRecordModel.self) }
-        #else
-        return []
-        #endif
+        try await collection(for: userId).getAllDocuments()
     }
 
     func saveRecord(_ model: BeltRecordModel, userId: String) async throws {
-        #if !MOCK
-        try await Firestore.firestore()
-            .collection("users").document(userId).collection(collectionPath)
-            .document(model.beltRecordId).setData(from: model, merge: true)
-        #endif
+        try await collection(for: userId).setDocument(id: model.beltRecordId, document: model)
     }
 
     func deleteRecord(id: String, userId: String) async throws {
-        #if !MOCK
-        try await Firestore.firestore()
-            .collection("users").document(userId).collection(collectionPath)
-            .document(id).delete()
-        #endif
+        try await collection(for: userId).deleteDocument(id: id)
     }
 }

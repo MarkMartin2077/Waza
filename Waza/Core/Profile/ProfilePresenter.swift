@@ -12,6 +12,9 @@ class ProfilePresenter {
     private(set) var earnedAchievements: [AchievementEarnedModel] = []
     private(set) var isPremium: Bool = false
     private(set) var userName: String = ""
+    private(set) var gyms: [GymLocationModel] = []
+    private(set) var scheduleCount: Int = 0
+    private(set) var classAttendance: [ClassAttendanceModel] = []
 
     var showAddPromotionSheet: Bool = false
     var errorMessage: String?
@@ -47,6 +50,14 @@ class ProfilePresenter {
         earnedAchievements = interactor.earnedAchievements
         isPremium = interactor.isPremium
         userName = interactor.currentUser?.commonNameCalculated ?? interactor.currentUser?.displayName ?? "Grappler"
+        gyms = interactor.gyms
+        scheduleCount = interactor.schedules.count
+        classAttendance = interactor.classAttendance
+    }
+
+    func onManageScheduleTapped() {
+        interactor.trackEvent(event: Event.manageScheduleTapped)
+        router.showClassScheduleView()
     }
 
     func onSettingsButtonPressed() {
@@ -146,6 +157,7 @@ extension ProfilePresenter {
         case addPromotionTapped
         case savePromotionTapped
         case saveFail(error: Error)
+        case manageScheduleTapped
 
         var eventName: String {
             switch self {
@@ -156,6 +168,7 @@ extension ProfilePresenter {
             case .addPromotionTapped:   return "ProfileView_AddPromotion_Tap"
             case .savePromotionTapped:  return "ProfileView_SavePromotion_Tap"
             case .saveFail:             return "ProfileView_Save_Fail"
+            case .manageScheduleTapped: return "ProfileView_ManageSchedule_Tap"
             }
         }
 

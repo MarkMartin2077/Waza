@@ -15,12 +15,20 @@ import NotificationCenter
 // 3. Recieve notification with .onNotificationRecieved() (must be connected before notification triggers)
 
 extension Notification.Name {
-    
+
     /// Notification for updated Firebase Cloud Messaging Token.
     static let fcmToken = Notification.Name("FCMToken")
-    
-    /// Notification for when app is opened from a Push Notification
+
+    /// Notification for when app is opened from a Push Notification.
     static let pushNotification = Notification.Name("PushNotification")
+
+    /// Posted when a geofence detects the user has arrived at a registered gym.
+    /// userInfo: ["gymId": String]
+    static let gymArrival = Notification.Name("GymArrival")
+
+    /// Posted when a class reminder notification is tapped.
+    /// userInfo: ["scheduleId": String]
+    static let classReminder = Notification.Name("ClassReminder")
 }
 
 // The below code, postFCMToken + getFCMToken are examples of this.

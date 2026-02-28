@@ -8,6 +8,8 @@ struct DashboardView: View {
         ScrollView {
             VStack(spacing: 20) {
                 streakIndicator
+                upcomingClassSection
+                weeklyRingSection
                 recentSessionsContent
                 if !presenter.activeGoals.isEmpty {
                     activeGoalsSection
@@ -31,6 +33,33 @@ struct DashboardView: View {
         }
         .onAppear {
             presenter.onViewAppear()
+        }
+    }
+
+    // MARK: - Upcoming Class
+
+    @ViewBuilder
+    private var upcomingClassSection: some View {
+        if let (schedule, gym) = presenter.nextUpcomingClass {
+            UpcomingClassCardView(
+                schedule: schedule,
+                gym: gym,
+                onTap: {
+                    presenter.onCheckInTapped(gym: gym, schedule: schedule)
+                }
+            )
+        }
+    }
+
+    // MARK: - Weekly Ring
+
+    private var weeklyRingSection: some View {
+        WeeklyAttendanceRingView(
+            current: presenter.weeklyAttendanceCount,
+            target: presenter.weeklyAttendanceTarget
+        )
+        .anyButton(.press) {
+            presenter.onScheduleTapped()
         }
     }
 
