@@ -35,6 +35,15 @@ class TrainingStatsPresenter {
         router.showGoalsPlanningView()
     }
 
+    func onAIInsightsTapped() {
+        interactor.trackEvent(event: Event.aiInsightsTapped)
+        router.showAIInsightsView()
+    }
+
+    var isAIAvailable: Bool {
+        interactor.isAIAvailable
+    }
+
     func onPeriodSelected(label: String, range: DateRange) {
         interactor.trackEvent(event: Event.periodChanged(label: label))
         selectedPeriodLabel = label
@@ -52,12 +61,14 @@ extension TrainingStatsPresenter {
         case onAppear
         case periodChanged(label: String)
         case manageGoalsTapped
+        case aiInsightsTapped
 
         var eventName: String {
             switch self {
-            case .onAppear:         return "TrainingStats_Appear"
-            case .periodChanged:    return "TrainingStats_PeriodChange"
+            case .onAppear:          return "TrainingStats_Appear"
+            case .periodChanged:     return "TrainingStats_PeriodChange"
             case .manageGoalsTapped: return "TrainingStats_ManageGoals_Tap"
+            case .aiInsightsTapped:  return "TrainingStats_AIInsights_Tap"
             }
         }
 

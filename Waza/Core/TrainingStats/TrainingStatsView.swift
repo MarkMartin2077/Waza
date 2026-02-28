@@ -15,6 +15,17 @@ struct TrainingStatsView: View {
             .padding(16)
         }
         .navigationTitle("Progress")
+        .toolbar {
+            if presenter.isAIAvailable {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Image(systemName: "apple.intelligence")
+                        .font(.headline)
+                        .anyButton {
+                            presenter.onAIInsightsTapped()
+                        }
+                }
+            }
+        }
         .onAppear {
             presenter.onViewAppear()
         }

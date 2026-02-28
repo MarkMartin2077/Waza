@@ -40,7 +40,7 @@ extension CoreBuilder {
         TabBarView(
             presenter: TabBarPresenter(interactor: interactor),
             tabs: [
-                TabBarScreen(title: "Home", systemImage: "house.fill", screen: {
+                TabBarScreen(title: "Today", systemImage: "sun.max.fill", screen: {
                     RouterView { router in
                         dashboardView(router: router, delegate: DashboardDelegate())
                     }
@@ -77,7 +77,7 @@ extension CoreBuilder {
     return TabBarView(
         presenter: presenter,
         tabs: [
-            TabBarScreen(title: "Home", systemImage: "house.fill", screen: {
+            TabBarScreen(title: "Today", systemImage: "sun.max.fill", screen: {
                 Color.red.any()
             }),
             TabBarScreen(title: "Sessions", systemImage: "figure.martial.arts", screen: {

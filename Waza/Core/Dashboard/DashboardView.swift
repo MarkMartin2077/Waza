@@ -4,8 +4,6 @@ struct DashboardView: View {
     @State var presenter: DashboardPresenter
     let delegate: DashboardDelegate
 
-    @State private var isLoaded: Bool = false
-
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
@@ -13,7 +11,6 @@ struct DashboardView: View {
                 streakHeroCard
                 quickStatsRow
                 upcomingClassSection
-                sessionsSection
             }
             .padding(.horizontal, 16)
             .padding(.top, 8)
@@ -23,18 +20,9 @@ struct DashboardView: View {
             ToolbarItem(placement: .topBarLeading) {
                 devSettingsButton
             }
-            ToolbarItem(placement: .topBarTrailing) {
-                aiInsightsButton
-            }
-            ToolbarItem(placement: .topBarTrailing) {
-                addSessionButton
-            }
         }
         .onAppear {
             presenter.onViewAppear()
-            withAnimation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.3)) {
-                isLoaded = true
-            }
         }
     }
 
@@ -121,62 +109,7 @@ struct DashboardView: View {
         }
     }
 
-    // MARK: - Sessions
-
-    @ViewBuilder
-    private var sessionsSection: some View {
-        if presenter.sessions.isEmpty {
-            ContentUnavailableView(
-                "No Sessions Yet",
-                systemImage: "figure.martial.arts",
-                description: Text("Tap + to log your first training session.")
-            )
-            .padding(.top, 32)
-        } else {
-            sessionsList
-        }
-    }
-
-    private var sessionsList: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("Sessions")
-                .font(.headline)
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-            ForEach(Array(presenter.sessions.enumerated()), id: \.element.id) { sessionIndex, session in
-                SessionRowView(session: session, accentColor: presenter.beltAccentColor)
-                    .anyButton(.press) {
-                        presenter.onSessionTapped(session)
-                    }
-                    .offset(y: isLoaded ? 0 : 20)
-                    .opacity(isLoaded ? 1 : 0)
-                    .animation(
-                        .spring(response: 0.45, dampingFraction: 0.75).delay(Double(sessionIndex) * 0.05),
-                        value: isLoaded
-                    )
-            }
-        }
-    }
-
     // MARK: - Toolbar Buttons
-
-    private var aiInsightsButton: some View {
-        Image(systemName: "apple.intelligence")
-            .font(.headline)
-            .foregroundStyle(.accent)
-            .anyButton {
-                presenter.onAIInsightsTapped()
-            }
-    }
-
-    private var addSessionButton: some View {
-        Image(systemName: "plus")
-            .font(.headline)
-            .foregroundStyle(.accent)
-            .anyButton {
-                presenter.onLogSessionTapped()
-            }
-    }
 
     private var devSettingsButton: some View {
         Image(systemName: "gearshape")
