@@ -30,7 +30,7 @@ class GoalManager {
     /// Synchronous — returns immediately; merges remote-only records in the background.
     func logIn(userId: String) {
         self.userId = userId
-        guard BJJSyncHelper.shouldSync(key: BJJSyncHelper.goalsSyncKey) else { return }
+        guard BJJSyncHelper.shouldSync(key: BJJSyncHelper.goalsSyncKey, userId: userId) else { return }
         Task { await syncFromRemote(userId: userId) }
     }
 
@@ -102,10 +102,12 @@ class GoalManager {
     // MARK: - Wipe
 
     func clearAll() {
+        if let userId {
+            BJJSyncHelper.clearSyncTimestamp(key: BJJSyncHelper.goalsSyncKey, userId: userId)
+        }
         logOut()
         try? localService.deleteAll()
         goals = []
-        BJJSyncHelper.clearSyncTimestamp(key: BJJSyncHelper.goalsSyncKey)
     }
 
     func seedMockDataIfEmpty() {
@@ -128,7 +130,7 @@ class GoalManager {
                 changed = true
             }
             if changed { refresh() }
-            BJJSyncHelper.markSynced(key: BJJSyncHelper.goalsSyncKey)
+            BJJSyncHelper.markSynced(key: BJJSyncHelper.goalsSyncKey, userId: userId)
         } catch {
             logger?.trackEvent(event: BJJSyncErrorEvent(managerName: "GoalManager", context: "Sync", error: error))
         }

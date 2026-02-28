@@ -34,7 +34,7 @@ class BeltManager {
     /// Synchronous — returns immediately; merges remote-only records in the background.
     func logIn(userId: String) {
         self.userId = userId
-        guard BJJSyncHelper.shouldSync(key: BJJSyncHelper.beltsSyncKey) else { return }
+        guard BJJSyncHelper.shouldSync(key: BJJSyncHelper.beltsSyncKey, userId: userId) else { return }
         Task { await syncFromRemote(userId: userId) }
     }
 
@@ -90,10 +90,12 @@ class BeltManager {
     // MARK: - Wipe
 
     func clearAll() {
+        if let userId {
+            BJJSyncHelper.clearSyncTimestamp(key: BJJSyncHelper.beltsSyncKey, userId: userId)
+        }
         logOut()
         try? localService.deleteAll()
         beltHistory = []
-        BJJSyncHelper.clearSyncTimestamp(key: BJJSyncHelper.beltsSyncKey)
     }
 
     func seedMockDataIfEmpty() {
@@ -116,7 +118,7 @@ class BeltManager {
                 changed = true
             }
             if changed { refresh() }
-            BJJSyncHelper.markSynced(key: BJJSyncHelper.beltsSyncKey)
+            BJJSyncHelper.markSynced(key: BJJSyncHelper.beltsSyncKey, userId: userId)
         } catch {
             logger?.trackEvent(event: BJJSyncErrorEvent(managerName: "BeltManager", context: "Sync", error: error))
         }

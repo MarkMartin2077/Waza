@@ -10,19 +10,21 @@ struct BJJSyncHelper {
     static let goalsSyncKey        = "waza.bjj.sync.goals"
     static let achievementsSyncKey = "waza.bjj.sync.achievements"
 
-    /// Returns true if enough time has passed since the last successful sync.
-    static func shouldSync(key: String) -> Bool {
-        guard let lastSync = UserDefaults.standard.object(forKey: key) as? Date else { return true }
+    /// Returns true if enough time has passed since the last successful sync for this user.
+    /// Scoping by userId prevents User A's throttle from blocking User B on a shared device.
+    static func shouldSync(key: String, userId: String) -> Bool {
+        let scopedKey = key + "." + userId
+        guard let lastSync = UserDefaults.standard.object(forKey: scopedKey) as? Date else { return true }
         return Date().timeIntervalSince(lastSync) > throttleInterval
     }
 
-    static func markSynced(key: String) {
-        UserDefaults.standard.set(Date(), forKey: key)
+    static func markSynced(key: String, userId: String) {
+        UserDefaults.standard.set(Date(), forKey: key + "." + userId)
     }
 
     /// Call on sign-out or account deletion so the next login triggers a fresh sync.
-    static func clearSyncTimestamp(key: String) {
-        UserDefaults.standard.removeObject(forKey: key)
+    static func clearSyncTimestamp(key: String, userId: String) {
+        UserDefaults.standard.removeObject(forKey: key + "." + userId)
     }
 }
 

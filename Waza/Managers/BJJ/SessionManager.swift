@@ -23,7 +23,7 @@ class SessionManager {
     /// The app shows locally-cached data at once; remote data merges in silently.
     func logIn(userId: String) {
         self.userId = userId
-        guard BJJSyncHelper.shouldSync(key: BJJSyncHelper.sessionsSyncKey) else { return }
+        guard BJJSyncHelper.shouldSync(key: BJJSyncHelper.sessionsSyncKey, userId: userId) else { return }
         Task { await syncFromRemote(userId: userId) }
     }
 
@@ -122,10 +122,12 @@ class SessionManager {
     // MARK: - Wipe
 
     func clearAll() {
+        if let userId {
+            BJJSyncHelper.clearSyncTimestamp(key: BJJSyncHelper.sessionsSyncKey, userId: userId)
+        }
         logOut()
         try? localService.deleteAll()
         sessions = []
-        BJJSyncHelper.clearSyncTimestamp(key: BJJSyncHelper.sessionsSyncKey)
     }
 
     func seedMockDataIfEmpty() {
@@ -148,7 +150,7 @@ class SessionManager {
                 changed = true
             }
             if changed { refresh() }
-            BJJSyncHelper.markSynced(key: BJJSyncHelper.sessionsSyncKey)
+            BJJSyncHelper.markSynced(key: BJJSyncHelper.sessionsSyncKey, userId: userId)
         } catch {
             logger?.trackEvent(event: BJJSyncErrorEvent(managerName: "SessionManager", context: "Sync", error: error))
         }

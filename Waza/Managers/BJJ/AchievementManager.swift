@@ -22,7 +22,7 @@ class AchievementManager {
     /// Synchronous — returns immediately; merges remote-only records in the background.
     func logIn(userId: String) {
         self.userId = userId
-        guard BJJSyncHelper.shouldSync(key: BJJSyncHelper.achievementsSyncKey) else { return }
+        guard BJJSyncHelper.shouldSync(key: BJJSyncHelper.achievementsSyncKey, userId: userId) else { return }
         Task { await syncFromRemote(userId: userId) }
     }
 
@@ -61,10 +61,12 @@ class AchievementManager {
     // MARK: - Wipe
 
     func clearAll() {
+        if let userId {
+            BJJSyncHelper.clearSyncTimestamp(key: BJJSyncHelper.achievementsSyncKey, userId: userId)
+        }
         logOut()
         try? localService.deleteAll()
         earnedAchievements = []
-        BJJSyncHelper.clearSyncTimestamp(key: BJJSyncHelper.achievementsSyncKey)
     }
 
     // MARK: - Private
@@ -79,7 +81,7 @@ class AchievementManager {
                 changed = true
             }
             if changed { refresh() }
-            BJJSyncHelper.markSynced(key: BJJSyncHelper.achievementsSyncKey)
+            BJJSyncHelper.markSynced(key: BJJSyncHelper.achievementsSyncKey, userId: userId)
         } catch {
             logger?.trackEvent(event: BJJSyncErrorEvent(managerName: "AchievementManager", context: "Sync", error: error))
         }
