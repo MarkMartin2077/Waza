@@ -41,7 +41,13 @@ class CheckInPresenter {
             checkedInRecord = record
             isConfirmed = true
             interactor.trackEvent(event: Event.checkInSuccess)
-            interactor.playHaptic(option: .success)
+            Task {
+                interactor.playHaptic(option: .medium)
+                try? await Task.sleep(nanoseconds: 120_000_000)
+                interactor.playHaptic(option: .heavy)
+                try? await Task.sleep(nanoseconds: 250_000_000)
+                interactor.playHaptic(option: .success)
+            }
             streamAIEncouragement()
             delegate.onCheckedIn?(record)
         } catch {
@@ -64,6 +70,10 @@ class CheckInPresenter {
 
     var gymName: String { delegate.gym.name }
     var scheduleName: String? { delegate.matchedSchedule?.name }
+
+    var beltAccentColor: Color {
+        interactor.currentBeltEnum.accentColor
+    }
 
     // MARK: - AI
 

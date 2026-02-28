@@ -4,10 +4,14 @@ struct DashboardView: View {
     @State var presenter: DashboardPresenter
     let delegate: DashboardDelegate
 
+    @State private var isLoaded: Bool = false
+
     var body: some View {
         ScrollView {
-            VStack(spacing: 20) {
-                statStrip
+            VStack(spacing: 24) {
+                greetingHeader
+                streakHeroCard
+                quickStatsRow
                 upcomingClassSection
                 sessionsSection
             }
@@ -15,7 +19,6 @@ struct DashboardView: View {
             .padding(.top, 8)
             .padding(.bottom, 16)
         }
-        .navigationTitle("Waza")
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 devSettingsButton
@@ -29,25 +32,74 @@ struct DashboardView: View {
         }
         .onAppear {
             presenter.onViewAppear()
+            withAnimation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.3)) {
+                isLoaded = true
+            }
         }
     }
 
-    // MARK: - Stat Strip
+    // MARK: - Greeting Header
 
-    private var statStrip: some View {
+    private var greetingHeader: some View {
+        HStack(alignment: .center) {
+            Text("\(presenter.greeting), \(presenter.userFirstName)")
+                .font(.title2)
+                .fontWeight(.bold)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            Circle()
+                .fill(presenter.beltAccentColor)
+                .frame(width: 12, height: 12)
+        }
+    }
+
+    // MARK: - Streak Hero Card
+
+    private var streakHeroCard: some View {
+        StreakHeroView(
+            streakCount: presenter.streakCount > 0 ? presenter.streakCount : nil,
+            accentColor: presenter.beltAccentColor
+        )
+        .padding(.vertical, 24)
+        .background(presenter.beltAccentColor.opacity(0.08), in: RoundedRectangle(cornerRadius: 20))
+    }
+
+    // MARK: - Quick Stats Row
+
+    private var quickStatsRow: some View {
         HStack(spacing: 0) {
-            Image(systemName: "flame.fill")
-                .foregroundStyle(presenter.streakCount > 0 ? .orange : .secondary)
-            Text(presenter.streakCount > 0 ? " \(presenter.streakCount) day streak" : " No streak")
-                .foregroundStyle(presenter.streakCount > 0 ? .primary : .secondary)
-            Text("  ·  ")
+            quickStatCell(
+                value: "\(presenter.sessionsThisWeek)",
+                label: "sessions",
+                sublabel: "this week"
+            )
+
+            Divider()
+                .frame(height: 48)
+
+            quickStatCell(
+                value: presenter.totalTrainingTimeFormatted,
+                label: "trained",
+                sublabel: "all time"
+            )
+        }
+        .padding(.vertical, 16)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+    }
+
+    private func quickStatCell(value: String, label: String, sublabel: String) -> some View {
+        VStack(spacing: 2) {
+            Text(value)
+                .font(.wazaStat)
+                .foregroundStyle(presenter.beltAccentColor)
+            Text(label)
+                .font(.wazaLabel)
                 .foregroundStyle(.secondary)
-            Text("\(presenter.sessionsThisWeek) this week")
+            Text(sublabel)
+                .font(.wazaLabel)
                 .foregroundStyle(.secondary)
         }
-        .font(.subheadline)
-        .fontWeight(.medium)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity)
     }
 
     // MARK: - Upcoming Class
@@ -61,6 +113,10 @@ struct DashboardView: View {
                 onTap: {
                     presenter.onCheckInTapped(gym: gym, schedule: schedule)
                 }
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 14)
+                    .stroke(presenter.beltAccentColor, lineWidth: 2)
             )
         }
     }
@@ -87,11 +143,17 @@ struct DashboardView: View {
                 .font(.headline)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-            ForEach(presenter.sessions, id: \.id) { session in
+            ForEach(Array(presenter.sessions.enumerated()), id: \.element.id) { sessionIndex, session in
                 SessionRowView(session: session)
                     .anyButton(.press) {
                         presenter.onSessionTapped(session)
                     }
+                    .offset(y: isLoaded ? 0 : 20)
+                    .opacity(isLoaded ? 1 : 0)
+                    .animation(
+                        .spring(response: 0.45, dampingFraction: 0.75).delay(Double(sessionIndex) * 0.05),
+                        value: isLoaded
+                    )
             }
         }
     }

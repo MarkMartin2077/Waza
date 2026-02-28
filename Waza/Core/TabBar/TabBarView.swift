@@ -18,6 +18,7 @@ struct TabBarScreen: Identifiable {
 
 struct TabBarView: View {
 
+    @State var presenter: TabBarPresenter
     var tabs: [TabBarScreen]
 
     var body: some View {
@@ -29,6 +30,7 @@ struct TabBarView: View {
                     }
             }
         }
+        .tint(presenter.beltAccentColor)
     }
 }
 
@@ -36,6 +38,7 @@ extension CoreBuilder {
 
     func tabbarView() -> some View {
         TabBarView(
+            presenter: TabBarPresenter(interactor: interactor),
             tabs: [
                 TabBarScreen(title: "Home", systemImage: "house.fill", screen: {
                     RouterView { router in
@@ -68,20 +71,26 @@ extension CoreBuilder {
 }
 
 #Preview("Fake tabs") {
-    TabBarView(tabs: [
-        TabBarScreen(title: "Home", systemImage: "house.fill", screen: {
-            Color.red.any()
-        }),
-        TabBarScreen(title: "Sessions", systemImage: "figure.martial.arts", screen: {
-            Color.blue.any()
-        }),
-        TabBarScreen(title: "Progress", systemImage: "chart.line.uptrend.xyaxis", screen: {
-            Color.orange.any()
-        }),
-        TabBarScreen(title: "Profile", systemImage: "person.fill", screen: {
-            Color.green.any()
-        })
-    ])
+    let container = DevPreview.shared.container()
+    let presenter = TabBarPresenter(interactor: CoreInteractor(container: container))
+
+    return TabBarView(
+        presenter: presenter,
+        tabs: [
+            TabBarScreen(title: "Home", systemImage: "house.fill", screen: {
+                Color.red.any()
+            }),
+            TabBarScreen(title: "Sessions", systemImage: "figure.martial.arts", screen: {
+                Color.blue.any()
+            }),
+            TabBarScreen(title: "Progress", systemImage: "chart.line.uptrend.xyaxis", screen: {
+                Color.orange.any()
+            }),
+            TabBarScreen(title: "Profile", systemImage: "person.fill", screen: {
+                Color.green.any()
+            })
+        ]
+    )
 }
 
 #Preview("Real tabs") {

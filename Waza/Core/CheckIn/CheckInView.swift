@@ -5,6 +5,7 @@ struct CheckInView: View {
     let delegate: CheckInDelegate
 
     private let moodEmojis = ["😴", "😐", "🙂", "😊", "🔥"]
+    @State private var celebrationOpacity: Double = 0
 
     var body: some View {
         NavigationStack {
@@ -41,6 +42,17 @@ struct CheckInView: View {
             .onAppear {
                 presenter.onViewAppear()
             }
+        }
+        .overlay(alignment: .center) {
+            presenter.beltAccentColor
+                .opacity(celebrationOpacity)
+                .ignoresSafeArea()
+                .allowsHitTesting(false)
+        }
+        .onChange(of: presenter.isConfirmed) { _, isConfirmed in
+            guard isConfirmed else { return }
+            withAnimation(.easeOut(duration: 0.3)) { celebrationOpacity = 0.6 }
+            withAnimation(.easeIn(duration: 0.4).delay(0.3)) { celebrationOpacity = 0 }
         }
     }
 

@@ -50,6 +50,33 @@ class DashboardPresenter {
         currentBelt?.displayTitle ?? interactor.currentBeltEnum.displayName
     }
 
+    var greeting: String {
+        let hour = Calendar.current.component(.hour, from: Date())
+        switch hour {
+        case 5..<12:  return "Good morning"
+        case 12..<17: return "Good afternoon"
+        case 17..<21: return "Good evening"
+        default:      return "Ready to train?"
+        }
+    }
+
+    var userFirstName: String {
+        interactor.currentUserName.components(separatedBy: " ").first ?? "Athlete"
+    }
+
+    var beltAccentColor: Color {
+        interactor.currentBeltEnum.accentColor
+    }
+
+    var totalTrainingTimeFormatted: String {
+        let totalSeconds = Int(sessionStats.totalTrainingTime)
+        let hours = totalSeconds / 3600
+        let minutes = (totalSeconds % 3600) / 60
+        if hours == 0 { return "\(minutes)m" }
+        if minutes == 0 { return "\(hours)h" }
+        return "\(hours)h \(minutes)m"
+    }
+
     // MARK: - User actions
 
     func onLogSessionTapped() {

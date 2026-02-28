@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 
 // MARK: - Session Type
 
@@ -81,6 +82,16 @@ enum BJJBelt: String, Codable, CaseIterable {
         case .purple: return "7B2D8B"
         case .brown: return "795548"
         case .black: return "1A1A1A"
+        }
+    }
+
+    var accentColor: Color {
+        switch self {
+        case .white:  return Color(hex: "5A6A7A")
+        case .blue:   return Color(hex: "1E56A0")
+        case .purple: return Color(hex: "7B2D8B")
+        case .brown:  return Color(hex: "795548")
+        case .black:  return Color(hex: "2C2C2C")
         }
     }
 }

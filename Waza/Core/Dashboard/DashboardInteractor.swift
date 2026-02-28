@@ -6,6 +6,7 @@ protocol DashboardInteractor: GlobalInteractor {
     var sessionStats: SessionStats { get }
     var currentBelt: BeltRecordModel? { get }
     var currentBeltEnum: BJJBelt { get }
+    var currentUserName: String { get }
     var currentStreakData: CurrentStreakData { get }
     var currentExperiencePointsData: CurrentExperiencePointsData { get }
     var isPremium: Bool { get }

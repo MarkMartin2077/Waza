@@ -17,9 +17,7 @@ struct ProfileView: View {
                 headerSection
                 statsSection
                 beltHistorySection
-                if !presenter.earnedAchievements.isEmpty {
-                    achievementsSection
-                }
+                achievementsSection
                 trainingScheduleSection
                 AttendanceCalendarView(attendance: presenter.classAttendance)
             }
@@ -50,6 +48,66 @@ struct ProfileView: View {
         .onDisappear {
             presenter.onViewDisappear(delegate: delegate)
         }
+        .overlay {
+            if let achievementId = presenter.pendingUnlockAchievement {
+                AchievementUnlockModal(
+                    achievementId: achievementId,
+                    accentColor: presenter.beltAccentColor,
+                    onDismiss: { presenter.onAchievementUnlockDismissed() }
+                )
+                .ignoresSafeArea()
+                .transition(.opacity)
+            }
+        }
+        .sheet(item: $presenter.selectedAchievement) { achievementId in
+            achievementDetailSheet(achievementId: achievementId)
+        }
+    }
+
+    // MARK: - Achievement Detail Sheet
+
+    private func achievementDetailSheet(achievementId: AchievementId) -> some View {
+        VStack(spacing: 24) {
+            Spacer()
+
+            Image(systemName: achievementId.iconName)
+                .font(.system(size: 56, weight: .semibold))
+                .foregroundStyle(presenter.beltAccentColor)
+                .frame(width: 110, height: 110)
+                .background(presenter.beltAccentColor.opacity(0.12), in: Circle())
+                .overlay(Circle().stroke(presenter.beltAccentColor.opacity(0.3), lineWidth: 1.5))
+
+            VStack(spacing: 8) {
+                Text(achievementId.displayName)
+                    .font(.wazaTitle)
+                    .multilineTextAlignment(.center)
+
+                Text(achievementId.achievementDescription)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+
+            if let earnedDate = presenter.earnedDate(for: achievementId) {
+                Label(earnedDate.formatted(date: .long, time: .omitted), systemImage: "checkmark.seal.fill")
+                    .font(.caption)
+                    .foregroundStyle(presenter.beltAccentColor)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 8)
+                    .background(presenter.beltAccentColor.opacity(0.1), in: Capsule())
+            } else {
+                Label("Not yet earned", systemImage: "lock.fill")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 8)
+                    .background(Color(.systemGray6), in: Capsule())
+            }
+
+            Spacer()
+        }
+        .padding(.horizontal, 32)
+        .presentationDetents([.medium])
     }
 
     // MARK: - Header
@@ -172,34 +230,28 @@ struct ProfileView: View {
 
     private var achievementsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Achievements")
-                .font(.headline)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            HStack {
+                Text("Achievements")
+                    .font(.headline)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Text(presenter.achievementsProgress)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
 
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 80))], spacing: 12) {
-                ForEach(presenter.earnedAchievements.prefix(9), id: \.id) { achievement in
-                    if let achievementId = AchievementId(rawValue: achievement.achievementId) {
-                        achievementBadge(id: achievementId)
-                    }
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 72))], spacing: 16) {
+                ForEach(AchievementId.allCases, id: \.self) { achievementId in
+                    AchievementBadgeView(
+                        achievementId: achievementId,
+                        isEarned: presenter.isAchievementEarned(achievementId),
+                        accentColor: presenter.beltAccentColor,
+                        onTap: { presenter.onAchievementTapped(achievementId) }
+                    )
                 }
             }
         }
         .padding(16)
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
-    }
-
-    private func achievementBadge(id: AchievementId) -> some View {
-        VStack(spacing: 6) {
-            Image(systemName: id.iconName)
-                .font(.title3)
-                .foregroundStyle(.accent)
-                .frame(width: 44, height: 44)
-                .background(.accent.opacity(0.1), in: Circle())
-            Text(id.displayName)
-                .font(.caption2)
-                .multilineTextAlignment(.center)
-                .lineLimit(2)
-        }
     }
 
     // MARK: - Training Schedule
