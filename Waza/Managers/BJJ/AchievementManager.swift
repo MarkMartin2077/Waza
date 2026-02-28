@@ -114,6 +114,11 @@ class AchievementManager {
         let model = AchievementEarnedModel(achievementId: id.rawValue)
         try? localService.create(model)
         refresh()
+        NotificationCenter.default.post(
+            name: .achievementUnlocked,
+            object: nil,
+            userInfo: ["achievementId": id.rawValue]
+        )
         syncToRemote(model)
         return [id]
     }

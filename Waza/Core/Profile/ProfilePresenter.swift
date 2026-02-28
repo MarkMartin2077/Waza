@@ -23,11 +23,7 @@ class ProfilePresenter {
 
     var showAddPromotionSheet: Bool = false
     var errorMessage: String?
-    var pendingUnlockAchievement: AchievementId?
     var selectedAchievement: AchievementId?
-
-    // Tracks whether the first load has happened to avoid false unlock triggers on appear
-    private var hasLoadedInitially: Bool = false
 
     // Sheet mode — true = initial belt setup (no achievement), false = promotion (triggers achievement)
     private(set) var isInitialBeltSetup: Bool = false
@@ -54,10 +50,6 @@ class ProfilePresenter {
     }
 
     func loadData() {
-        // Capture count before refresh to detect new awards
-        let previousCount = hasLoadedInitially ? earnedAchievements.count : interactor.earnedAchievements.count
-        hasLoadedInitially = true
-
         currentBelt = interactor.currentBelt
         beltHistory = interactor.beltHistory
         sessionStats = interactor.sessionStats
@@ -67,19 +59,6 @@ class ProfilePresenter {
         gyms = interactor.gyms
         scheduleCount = interactor.schedules.count
         classAttendance = interactor.classAttendance
-
-        // Detect newly unlocked achievements (sorted newest first)
-        if earnedAchievements.count > previousCount, pendingUnlockAchievement == nil {
-            let newOnes = Array(earnedAchievements.prefix(earnedAchievements.count - previousCount))
-            if let first = newOnes.first, let achievementId = AchievementId(rawValue: first.achievementId) {
-                pendingUnlockAchievement = achievementId
-                Task {
-                    interactor.playHaptic(option: .heavy)
-                    try? await Task.sleep(nanoseconds: 150_000_000)
-                    interactor.playHaptic(option: .success)
-                }
-            }
-        }
     }
 
     // MARK: - Achievement actions
@@ -95,12 +74,6 @@ class ProfilePresenter {
     func onAchievementTapped(_ id: AchievementId) {
         interactor.trackEvent(event: Event.achievementTapped)
         selectedAchievement = id
-    }
-
-    func onAchievementUnlockDismissed() {
-        interactor.trackEvent(event: Event.achievementUnlockDismissed)
-        interactor.playHaptic(option: .selection)
-        pendingUnlockAchievement = nil
     }
 
     // MARK: - Computed display values
@@ -217,21 +190,19 @@ extension ProfilePresenter {
         case saveFail(error: Error)
         case manageScheduleTapped
         case achievementTapped
-        case achievementUnlockDismissed
 
         var eventName: String {
             switch self {
-            case .onAppear:                   return "ProfileView_Appear"
-            case .onDisappear:                return "ProfileView_Disappear"
-            case .settingsPressed:            return "ProfileView_Settings_Pressed"
-            case .setCurrentBeltTapped:       return "ProfileView_SetCurrentBelt_Tap"
-            case .addPromotionTapped:         return "ProfileView_AddPromotion_Tap"
-            case .cancelPromotion:            return "ProfileView_CancelPromotion_Tap"
-            case .savePromotionTapped:        return "ProfileView_SavePromotion_Tap"
-            case .saveFail:                   return "ProfileView_Save_Fail"
-            case .manageScheduleTapped:       return "ProfileView_ManageSchedule_Tap"
-            case .achievementTapped:          return "ProfileView_Achievement_Tap"
-            case .achievementUnlockDismissed: return "ProfileView_AchievementUnlock_Dismiss"
+            case .onAppear:             return "ProfileView_Appear"
+            case .onDisappear:          return "ProfileView_Disappear"
+            case .settingsPressed:      return "ProfileView_Settings_Pressed"
+            case .setCurrentBeltTapped: return "ProfileView_SetCurrentBelt_Tap"
+            case .addPromotionTapped:   return "ProfileView_AddPromotion_Tap"
+            case .cancelPromotion:      return "ProfileView_CancelPromotion_Tap"
+            case .savePromotionTapped:  return "ProfileView_SavePromotion_Tap"
+            case .saveFail:             return "ProfileView_Save_Fail"
+            case .manageScheduleTapped: return "ProfileView_ManageSchedule_Tap"
+            case .achievementTapped:    return "ProfileView_Achievement_Tap"
             }
         }
 

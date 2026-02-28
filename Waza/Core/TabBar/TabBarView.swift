@@ -22,15 +22,38 @@ struct TabBarView: View {
     var tabs: [TabBarScreen]
 
     var body: some View {
-        TabView {
-            ForEach(tabs) { tab in
-                tab.screen()
-                    .tabItem {
-                        Label(tab.title, systemImage: tab.systemImage)
-                    }
+        // ZStack instead of .overlay — avoids the invisible hit-test layer that
+        // .overlay creates over TabView, which caused toolbar buttons to need two taps.
+        ZStack {
+            TabView {
+                ForEach(tabs) { tab in
+                    tab.screen()
+                        .tabItem {
+                            Label(tab.title, systemImage: tab.systemImage)
+                        }
+                }
+            }
+            .tint(presenter.beltAccentColor)
+            .onReceive(NotificationCenter.default.publisher(for: .achievementUnlocked)) { notification in
+                guard
+                    let userInfo = notification.userInfo as? [String: String],
+                    let rawValue = userInfo["achievementId"],
+                    let id = AchievementId(rawValue: rawValue)
+                else { return }
+                presenter.onAchievementUnlocked(id)
+            }
+
+            if let achievement = presenter.pendingUnlockAchievement {
+                AchievementUnlockModal(
+                    achievementId: achievement,
+                    accentColor: presenter.beltAccentColor,
+                    onDismiss: { presenter.onAchievementDismissed() }
+                )
+                .ignoresSafeArea()
+                .transition(.opacity)
             }
         }
-        .tint(presenter.beltAccentColor)
+        .animation(.easeInOut(duration: 0.2), value: presenter.pendingUnlockAchievement != nil)
     }
 }
 
@@ -46,7 +69,7 @@ extension CoreBuilder {
                     }
                     .any()
                 }),
-                TabBarScreen(title: "Sessions", systemImage: "figure.martial.arts", screen: {
+                TabBarScreen(title: "Sessions", systemImage: "figure.wrestling", screen: {
                     RouterView { router in
                         sessionsView(router: router)
                     }
@@ -80,7 +103,7 @@ extension CoreBuilder {
             TabBarScreen(title: "Today", systemImage: "sun.max.fill", screen: {
                 Color.red.any()
             }),
-            TabBarScreen(title: "Sessions", systemImage: "figure.martial.arts", screen: {
+            TabBarScreen(title: "Sessions", systemImage: "figure.wrestling", screen: {
                 Color.blue.any()
             }),
             TabBarScreen(title: "Progress", systemImage: "chart.line.uptrend.xyaxis", screen: {

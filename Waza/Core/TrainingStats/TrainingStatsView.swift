@@ -104,7 +104,7 @@ struct TrainingStatsView: View {
                 statCard(
                     value: "\(presenter.snapshot.sessionCount)",
                     label: "Sessions",
-                    icon: "figure.martial.arts"
+                    icon: "figure.wrestling"
                 )
                 statCard(
                     value: String(format: "%.1f", presenter.snapshot.totalHours),

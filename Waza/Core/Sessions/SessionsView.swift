@@ -9,7 +9,7 @@ struct SessionsView: View {
                 if presenter.sessions.isEmpty {
                     ContentUnavailableView(
                         "No Sessions Yet",
-                        systemImage: "figure.martial.arts",
+                        systemImage: "figure.wrestling",
                         description: Text("Tap + to log your first training session.")
                     )
                     .padding(.top, 60)

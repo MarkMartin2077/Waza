@@ -48,17 +48,6 @@ struct ProfileView: View {
         .onDisappear {
             presenter.onViewDisappear(delegate: delegate)
         }
-        .overlay {
-            if let achievementId = presenter.pendingUnlockAchievement {
-                AchievementUnlockModal(
-                    achievementId: achievementId,
-                    accentColor: presenter.beltAccentColor,
-                    onDismiss: { presenter.onAchievementUnlockDismissed() }
-                )
-                .ignoresSafeArea()
-                .transition(.opacity)
-            }
-        }
         .sheet(item: $presenter.selectedAchievement) { achievementId in
             achievementDetailSheet(achievementId: achievementId)
         }

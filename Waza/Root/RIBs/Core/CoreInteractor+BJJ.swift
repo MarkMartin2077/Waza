@@ -79,12 +79,23 @@ extension CoreInteractor {
         academy: String? = nil,
         notes: String? = nil
     ) throws -> BeltRecordModel {
+        // Capture current rank BEFORE saving so we can compare direction
+        let beltRanks = BJJBelt.allCases
+        let previousRank = beltRanks.firstIndex(of: currentBeltEnum) ?? 0
+        let previousStripes = currentBelt?.stripes ?? 0
+        let newRank = beltRanks.firstIndex(of: belt) ?? 0
+
         let record = try beltManager.addPromotion(belt: belt, stripes: stripes, date: date, academy: academy, notes: notes)
-        achievementManager.checkAndAward(
-            event: .beltPromoted(belt: belt),
-            sessionStats: sessionStats,
-            streakCount: currentStreakData.currentStreak ?? 0
-        )
+
+        // Only award if the new entry is strictly higher in rank, or the same belt with more stripes
+        let isPromotion = newRank > previousRank || (newRank == previousRank && stripes > previousStripes)
+        if isPromotion {
+            achievementManager.checkAndAward(
+                event: .beltPromoted(belt: belt),
+                sessionStats: sessionStats,
+                streakCount: currentStreakData.currentStreak ?? 0
+            )
+        }
         return record
     }
 

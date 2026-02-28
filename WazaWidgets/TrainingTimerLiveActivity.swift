@@ -32,7 +32,7 @@ struct TrainingTimerLiveActivity: Widget {
             DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
                     HStack(spacing: 10) {
-                        Image(systemName: "figure.martial.arts")
+                        Image(systemName: "figure.wrestling")
                             .font(.title2)
                             .foregroundStyle(context.attributes.accentColor)
                         VStack(alignment: .leading, spacing: 2) {
@@ -61,7 +61,7 @@ struct TrainingTimerLiveActivity: Widget {
                 }
             } compactLeading: {
                 HStack(spacing: 4) {
-                    Image(systemName: "figure.martial.arts")
+                    Image(systemName: "figure.wrestling")
                         .font(.caption2.weight(.bold))
                         .foregroundStyle(context.attributes.accentColor)
                     Text(context.attributes.sessionTypeDisplayName)
@@ -75,7 +75,7 @@ struct TrainingTimerLiveActivity: Widget {
                     .monospacedDigit()
                     .foregroundStyle(context.attributes.accentColor)
             } minimal: {
-                Image(systemName: "figure.martial.arts")
+                Image(systemName: "figure.wrestling")
                     .font(.caption2.weight(.bold))
                     .foregroundStyle(context.attributes.accentColor)
             }
@@ -91,7 +91,7 @@ private struct TrainingTimerLockScreenView: View {
     var body: some View {
         HStack(spacing: 16) {
             // Belt-tinted icon
-            Image(systemName: "figure.martial.arts")
+            Image(systemName: "figure.wrestling")
                 .font(.title)
                 .foregroundStyle(context.attributes.accentColor)
                 .frame(width: 48, height: 48)

@@ -1,5 +1,6 @@
 import Foundation
 import IdentifiableByString
+import SwiftUI
 
 struct AchievementEarnedModel: Codable, Sendable, Identifiable, StringIdentifiable {
     var achievementEarnedId: String
@@ -49,6 +50,39 @@ struct AchievementEarnedModel: Codable, Sendable, Identifiable, StringIdentifiab
             "achievement_id": achievementId
         ]
         return dict.compactMapValues { $0 }
+    }
+}
+
+// MARK: - Achievement Rarity
+
+enum AchievementRarity {
+    case common, rare, epic, legendary
+
+    var displayName: String {
+        switch self {
+        case .common:    return "Common"
+        case .rare:      return "Rare"
+        case .epic:      return "Epic"
+        case .legendary: return "Legendary"
+        }
+    }
+
+    var symbolName: String {
+        switch self {
+        case .common:    return "circle.fill"
+        case .rare:      return "star.fill"
+        case .epic:      return "sparkles"
+        case .legendary: return "crown.fill"
+        }
+    }
+
+    var color: Color {
+        switch self {
+        case .common:    return Color(white: 0.65)
+        case .rare:      return Color(hex: "3B82F6")
+        case .epic:      return Color(hex: "9333EA")
+        case .legendary: return Color(hex: "F59E0B")
+        }
     }
 }
 
@@ -110,16 +144,35 @@ enum AchievementId: String, CaseIterable {
 
     var iconName: String {
         switch self {
-        case .firstSession: return "figure.martial.arts"
+        case .firstSession: return "figure.wrestling"
         case .tenSessions, .fiftySessions, .hundredSessions: return "number.circle.fill"
         case .threeDayStreak, .sevenDayStreak, .thirtyDayStreak: return "flame.fill"
         case .firstGoalCompleted: return "checkmark.seal.fill"
         case .firstBeltPromotion: return "star.fill"
         case .firstClassCheckedIn: return "location.fill"
         case .fiveClassAttendance: return "checkmark.circle.fill"
-        case .twentyFiveClassAttendance: return "figure.martial.arts"
+        case .twentyFiveClassAttendance: return "figure.wrestling"
         case .perfectWeek: return "calendar.badge.checkmark"
         case .fourWeekConsistency: return "flame.fill"
+        }
+    }
+
+    var rarity: AchievementRarity {
+        switch self {
+        case .firstSession:             return .common
+        case .tenSessions:              return .common
+        case .fiftySessions:            return .rare
+        case .hundredSessions:          return .legendary
+        case .threeDayStreak:           return .common
+        case .sevenDayStreak:           return .rare
+        case .thirtyDayStreak:          return .legendary
+        case .firstGoalCompleted:       return .common
+        case .firstBeltPromotion:       return .epic
+        case .firstClassCheckedIn:      return .common
+        case .fiveClassAttendance:      return .common
+        case .twentyFiveClassAttendance: return .rare
+        case .perfectWeek:              return .rare
+        case .fourWeekConsistency:      return .epic
         }
     }
 }
