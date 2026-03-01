@@ -20,19 +20,10 @@ class SessionEntryPresenter {
     var whatWorkedWell: String = ""
     var needsImprovement: String = ""
     var keyInsights: String = ""
-    var selectedFocusAreas: [String] = []
     var showMoodSection: Bool = false
 
     var isLoading: Bool = false
     var errorMessage: String?
-
-    let availableFocusAreas = [
-        "Guard Passing", "Guard Retention", "Back Takes", "Back Defense",
-        "Side Control", "Mount", "Escapes", "Takedowns", "Wrestling",
-        "Leg Locks", "Triangle", "Armbar", "Rear Naked Choke", "D'Arce",
-        "Butterfly Guard", "De La Riva", "Half Guard", "Closed Guard",
-        "Deep Half", "Spider Guard", "X-Guard", "Drilling", "Free Rolling"
-    ]
 
     init(interactor: SessionEntryInteractor, router: SessionEntryRouter, delegate: SessionEntryDelegate) {
         self.interactor = interactor
@@ -50,15 +41,7 @@ class SessionEntryPresenter {
         sessionType = type
     }
 
-    func onFocusAreaTapped(_ area: String) {
-        interactor.trackEvent(event: Event.focusAreaToggled(area: area))
-        interactor.playHaptic(option: .selection)
-        if selectedFocusAreas.contains(area) {
-            selectedFocusAreas.removeAll { $0 == area }
-        } else {
-            selectedFocusAreas.append(area)
-        }
-    }
+    // MARK: - Duration
 
     func onDurationIncreased() {
         guard durationMinutes < 300 else { return }
@@ -108,7 +91,7 @@ class SessionEntryPresenter {
                 sessionType: sessionType,
                 academy: academy.isEmpty ? nil : academy,
                 instructor: instructor.isEmpty ? nil : instructor,
-                focusAreas: selectedFocusAreas,
+                focusAreas: [],
                 notes: notes.isEmpty ? nil : notes,
                 preSessionMood: showMoodSection ? preSessionMood : nil,
                 postSessionMood: showMoodSection ? postSessionMood : nil,
@@ -151,7 +134,6 @@ extension SessionEntryPresenter {
         case saveFail(error: Error)
         case cancelTapped
         case sessionTypeSelected(type: SessionType)
-        case focusAreaToggled(area: String)
 
         var eventName: String {
             switch self {
@@ -161,7 +143,6 @@ extension SessionEntryPresenter {
             case .saveFail:             return "SessionEntryView_Save_Fail"
             case .cancelTapped:         return "SessionEntryView_Cancel_Tap"
             case .sessionTypeSelected:  return "SessionEntryView_SessionType_Select"
-            case .focusAreaToggled:     return "SessionEntryView_FocusArea_Toggle"
             }
         }
 
@@ -173,8 +154,6 @@ extension SessionEntryPresenter {
                 return error.eventParameters
             case .sessionTypeSelected(type: let type):
                 return ["session_type": type.rawValue]
-            case .focusAreaToggled(area: let area):
-                return ["focus_area": area]
             default:
                 return nil
             }

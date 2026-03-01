@@ -50,14 +50,16 @@ class AIInsightsManager {
                 }
                 do {
                     let aiSession = LanguageModelSession()
+                    let classWord = context.classesThisWeek == 1 ? "class" : "classes"
+                    let dayWord = context.streakCount == 1 ? "day" : "days"
                     let progressText = context.weeklyTarget > 0
-                        ? "\(context.classesThisWeek)/\(context.weeklyTarget) classes this week"
-                        : "\(context.classesThisWeek) classes this week"
+                        ? "\(context.classesThisWeek)/\(context.weeklyTarget) \(classWord) this week"
+                        : "\(context.classesThisWeek) \(classWord) this week"
                     let prompt = """
                     You are a warm, encouraging BJJ coach. Write a 1–2 sentence personalised \
                     check-in message addressed to \(context.userName), a \(context.belt.displayName) belt athlete who just arrived at the gym. \
                     Use their name naturally in the message. \
-                    Details: \(progressText), \(context.streakCount) day training streak, \(context.totalAttendance) total classes attended. \
+                    Details: \(progressText), \(context.streakCount) \(dayWord) training streak, \(context.totalAttendance) total classes attended. \
                     Be specific, upbeat and brief.
                     """
                     for try await partial in aiSession.streamResponse(to: prompt) {

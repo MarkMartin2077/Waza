@@ -87,7 +87,7 @@ struct SessionsView: View {
     }
 
     private var sessionCountHeader: some View {
-        Text("\(presenter.sessionCount) sessions logged")
+        Text("^[\(presenter.sessionCount) session](inflect: true) logged")
             .font(.subheadline)
             .foregroundStyle(.secondary)
             .frame(maxWidth: .infinity, alignment: .leading)

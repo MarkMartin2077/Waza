@@ -232,7 +232,7 @@ struct ProfileView: View {
                     }
                 }
                 if presenter.scheduleCount > 0 {
-                    Text("\(presenter.scheduleCount) class\(presenter.scheduleCount == 1 ? "" : "es") scheduled")
+                    Text("^[\(presenter.scheduleCount) class](inflect: true) scheduled")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }

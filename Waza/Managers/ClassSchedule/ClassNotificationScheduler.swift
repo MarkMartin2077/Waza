@@ -10,7 +10,8 @@ struct ClassNotificationScheduler {
 
         let content = UNMutableNotificationContent()
         content.title = "Class Reminder"
-        content.body = "\(schedule.name) at \(gym.name) starts in \(schedule.reminderMinutesBefore) minutes."
+        let minuteWord = schedule.reminderMinutesBefore == 1 ? "minute" : "minutes"
+        content.body = "\(schedule.name) at \(gym.name) starts in \(schedule.reminderMinutesBefore) \(minuteWord)."
         content.sound = .default
 
         var components = DateComponents()

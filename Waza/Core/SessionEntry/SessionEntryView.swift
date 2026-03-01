@@ -4,7 +4,6 @@ struct SessionEntryView: View {
     @State var presenter: SessionEntryPresenter
     let delegate: SessionEntryDelegate
 
-    @State private var focusAreasExpanded = true
     @State private var locationExpanded = false
     @State private var reflectionExpanded = false
     @State private var statsExpanded = false
@@ -17,7 +16,6 @@ struct SessionEntryView: View {
                 VStack(spacing: 16) {
                     typeCard
                     dateAndDurationCard
-                    focusAreasCard
                     locationCard
                     reflectionCard
                     statsCard
@@ -129,46 +127,6 @@ struct SessionEntryView: View {
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
     }
 
-    // MARK: - Focus Areas Card
-
-    private var focusAreasCard: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            collapsibleCardHeader(
-                title: "Focus Areas",
-                badge: presenter.selectedFocusAreas.isEmpty ? nil : "\(presenter.selectedFocusAreas.count)",
-                isExpanded: $focusAreasExpanded
-            )
-
-            if focusAreasExpanded {
-                Divider()
-                    .padding(.horizontal, 16)
-
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 92))], spacing: 8) {
-                    ForEach(presenter.availableFocusAreas, id: \.self) { area in
-                        let isSelected = presenter.selectedFocusAreas.contains(area)
-                        Text(area)
-                            .font(.caption)
-                            .fontWeight(.medium)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 7)
-                            .frame(maxWidth: .infinity)
-                            .background(
-                                isSelected ? presenter.beltAccentColor : Color(.systemGray6),
-                                in: RoundedRectangle(cornerRadius: 8)
-                            )
-                            .foregroundStyle(isSelected ? .white : .primary)
-                            .anyButton(.press) {
-                                presenter.onFocusAreaTapped(area)
-                            }
-                    }
-                }
-                .padding(16)
-            }
-        }
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
-        .clipped()
-    }
-
     // MARK: - Location Card
 
     private var locationCard: some View {
@@ -234,7 +192,7 @@ struct SessionEntryView: View {
             .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 10))
     }
 
-    // MARK: - Stats Card (Mood + Rounds)
+    // MARK: - Stats Card
 
     private var statsCard: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -255,7 +213,6 @@ struct SessionEntryView: View {
                     if presenter.showMoodSection {
                         moodRow(label: "Before", isBefore: true, value: $presenter.preSessionMood)
                         moodRow(label: "After", isBefore: false, value: $presenter.postSessionMood)
-
                         Divider()
                     }
 

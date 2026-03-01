@@ -103,7 +103,7 @@ struct SessionDetailView: View {
             HStack(spacing: 8) {
                 detailPill(icon: "clock", value: presenter.session.durationFormatted)
                 if presenter.session.roundsCount > 0 {
-                    detailPill(icon: "repeat", value: "\(presenter.session.roundsCount) rounds")
+                    detailPill(icon: "repeat", value: "\(presenter.session.roundsCount) \(presenter.session.roundsCount == 1 ? "round" : "rounds")")
                 }
                 if let academy = presenter.session.academy {
                     detailPill(icon: "mappin", value: academy)
