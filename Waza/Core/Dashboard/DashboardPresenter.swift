@@ -54,6 +54,26 @@ class DashboardPresenter {
 
     // MARK: - Computed display values
 
+    var isNewUser: Bool {
+        sessionStats.totalSessions == 0
+    }
+
+    var isBeltSet: Bool {
+        currentBelt != nil
+    }
+
+    var isGymSet: Bool {
+        !interactor.gyms.isEmpty
+    }
+
+    var weeklyGoalText: String {
+        let count = sessionStats.thisWeekSessions
+        if let goal = interactor.trainingGoalPerWeek {
+            return "\(count) / \(goal) this week"
+        }
+        return "\(count) this week"
+    }
+
     var sessionsThisWeek: Int {
         sessionStats.thisWeekSessions
     }
@@ -113,6 +133,10 @@ class DashboardPresenter {
         })
     }
 
+    func onSetBeltTapped() {
+        interactor.trackEvent(event: Event.setBeltTapped)
+    }
+
     func onAIInsightsTapped() {
         interactor.trackEvent(event: Event.aiInsightsTapped)
         router.showAIInsightsView()
@@ -163,6 +187,7 @@ extension DashboardPresenter {
         case aiInsightsTapped
         case upgradeTapped
         case devSettingsTapped
+        case setBeltTapped
 
         var eventName: String {
             switch self {
@@ -173,6 +198,7 @@ extension DashboardPresenter {
             case .aiInsightsTapped:  return "DashboardView_AIInsights_Tap"
             case .upgradeTapped:     return "DashboardView_Upgrade_Tap"
             case .devSettingsTapped: return "DashboardView_DevSettings_Tap"
+            case .setBeltTapped:     return "DashboardView_SetBelt_Tap"
             }
         }
 

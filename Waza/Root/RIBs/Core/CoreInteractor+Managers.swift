@@ -55,6 +55,14 @@ extension CoreInteractor {
         try await userManager.saveOnboardingCompleteForCurrentUser()
     }
 
+    func saveTrainingGoal(sessionsPerWeek: Int) async throws {
+        try await userManager.saveTrainingGoal(sessionsPerWeek: sessionsPerWeek)
+    }
+
+    var trainingGoalPerWeek: Int? {
+        userManager.currentUser?.trainingGoalPerWeek
+    }
+
     func saveUserName(name: String) async throws {
         try await userManager.saveUserName(name: name)
     }

@@ -32,8 +32,12 @@ class MockUserService: RemoteUserService {
         
     }
     
+    func saveTrainingGoal(userId: String, sessionsPerWeek: Int) async throws {
+
+    }
+
     func saveUserName(userId: String, name: String) async throws {
-        
+
     }
     
     func saveUserEmail(userId: String, email: String) async throws {

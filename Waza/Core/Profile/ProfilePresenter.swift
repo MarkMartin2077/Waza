@@ -15,6 +15,7 @@ class ProfilePresenter {
     private(set) var gyms: [GymLocationModel] = []
     private(set) var scheduleCount: Int = 0
     private(set) var classAttendance: [ClassAttendanceModel] = []
+    private(set) var streakCount: Int = 0
 
     var showAddPromotionSheet: Bool = false
     var errorMessage: String?
@@ -53,6 +54,7 @@ class ProfilePresenter {
         gyms = interactor.gyms
         scheduleCount = interactor.schedules.count
         classAttendance = interactor.classAttendance
+        streakCount = interactor.currentStreakData.currentStreak ?? 0
     }
 
     // MARK: - Achievement actions

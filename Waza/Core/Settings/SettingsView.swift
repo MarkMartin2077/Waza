@@ -8,8 +8,10 @@ struct SettingsView: View {
         ScrollView {
             VStack(spacing: 16) {
                 profileHeader
+                appearanceCard
                 accountCard
                 purchaseCard
+                storeCard
                 appInfoCard
             }
             .padding(.horizontal, 16)
@@ -166,6 +168,81 @@ struct SettingsView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
+        }
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+    }
+
+    // MARK: - Appearance Card
+
+    private var appearanceCard: some View {
+        VStack(spacing: 0) {
+            sectionHeader("Appearance")
+
+            HStack(spacing: 14) {
+                settingsIcon(systemName: "moon.circle.fill", color: .indigo)
+                Text("Color Scheme")
+                    .font(.subheadline)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Picker("Color Scheme", selection: Binding(
+                    get: { presenter.colorSchemeIndex },
+                    set: { presenter.colorSchemeIndex = $0 }
+                )) {
+                    Text("System").tag(0)
+                    Text("Light").tag(1)
+                    Text("Dark").tag(2)
+                }
+                .pickerStyle(.segmented)
+                .frame(width: 186)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
+
+            Divider().padding(.leading, 52)
+
+            settingsRow(
+                icon: "bell.badge",
+                iconColor: .red,
+                label: "Notifications",
+                action: { presenter.onNotificationsSettingsPressed() }
+            )
+        }
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+    }
+
+    // MARK: - Store Card
+
+    private var storeCard: some View {
+        VStack(spacing: 0) {
+            sectionHeader("Support Us")
+
+            settingsRow(
+                icon: "star.fill",
+                iconColor: .yellow,
+                label: "Rate the App",
+                action: { presenter.onRateAppPressed() }
+            )
+
+            Divider().padding(.leading, 52)
+
+            ShareLink(
+                item: URL(string: "https://apps.apple.com/app/id123456789")!,
+                message: Text("Check out Waza — the best BJJ training tracker!")
+            ) {
+                HStack(spacing: 14) {
+                    settingsIcon(systemName: "square.and.arrow.up", color: presenter.beltAccentColor)
+                    Text("Share the App")
+                        .font(.subheadline)
+                        .foregroundStyle(.primary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    Image(systemName: "chevron.right")
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 14)
+            }
+            .buttonStyle(.plain)
+            .simultaneousGesture(TapGesture().onEnded { presenter.onShareAppPressed() })
         }
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
     }

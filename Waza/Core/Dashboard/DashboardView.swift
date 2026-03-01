@@ -9,7 +9,11 @@ struct DashboardView: View {
             VStack(spacing: 24) {
                 greetingHeader
                 streakHeroCard
-                quickStatsRow
+                if presenter.isNewUser {
+                    activationCard
+                } else {
+                    quickStatsRow
+                }
                 upcomingClassSection
             }
             .padding(.horizontal, 16)
@@ -50,6 +54,19 @@ struct DashboardView: View {
         )
         .padding(.vertical, 24)
         .background(presenter.beltAccentColor.opacity(0.08), in: RoundedRectangle(cornerRadius: 20))
+    }
+
+    // MARK: - Activation Card (new user)
+
+    private var activationCard: some View {
+        ActivationCardView(
+            userName: presenter.userFirstName == "Athlete" ? nil : presenter.userFirstName,
+            accentColor: presenter.beltAccentColor,
+            isBeltSet: presenter.isBeltSet,
+            isGymSet: presenter.isGymSet,
+            onLogSessionTapped: { presenter.onLogSessionTapped() },
+            onSetBeltTapped: { presenter.onSetBeltTapped() }
+        )
     }
 
     // MARK: - Quick Stats Row

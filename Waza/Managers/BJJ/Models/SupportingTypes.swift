@@ -24,7 +24,7 @@ enum SessionType: String, Codable, CaseIterable {
 
     var iconName: String {
         switch self {
-        case .gi: return "figure.wrestling"
+        case .gi: return "tshirt.fill"
         case .noGi: return "figure.wrestling"
         case .openMat: return "circle.grid.2x2.fill"
         case .competition: return "trophy.fill"

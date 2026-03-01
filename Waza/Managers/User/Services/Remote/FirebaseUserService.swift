@@ -50,6 +50,12 @@ struct FirebaseUserService: RemoteUserService {
         ])
     }
     
+    func saveTrainingGoal(userId: String, sessionsPerWeek: Int) async throws {
+        try await collection.updateDocument(id: userId, dict: [
+            UserModel.CodingKeys.trainingGoalPerWeek.rawValue: sessionsPerWeek
+        ])
+    }
+
     func markOnboardingCompleted(userId: String) async throws {
         try await collection.updateDocument(id: userId, dict: [
             UserModel.CodingKeys.didCompleteOnboarding.rawValue: true

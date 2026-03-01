@@ -33,7 +33,8 @@ struct UserModel: StringIdentifiable, Codable {
     let submittedProfileImage: String?
     let fcmToken: String?
     private(set) var didCompleteOnboarding: Bool?
-    
+    let trainingGoalPerWeek: Int?
+
     init(
         userId: String,
         email: String? = nil,
@@ -51,7 +52,8 @@ struct UserModel: StringIdentifiable, Codable {
         submittedName: String? = nil,
         submittedProfileImage: String? = nil,
         fcmToken: String? = nil,
-        didCompleteOnboarding: Bool? = nil
+        didCompleteOnboarding: Bool? = nil,
+        trainingGoalPerWeek: Int? = nil
     ) {
         self.userId = userId
         self.email = email
@@ -70,8 +72,9 @@ struct UserModel: StringIdentifiable, Codable {
         self.submittedProfileImage = submittedProfileImage
         self.fcmToken = fcmToken
         self.didCompleteOnboarding = didCompleteOnboarding
+        self.trainingGoalPerWeek = trainingGoalPerWeek
     }
-    
+
     init(auth: UserAuthInfo, creationVersion: String?) {
         self.init(
             userId: auth.uid,
@@ -107,6 +110,7 @@ struct UserModel: StringIdentifiable, Codable {
         case submittedProfileImage = "submitted_profile_image"
         case fcmToken = "fcm_token"
         case didCompleteOnboarding = "did_complete_onboarding"
+        case trainingGoalPerWeek = "training_goal_per_week"
     }
     
     var eventParameters: [String: Any] {
@@ -129,7 +133,8 @@ struct UserModel: StringIdentifiable, Codable {
             "user_\(CodingKeys.submittedEmail.rawValue)": submittedEmail,
             "user_\(CodingKeys.submittedProfileImage.rawValue)": submittedProfileImage,
             "user_has_\(CodingKeys.fcmToken.rawValue)": (fcmToken?.count ?? 0) > 0,
-            "user_\(CodingKeys.didCompleteOnboarding.rawValue)": didCompleteOnboarding
+            "user_\(CodingKeys.didCompleteOnboarding.rawValue)": didCompleteOnboarding,
+            "user_\(CodingKeys.trainingGoalPerWeek.rawValue)": trainingGoalPerWeek
         ]
         return dict.compactMapValues({ $0 })
     }

@@ -1,5 +1,4 @@
 import SwiftUI
-import SwiftfulOnboarding
 
 struct OnboardingDelegate {
     var eventParameters: [String: Any]? { nil }
@@ -12,18 +11,21 @@ class OnboardingPresenter {
     private let interactor: OnboardingInteractor
     private let router: OnboardingRouter
 
-    var configuration: OnbConfiguration
+    static let totalPages = 7
+
+    var currentPage: Int = 0
+    var selectedBelt: String = "white"
+    var enteredName: String = ""
+    var selectedGoalId: String?
+    var isCompletingOnboarding: Bool = false
+
+    var isLastPage: Bool {
+        currentPage >= Self.totalPages - 1
+    }
 
     init(interactor: any OnboardingInteractor, router: any OnboardingRouter) {
         self.interactor = interactor
         self.router = router
-        self.configuration = OnboardingPresenter.buildConfiguration(interactor: interactor)
-        // Self is fully initialized — safe to capture weakly in callback
-        self.configuration.onFlowComplete = { [weak self] flowData in
-            Task { @MainActor in
-                self?.handleFlowComplete(flowData: flowData)
-            }
-        }
     }
 
     func onViewAppear(delegate: OnboardingDelegate) {
@@ -34,6 +36,10 @@ class OnboardingPresenter {
         interactor.trackEvent(event: Event.onDisappear(delegate: delegate))
     }
 
+    func onPageChanged(_ page: Int) {
+        interactor.trackEvent(event: Event.pageChanged(page: page))
+    }
+
     func onSkipPressed() {
         interactor.trackEvent(event: Event.onboardingSkipped)
         Task {
@@ -42,213 +48,80 @@ class OnboardingPresenter {
         router.switchToCoreModule()
     }
 
-    // MARK: - Private
+    func onContinuePressed() {
+        interactor.trackEvent(event: Event.continuePressed(fromPage: currentPage))
+        advance()
+    }
 
-    private func handleFlowComplete(flowData: OnbFlowData) {
-        interactor.trackEvent(event: Event.onboardingCompleted)
+    func onBeltSelected(_ beltId: String) {
+        interactor.trackEvent(event: Event.beltSelected(beltId: beltId))
+        selectedBelt = beltId
+        advance()
+    }
 
-        // Persist belt selection — defaults to white if skipped
-        let beltId = flowData.slides.first(where: { $0.slideId == "belt" })?.selections.first?.id ?? "white"
-        let belt = BJJBelt(rawValue: beltId) ?? .white
-        try? interactor.setInitialBelt(belt: belt, stripes: 0, date: Date(), academy: nil, notes: nil)
+    func onGoalSelected(_ goalId: String) {
+        interactor.trackEvent(event: Event.goalSelected(goalId: goalId))
+        selectedGoalId = goalId
+        advance()
+    }
+
+    func onEnableNotificationsTapped() {
+        interactor.trackEvent(event: Event.notificationsEnablePressed)
+        Task {
+            _ = try? await interactor.requestPushAuthorization()
+            advance()
+        }
+    }
+
+    func onSkipNotificationsTapped() {
+        interactor.trackEvent(event: Event.notificationsSkipped)
+        advance()
+    }
+
+    func onEnableLocationTapped() {
+        interactor.trackEvent(event: Event.locationEnablePressed)
+        interactor.requestLocationAuthorization()
+        advance()
+    }
+
+    func onSkipLocationTapped() {
+        interactor.trackEvent(event: Event.locationSkipped)
+        advance()
+    }
+
+    func onFinishPressed() {
+        isCompletingOnboarding = true
+        interactor.trackEvent(event: Event.finishStart)
 
         Task {
-            try? await interactor.markOnboardingComplete()
-        }
+            do {
+                let belt = BJJBelt(rawValue: selectedBelt) ?? .white
+                try interactor.setInitialBelt(belt: belt, stripes: 0, date: Date(), academy: nil, notes: nil)
 
-        router.switchToCoreModule()
-    }
-
-    // MARK: - Configuration builder
-
-    private static func buildConfiguration(interactor: any OnboardingInteractor) -> OnbConfiguration {
-        let accent = Color.accentColor
-        let ctaStyle = makeCTAStyle(accent: accent)
-        let beltOptionStyle = makeBeltOptionStyle(accent: accent)
-        let skipStyle = makeSkipStyle()
-        return OnbConfiguration(
-            headerConfiguration: OnbHeaderConfiguration(
-                headerStyle: .progressBar,
-                headerAlignment: .center,
-                showBackButton: .afterFirstSlide,
-                backButtonColor: .white,
-                progressBarAccentColor: accent
-            ),
-            slides: [
-                trackSlide(ctaStyle: ctaStyle, background: makeWarmGradient()),
-                beltSlide(optionStyle: beltOptionStyle, background: makeNavyGradient()),
-                notificationsSlide(interactor: interactor, ctaStyle: ctaStyle, skipStyle: skipStyle, background: makePurpleGradient()),
-                locationSlide(interactor: interactor, ctaStyle: ctaStyle, skipStyle: skipStyle, background: makeTealGradient()),
-                readySlide(ctaStyle: ctaStyle, background: makeWarmGradient())
-            ],
-            slideDefaults: OnbSlideDefaults(
-                titleFont: .title2.weight(.bold),
-                subtitleFont: .subheadline,
-                contentAlignment: .center,
-                contentSpacing: 36,
-                ctaText: "Continue",
-                ctaButtonStyle: ctaStyle,
-                ctaButtonFormatData: makeCTAFormat(),
-                optionsButtonFormatData: makeOptionFormat(),
-                secondaryButtonFormatData: makeSkipFormat(),
-                background: .solidColor(Color(white: 0.05)),
-                transitionStyle: .fade
-            )
-        )
-    }
-
-    // MARK: - Style factories
-
-    private static func makeCTAStyle(accent: Color) -> OnbButtonStyleType {
-        .duolingo(backgroundColor: accent, textColor: .white, shadowColor: accent.opacity(0.5))
-    }
-
-    private static func makeCTAFormat() -> OnbButtonFormatData {
-        OnbButtonFormatData(pressStyle: .press, font: .subheadline.weight(.semibold), height: .fixed(48), cornerRadius: 14)
-    }
-
-    private static func makeBeltOptionStyle(accent: Color) -> OnbButtonStyleType {
-        .solidOutline(
-            backgroundColor: .white.opacity(0.07),
-            textColor: .white,
-            borderColor: .white.opacity(0.15),
-            selectedBackgroundColor: accent.opacity(0.2),
-            selectedTextColor: .white,
-            selectedBorderColor: accent
-        )
-    }
-
-    private static func makeOptionFormat() -> OnbButtonFormatData {
-        OnbButtonFormatData(pressStyle: .press, font: .subheadline, height: .fixed(46), cornerRadius: 12)
-    }
-
-    private static func makeSkipStyle() -> OnbButtonStyleType {
-        .outline(textColor: .white.opacity(0.45), borderColor: .white.opacity(0.15))
-    }
-
-    private static func makeSkipFormat() -> OnbButtonFormatData {
-        OnbButtonFormatData(pressStyle: .press, font: .subheadline, height: .fixed(44), cornerRadius: 14)
-    }
-
-    // MARK: - Gradient factories
-
-    private static func makeWarmGradient() -> OnbBackgroundType {
-        .gradient(
-            Gradient(colors: [Color(white: 0.08), Color(red: 0.07, green: 0.04, blue: 0.01)]),
-            startPoint: .topLeading, endPoint: .bottomTrailing
-        )
-    }
-
-    private static func makeNavyGradient() -> OnbBackgroundType {
-        .gradient(
-            Gradient(colors: [Color(white: 0.06), Color(red: 0.02, green: 0.04, blue: 0.10)]),
-            startPoint: .topLeading, endPoint: .bottomTrailing
-        )
-    }
-
-    private static func makePurpleGradient() -> OnbBackgroundType {
-        .gradient(
-            Gradient(colors: [Color(white: 0.06), Color(red: 0.05, green: 0.02, blue: 0.10)]),
-            startPoint: .topLeading, endPoint: .bottomTrailing
-        )
-    }
-
-    private static func makeTealGradient() -> OnbBackgroundType {
-        .gradient(
-            Gradient(colors: [Color(white: 0.06), Color(red: 0.01, green: 0.07, blue: 0.06)]),
-            startPoint: .topLeading, endPoint: .bottomTrailing
-        )
-    }
-
-    private static func trackSlide(ctaStyle: OnbButtonStyleType, background: OnbBackgroundType) -> OnbSlideType {
-        .regular(
-            id: "track",
-            title: "Your BJJ journal.",
-            subtitle: "Log sessions, track submissions, and discover the gaps in your game.",
-            media: .bundleImage(named: "waza-logo-white", size: .large, cornerRadius: 0),
-            ctaButtonStyle: ctaStyle,
-            background: background,
-            showBackButton: false
-        )
-    }
-
-    private static func beltSlide(optionStyle: OnbButtonStyleType, background: OnbBackgroundType) -> OnbSlideType {
-        .multipleChoice(
-            id: "belt",
-            title: "What's your current belt?",
-            subtitle: "You can update this anytime in your profile.",
-            options: [
-                OnbChoiceOption(id: "white", content: OnbButtonContentData(text: "White", secondaryContent: .emoji("⬜️"), secondaryContentPlacement: .leading)),
-                OnbChoiceOption(id: "blue", content: OnbButtonContentData(text: "Blue", secondaryContent: .emoji("🟦"), secondaryContentPlacement: .leading)),
-                OnbChoiceOption(id: "purple", content: OnbButtonContentData(text: "Purple", secondaryContent: .emoji("🟣"), secondaryContentPlacement: .leading)),
-                OnbChoiceOption(id: "brown", content: OnbButtonContentData(text: "Brown", secondaryContent: .emoji("🟫"), secondaryContentPlacement: .leading)),
-                OnbChoiceOption(id: "black", content: OnbButtonContentData(text: "Black", secondaryContent: .emoji("⬛️"), secondaryContentPlacement: .leading))
-            ],
-            optionsButtonStyle: optionStyle,
-            selectionBehavior: .single(autoAdvance: true),
-            isGrid: false,
-            background: background
-        )
-    }
-
-    private static func notificationsSlide(
-        interactor: any OnboardingInteractor,
-        ctaStyle: OnbButtonStyleType,
-        skipStyle: OnbButtonStyleType,
-        background: OnbBackgroundType
-    ) -> OnbSlideType {
-        .primaryAction(
-            id: "notifications",
-            title: "Never miss a class.",
-            subtitle: "Get a reminder before each session so you always show up ready to train.",
-            media: .systemIcon(named: "bell.badge.fill", size: .large),
-            ctaText: "Enable Notifications",
-            ctaButtonStyle: ctaStyle,
-            secondaryButtonText: "Not Now",
-            secondaryButtonStyle: skipStyle,
-            onDidPressPrimaryButton: { advance in
-                Task {
-                    _ = try? await interactor.requestPushAuthorization()
-                    advance()
+                let trimmedName = enteredName.trimmingCharacters(in: .whitespaces)
+                if !trimmedName.isEmpty {
+                    try await interactor.saveUserName(name: trimmedName)
                 }
-            },
-            background: background
-        )
+
+                if let goalId = selectedGoalId, let goal = Int(goalId) {
+                    try await interactor.saveTrainingGoal(sessionsPerWeek: goal)
+                }
+
+                try await interactor.markOnboardingComplete()
+                interactor.trackEvent(event: Event.finishSuccess)
+                router.switchToCoreModule()
+            } catch {
+                router.showAlert(error: error)
+                interactor.trackEvent(event: Event.finishFail(error: error))
+            }
+
+            isCompletingOnboarding = false
+        }
     }
 
-    private static func locationSlide(
-        interactor: any OnboardingInteractor,
-        ctaStyle: OnbButtonStyleType,
-        skipStyle: OnbButtonStyleType,
-        background: OnbBackgroundType
-    ) -> OnbSlideType {
-        .primaryAction(
-            id: "location",
-            title: "Auto check-in at your gym.",
-            subtitle: "Waza detects when you arrive and logs your attendance automatically. Your location is never stored or shared.",
-            media: .systemIcon(named: "location.fill", size: .large),
-            ctaText: "Enable Location",
-            ctaButtonStyle: ctaStyle,
-            secondaryButtonText: "Not Now",
-            secondaryButtonStyle: skipStyle,
-            onDidPressPrimaryButton: { advance in
-                interactor.requestLocationAuthorization()
-                advance()
-            },
-            background: background
-        )
-    }
-
-    private static func readySlide(ctaStyle: OnbButtonStyleType, background: OnbBackgroundType) -> OnbSlideType {
-        .regular(
-            id: "ready",
-            title: "You're all set.",
-            subtitle: "Start logging sessions and watch your game evolve.",
-            media: .bundleImage(named: "waza-logo-white", size: .large, cornerRadius: 0),
-            ctaText: "Let's Train",
-            ctaButtonStyle: ctaStyle,
-            background: background
-        )
+    private func advance() {
+        guard !isLastPage else { return }
+        currentPage += 1
     }
 }
 
@@ -259,15 +132,35 @@ extension OnboardingPresenter {
     enum Event: LoggableEvent {
         case onAppear(delegate: OnboardingDelegate)
         case onDisappear(delegate: OnboardingDelegate)
-        case onboardingCompleted
+        case pageChanged(page: Int)
+        case continuePressed(fromPage: Int)
         case onboardingSkipped
+        case beltSelected(beltId: String)
+        case goalSelected(goalId: String)
+        case notificationsEnablePressed
+        case notificationsSkipped
+        case locationEnablePressed
+        case locationSkipped
+        case finishStart
+        case finishSuccess
+        case finishFail(error: Error)
 
         var eventName: String {
             switch self {
-            case .onAppear:             return "OnboardingView_Appear"
-            case .onDisappear:          return "OnboardingView_Disappear"
-            case .onboardingCompleted:  return "OnboardingView_Completed"
-            case .onboardingSkipped:    return "OnboardingView_Skipped"
+            case .onAppear:                    return "OnboardingView_Appear"
+            case .onDisappear:                 return "OnboardingView_Disappear"
+            case .pageChanged:                 return "OnboardingView_Page_Changed"
+            case .continuePressed:             return "OnboardingView_Continue_Pressed"
+            case .onboardingSkipped:           return "OnboardingView_Skipped"
+            case .beltSelected:                return "OnboardingView_Belt_Selected"
+            case .goalSelected:                return "OnboardingView_Goal_Selected"
+            case .notificationsEnablePressed:  return "OnboardingView_Notifications_Enable"
+            case .notificationsSkipped:        return "OnboardingView_Notifications_Skip"
+            case .locationEnablePressed:       return "OnboardingView_Location_Enable"
+            case .locationSkipped:             return "OnboardingView_Location_Skip"
+            case .finishStart:                 return "OnboardingView_Finish_Start"
+            case .finishSuccess:               return "OnboardingView_Finish_Success"
+            case .finishFail:                  return "OnboardingView_Finish_Fail"
             }
         }
 
@@ -275,6 +168,16 @@ extension OnboardingPresenter {
             switch self {
             case .onAppear(delegate: let delegate), .onDisappear(delegate: let delegate):
                 return delegate.eventParameters
+            case .pageChanged(page: let page):
+                return ["page": page]
+            case .continuePressed(fromPage: let page):
+                return ["from_page": page]
+            case .beltSelected(beltId: let beltId):
+                return ["belt_id": beltId]
+            case .goalSelected(goalId: let goalId):
+                return ["goal_id": goalId]
+            case .finishFail(error: let error):
+                return error.eventParameters
             default:
                 return nil
             }
@@ -282,6 +185,8 @@ extension OnboardingPresenter {
 
         var type: LogType {
             switch self {
+            case .finishFail:
+                return .severe
             default:
                 return .analytic
             }

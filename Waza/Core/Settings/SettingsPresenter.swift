@@ -16,7 +16,24 @@ class SettingsPresenter {
 
     private(set) var isPremium: Bool = false
     private(set) var isAnonymousUser: Bool = false
-    
+
+    private let colorSchemeKey = "waza_colorSchemeIndex"
+
+    var colorSchemeIndex: Int = UserDefaults.standard.integer(forKey: "waza_colorSchemeIndex") {
+        didSet {
+            UserDefaults.standard.set(colorSchemeIndex, forKey: colorSchemeKey)
+            interactor.trackEvent(event: Event.colorSchemeChanged(index: colorSchemeIndex))
+        }
+    }
+
+    var resolvedColorScheme: ColorScheme? {
+        switch colorSchemeIndex {
+        case 1: return .light
+        case 2: return .dark
+        default: return nil
+        }
+    }
+
     init(interactor: SettingsInteractor, router: SettingsRouter) {
         self.interactor = interactor
         self.router = router
@@ -130,11 +147,28 @@ class SettingsPresenter {
     
     func onCreateAccountPressed() {
         interactor.trackEvent(event: Event.createAccountPressed)
-        
+
         let delegate = CreateAccountDelegate()
         router.showCreateAccountView(delegate: delegate, onDismiss: {
             self.setAnonymousAccountStatus()
         })
+    }
+
+    func onRateAppPressed() {
+        interactor.trackEvent(event: Event.rateAppPressed)
+        let urlString = "itms-apps://itunes.apple.com/app/id123456789?action=write-review"
+        guard let url = URL(string: urlString), UIApplication.shared.canOpenURL(url) else { return }
+        UIApplication.shared.open(url)
+    }
+
+    func onShareAppPressed() {
+        interactor.trackEvent(event: Event.shareAppPressed)
+    }
+
+    func onNotificationsSettingsPressed() {
+        interactor.trackEvent(event: Event.notificationsSettingsPressed)
+        guard let url = URL(string: UIApplication.openNotificationSettingsURLString) else { return }
+        UIApplication.shared.open(url)
     }
 
 }
@@ -153,32 +187,42 @@ extension SettingsPresenter {
         case deleteAccountFail(error: Error)
         case createAccountPressed
         case contactUsPressed
+        case colorSchemeChanged(index: Int)
+        case rateAppPressed
+        case shareAppPressed
+        case notificationsSettingsPressed
 
         var eventName: String {
             switch self {
-            case .onAppear:                     return "SettingsView_Appear"
-            case .onDisappear:                  return "SettingsView_Disappear"
-            case .signOutStart:                 return "SettingsView_SignOut_Start"
-            case .signOutSuccess:               return "SettingsView_SignOut_Success"
-            case .signOutFail:                  return "SettingsView_SignOut_Fail"
-            case .deleteAccountStart:           return "SettingsView_DeleteAccount_Start"
-            case .deleteAccountStartConfirm:    return "SettingsView_DeleteAccount_StartConfirm"
-            case .deleteAccountSuccess:         return "SettingsView_DeleteAccount_Success"
-            case .deleteAccountFail:            return "SettingsView_DeleteAccount_Fail"
-            case .createAccountPressed:         return "SettingsView_CreateAccount_Pressed"
-            case .contactUsPressed:             return "SettingsView_ContactUs_Pressed"
+            case .onAppear:                       return "SettingsView_Appear"
+            case .onDisappear:                    return "SettingsView_Disappear"
+            case .signOutStart:                   return "SettingsView_SignOut_Start"
+            case .signOutSuccess:                 return "SettingsView_SignOut_Success"
+            case .signOutFail:                    return "SettingsView_SignOut_Fail"
+            case .deleteAccountStart:             return "SettingsView_DeleteAccount_Start"
+            case .deleteAccountStartConfirm:      return "SettingsView_DeleteAccount_StartConfirm"
+            case .deleteAccountSuccess:           return "SettingsView_DeleteAccount_Success"
+            case .deleteAccountFail:              return "SettingsView_DeleteAccount_Fail"
+            case .createAccountPressed:           return "SettingsView_CreateAccount_Pressed"
+            case .contactUsPressed:               return "SettingsView_ContactUs_Pressed"
+            case .colorSchemeChanged:             return "SettingsView_ColorScheme_Changed"
+            case .rateAppPressed:                 return "SettingsView_RateApp_Pressed"
+            case .shareAppPressed:                return "SettingsView_ShareApp_Pressed"
+            case .notificationsSettingsPressed:   return "SettingsView_Notifications_Pressed"
             }
         }
-        
+
         var parameters: [String: Any]? {
             switch self {
             case .signOutFail(error: let error), .deleteAccountFail(error: let error):
                 return error.eventParameters
+            case .colorSchemeChanged(index: let index):
+                return ["color_scheme_index": index]
             default:
                 return nil
             }
         }
-        
+
         var type: LogType {
             switch self {
             case .signOutFail, .deleteAccountFail:

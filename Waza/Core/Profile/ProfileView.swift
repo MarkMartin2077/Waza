@@ -87,10 +87,11 @@ struct ProfileView: View {
     // MARK: - Stats
 
     private var statsSection: some View {
-        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
             profileStat(value: "\(presenter.sessionStats.totalSessions)", label: "Sessions")
             profileStat(value: "\(presenter.sessionStats.thisWeekSessions)", label: "This Week")
             profileStat(value: presenter.totalTrainingHoursText, label: "Hrs Trained")
+            profileStat(value: "\(presenter.streakCount)", label: "Day Streak")
         }
     }
 

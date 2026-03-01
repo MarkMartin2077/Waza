@@ -76,6 +76,11 @@ class UserManager {
         try await remote.markOnboardingCompleted(userId: uid)
     }
     
+    func saveTrainingGoal(sessionsPerWeek: Int) async throws {
+        let uid = try currentUserId()
+        try await remote.saveTrainingGoal(userId: uid, sessionsPerWeek: sessionsPerWeek)
+    }
+
     func saveUserName(name: String) async throws {
         let uid = try currentUserId()
         try await remote.saveUserName(userId: uid, name: name)

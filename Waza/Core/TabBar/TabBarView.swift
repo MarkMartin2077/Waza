@@ -21,6 +21,16 @@ struct TabBarView: View {
     @State var presenter: TabBarPresenter
     var tabs: [TabBarScreen]
 
+    @AppStorage("waza_colorSchemeIndex") private var colorSchemeIndex: Int = 0
+
+    private var resolvedColorScheme: ColorScheme? {
+        switch colorSchemeIndex {
+        case 1: return .light
+        case 2: return .dark
+        default: return nil
+        }
+    }
+
     var body: some View {
         // ZStack instead of .overlay — avoids the invisible hit-test layer that
         // .overlay creates over TabView, which caused toolbar buttons to need two taps.
@@ -54,6 +64,7 @@ struct TabBarView: View {
             }
         }
         .animation(.easeInOut(duration: 0.2), value: presenter.pendingUnlockAchievement != nil)
+        .preferredColorScheme(resolvedColorScheme)
     }
 }
 
@@ -63,13 +74,7 @@ extension CoreBuilder {
         TabBarView(
             presenter: TabBarPresenter(interactor: interactor),
             tabs: [
-                TabBarScreen(title: "Today", systemImage: "sun.max.fill", screen: {
-                    RouterView { router in
-                        dashboardView(router: router, delegate: DashboardDelegate())
-                    }
-                    .any()
-                }),
-                TabBarScreen(title: "Sessions", systemImage: "figure.wrestling", screen: {
+                TabBarScreen(title: "Sessions", systemImage: "list.bullet", screen: {
                     RouterView { router in
                         sessionsView(router: router)
                     }
@@ -100,10 +105,7 @@ extension CoreBuilder {
     return TabBarView(
         presenter: presenter,
         tabs: [
-            TabBarScreen(title: "Today", systemImage: "sun.max.fill", screen: {
-                Color.red.any()
-            }),
-            TabBarScreen(title: "Sessions", systemImage: "figure.wrestling", screen: {
+            TabBarScreen(title: "Sessions", systemImage: "list.bullet", screen: {
                 Color.blue.any()
             }),
             TabBarScreen(title: "Progress", systemImage: "chart.line.uptrend.xyaxis", screen: {
