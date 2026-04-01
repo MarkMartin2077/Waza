@@ -8,15 +8,20 @@ struct DashboardView: View {
         ScrollView {
             VStack(spacing: 24) {
                 greetingHeader
+                    .scaleAppear(delay: 0)
                 logSessionButton
+                    .scaleAppear(delay: 0.05)
 
                 if presenter.isNewUser {
                     activationCard
+                        .scaleAppear(delay: 0.1)
                 } else {
                     thisWeekSection
+                        .scaleAppear(delay: 0.1)
                 }
 
                 upcomingClassSection
+                    .scaleAppear(delay: 0.15)
                 recentSessionsSection
             }
             .padding(.horizontal, 16)
@@ -112,12 +117,14 @@ struct DashboardView: View {
                 Text(value)
                     .font(.wazaTitle)
                     .foregroundStyle(Color.wazaAccent)
+                    .contentTransition(.numericText())
             }
             Text(label)
                 .font(.wazaLabel)
                 .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity)
+        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: value)
     }
 
     // MARK: - Upcoming Class
@@ -147,8 +154,9 @@ struct DashboardView: View {
             VStack(alignment: .leading, spacing: 10) {
                 sectionHeader("Recent Sessions")
 
-                ForEach(presenter.sessions.prefix(3), id: \.id) { session in
+                ForEach(Array(presenter.sessions.prefix(3).enumerated()), id: \.element.id) { index, session in
                     SessionRowView(session: session, accentColor: Color.wazaAccent)
+                        .staggeredAppear(index: index)
                         .anyButton {
                             presenter.onSessionTapped(session)
                         }

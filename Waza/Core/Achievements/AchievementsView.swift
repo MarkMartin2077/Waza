@@ -7,13 +7,14 @@ struct AchievementsView: View {
         List {
             ForEach(presenter.sections, id: \.category) { section in
                 Section {
-                    ForEach(section.achievements, id: \.self) { achievementId in
+                    ForEach(Array(section.achievements.enumerated()), id: \.element) { index, achievementId in
                         AchievementRowView(
                             achievementId: achievementId,
                             isEarned: presenter.isEarned(achievementId),
                             earnedDate: presenter.earnedDate(for: achievementId),
                             onTap: { presenter.onAchievementTapped(achievementId) }
                         )
+                        .staggeredAppear(index: index)
                         .listRowInsets(EdgeInsets(top: 10, leading: 16, bottom: 10, trailing: 16))
                     }
                 } header: {

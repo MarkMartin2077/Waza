@@ -9,10 +9,14 @@ struct TrainingStatsView: View {
             VStack(spacing: 24) {
                 if !presenter.activeGoals.isEmpty {
                     activeGoalsSection
+                        .scaleAppear(delay: 0)
                 }
                 periodPicker
+                    .scaleAppear(delay: 0.05)
                 sessionStatsSection
+                    .scaleAppear(delay: 0.1)
                 typeBreakdownSection
+                    .scaleAppear(delay: 0.15)
             }
             .padding(16)
         }
@@ -56,7 +60,7 @@ struct TrainingStatsView: View {
                     }
             }
 
-            ForEach(presenter.activeGoals, id: \.goalId) { goal in
+            ForEach(Array(presenter.activeGoals.enumerated()), id: \.element.goalId) { index, goal in
                 let progress = presenter.computedProgress(for: goal)
                 HStack(spacing: 10) {
                     Image(systemName: goal.goalMetric?.iconName ?? goal.goalType.iconName)
@@ -68,12 +72,15 @@ struct TrainingStatsView: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                         ProgressView(value: min(progress, 1.0))
                             .tint(Color.wazaAccent)
+                            .animation(.easeOut(duration: 0.5), value: progress)
                     }
                     Text("\(Int(progress * 100))%")
                         .font(.caption)
                         .foregroundStyle(.secondary)
+                        .contentTransition(.numericText())
                         .frame(width: 36, alignment: .trailing)
                 }
+                .staggeredAppear(index: index)
             }
         }
         .padding(14)
@@ -83,15 +90,18 @@ struct TrainingStatsView: View {
     private var periodPicker: some View {
         HStack(spacing: 0) {
             ForEach(presenter.periodLabels, id: \.self) { label in
+                let isSelected = presenter.selectedPeriodLabel == label
                 Text(label)
                     .font(.subheadline)
-                    .fontWeight(presenter.selectedPeriodLabel == label ? .semibold : .regular)
+                    .fontWeight(isSelected ? .semibold : .regular)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 8)
-                    .background(presenter.selectedPeriodLabel == label ? Color.wazaAccent : Color(.systemGray6))
-                    .foregroundStyle(presenter.selectedPeriodLabel == label ? .white : .primary)
+                    .background(isSelected ? Color.wazaAccent : Color(.systemGray6))
+                    .foregroundStyle(isSelected ? .white : .primary)
                     .anyButton {
-                        presenter.onPeriodSelected(label: label)
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                            presenter.onPeriodSelected(label: label)
+                        }
                     }
             }
         }
@@ -167,6 +177,7 @@ struct TrainingStatsView: View {
                     RoundedRectangle(cornerRadius: 4)
                         .fill(Color.wazaAccent)
                         .frame(width: geo.size.width * stat.percentage, height: 6)
+                        .animation(.easeOut(duration: 0.5), value: stat.percentage)
                 }
             }
             .frame(height: 6)
@@ -180,6 +191,7 @@ struct TrainingStatsView: View {
                 .foregroundStyle(Color.wazaAccent)
             Text(value)
                 .font(.wazaTitle)
+                .contentTransition(.numericText())
             Text(label)
                 .font(.caption2)
                 .foregroundStyle(.secondary)
@@ -188,6 +200,7 @@ struct TrainingStatsView: View {
         .frame(maxWidth: .infinity)
         .padding(12)
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: value)
     }
 }
 

@@ -67,6 +67,8 @@ struct SessionEntryView: View {
                             in: RoundedRectangle(cornerRadius: 12)
                         )
                         .foregroundStyle(isSelected ? .white : .primary)
+                        .scaleEffect(isSelected ? 1.0 : 0.96)
+                        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isSelected)
                         .anyButton(.press) {
                             presenter.onSessionTypeSelected(sessionType)
                         }
@@ -104,6 +106,8 @@ struct SessionEntryView: View {
                             in: Capsule()
                         )
                         .foregroundStyle(isSelected ? .white : .primary)
+                        .scaleEffect(isSelected ? 1.0 : 0.96)
+                        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isSelected)
                         .anyButton(.press) {
                             presenter.onFocusAreaToggled(area)
                         }
@@ -155,7 +159,9 @@ struct SessionEntryView: View {
                     Text(presenter.durationText)
                         .font(.wazaStat)
                         .foregroundStyle(Color.wazaAccent)
+                        .contentTransition(.numericText())
                         .frame(minWidth: 90, alignment: .center)
+                        .animation(.spring(response: 0.3, dampingFraction: 0.8), value: presenter.durationMinutes)
 
                     Image(systemName: "plus.circle.fill")
                         .font(.title)
@@ -185,6 +191,7 @@ struct SessionEntryView: View {
             if locationExpanded {
                 Divider()
                     .padding(.horizontal, 16)
+                    .transition(.opacity)
 
                 VStack(spacing: 10) {
                     if !presenter.savedGyms.isEmpty {
@@ -371,18 +378,21 @@ struct SessionEntryView: View {
 
             HStack(spacing: 8) {
                 ForEach(1...5, id: \.self) { rating in
+                    let isSelected = value.wrappedValue == rating
                     Text(moodEmojis[rating - 1])
                         .font(.title3)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 6)
                         .background(
-                            value.wrappedValue == rating ? Color.wazaAccent.opacity(0.15) : Color.clear,
+                            isSelected ? Color.wazaAccent.opacity(0.15) : Color.clear,
                             in: RoundedRectangle(cornerRadius: 12)
                         )
                         .overlay(
                             RoundedRectangle(cornerRadius: 12)
-                                .stroke(value.wrappedValue == rating ? Color.wazaAccent : Color.clear, lineWidth: 1.5)
+                                .stroke(isSelected ? Color.wazaAccent : Color.clear, lineWidth: 1.5)
                         )
+                        .scaleEffect(isSelected ? 1.15 : 1.0)
+                        .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isSelected)
                         .anyButton {
                             presenter.onMoodSelected(isBefore: isBefore, rating: rating)
                         }

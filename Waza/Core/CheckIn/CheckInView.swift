@@ -87,6 +87,7 @@ struct CheckInView: View {
 
             HStack(spacing: 12) {
                 ForEach(1...5, id: \.self) { rating in
+                    let isSelected = presenter.selectedMood == rating
                     VStack(spacing: 4) {
                         Text(moodEmojis[rating - 1])
                             .font(.system(size: 36))
@@ -97,15 +98,17 @@ struct CheckInView: View {
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 8)
                     .background(
-                        presenter.selectedMood == rating
+                        isSelected
                             ? Color.wazaAccent.opacity(0.15)
                             : Color.clear,
                         in: RoundedRectangle(cornerRadius: 12)
                     )
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
-                            .stroke(presenter.selectedMood == rating ? Color.wazaAccent : Color.clear, lineWidth: 2)
+                            .stroke(isSelected ? Color.wazaAccent : Color.clear, lineWidth: 2)
                     )
+                    .scaleEffect(isSelected ? 1.1 : 1.0)
+                    .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isSelected)
                     .anyButton {
                         presenter.onMoodSelected(rating)
                     }
@@ -137,16 +140,20 @@ struct CheckInView: View {
             Image(systemName: "checkmark.circle.fill")
                 .font(.system(size: 56))
                 .foregroundStyle(.green)
+                .scaleAppear(delay: 0)
 
             Text("You're in! Great work showing up.")
                 .font(.headline)
                 .multilineTextAlignment(.center)
+                .scaleAppear(delay: 0.1)
 
             if presenter.isStreamingAI || !presenter.aiMessage.isEmpty {
                 aiEncouragementCard
+                    .scaleAppear(delay: 0.2)
             }
 
             logSessionButton
+                .scaleAppear(delay: 0.25)
         }
     }
 

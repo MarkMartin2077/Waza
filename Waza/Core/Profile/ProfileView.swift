@@ -15,9 +15,13 @@ struct ProfileView: View {
         ScrollView {
             VStack(spacing: 20) {
                 headerSection
+                    .scaleAppear(delay: 0)
                 statsSection
+                    .scaleAppear(delay: 0.06)
                 achievementsSection
+                    .scaleAppear(delay: 0.12)
                 trainingScheduleSection
+                    .scaleAppear(delay: 0.18)
             }
             .padding(.horizontal, 16)
             .padding(.top, 8)
@@ -84,6 +88,7 @@ struct ProfileView: View {
             Text(value)
                 .font(.title3)
                 .fontWeight(.bold)
+                .contentTransition(.numericText())
             Text(label)
                 .font(.caption2)
                 .foregroundStyle(.secondary)
@@ -91,6 +96,7 @@ struct ProfileView: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 14)
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: value)
     }
 
     // MARK: - Achievements

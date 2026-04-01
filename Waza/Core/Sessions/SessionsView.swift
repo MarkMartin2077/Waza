@@ -26,9 +26,11 @@ struct SessionsView: View {
                 )
                 .listRowBackground(Color.clear)
                 .listRowSeparator(.hidden)
+                .scaleAppear(delay: 0.1)
             } else {
-                ForEach(presenter.sessions, id: \.id) { session in
+                ForEach(Array(presenter.sessions.enumerated()), id: \.element.id) { index, session in
                     SessionRowView(session: session, accentColor: Color.wazaAccent)
+                        .staggeredAppear(index: index)
                         .anyButton {
                             presenter.onSessionTapped(session)
                         }
