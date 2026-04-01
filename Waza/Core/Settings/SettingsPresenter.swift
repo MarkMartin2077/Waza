@@ -61,7 +61,7 @@ class SettingsPresenter {
     
     func onContactUsPressed() {
         interactor.trackEvent(event: Event.contactUsPressed)
-        let email = "hello@swiftful-thinking.com"
+        let email = "WazaBJJApp@gmail.com"
         let emailString = "mailto:\(email)"
 
         guard let url = URL(string: emailString) else {
@@ -150,9 +150,22 @@ class SettingsPresenter {
 
     func onRateAppPressed() {
         interactor.trackEvent(event: Event.rateAppPressed)
-        let urlString = "itms-apps://itunes.apple.com/app/id6759821384?action=write-review"
-        guard let url = URL(string: urlString) else { return }
-        router.openURL(url)
+
+        func onEnjoyingAppYesPressed() {
+            interactor.trackEvent(event: Event.rateAppYesPressed)
+            router.dismissModal()
+            AppStoreRatingsHelper.requestRatingsReview()
+        }
+
+        func onEnjoyingAppNoPressed() {
+            interactor.trackEvent(event: Event.rateAppNoPressed)
+            router.dismissModal()
+        }
+
+        router.showRatingsModal(
+            onYesPressed: onEnjoyingAppYesPressed,
+            onNoPressed: onEnjoyingAppNoPressed
+        )
     }
 
     func onShareAppPressed() {
@@ -193,6 +206,8 @@ extension SettingsPresenter {
         case contactUsPressed
         case colorSchemeChanged(index: Int)
         case rateAppPressed
+        case rateAppYesPressed
+        case rateAppNoPressed
         case shareAppPressed
         case notificationsSettingsPressed
         case manageSubscriptionPressed
@@ -213,6 +228,8 @@ extension SettingsPresenter {
             case .contactUsPressed:               return "SettingsView_ContactUs_Pressed"
             case .colorSchemeChanged:             return "SettingsView_ColorScheme_Changed"
             case .rateAppPressed:                 return "SettingsView_RateApp_Pressed"
+            case .rateAppYesPressed:              return "SettingsView_RateApp_Yes_Pressed"
+            case .rateAppNoPressed:               return "SettingsView_RateApp_No_Pressed"
             case .shareAppPressed:                return "SettingsView_ShareApp_Pressed"
             case .notificationsSettingsPressed:   return "SettingsView_Notifications_Pressed"
             case .manageSubscriptionPressed:      return "SettingsView_ManageSubscription_Pressed"

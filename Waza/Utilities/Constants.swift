@@ -6,8 +6,9 @@
 //
 struct Constants {
     static let randomImage = "https://picsum.photos/600/600"
-    static let privacyPolicyUrlString = "https://www.google.com"
-    static let termsOfServiceUrlString = "https://www.google.com"
+    static let privacyPolicyUrlString = "https://boatneck-pickle-bfa.notion.site/Waza-Privacy-Policy-33517d63a01a8043ab9cf6a2dd88e654"
+    static let termsOfServiceUrlString = "https://boatneck-pickle-bfa.notion.site/Waza-Terms-of-Service-33517d63a01a8084bdc8db91fd02100a"
+    static let supportUrlString = "https://boatneck-pickle-bfa.notion.site/Waza-Support-33517d63a01a80f3ab13db26f36726d0"
     
     static let onboardingModuleId = "onboarding"
     static let tabbarModuleId = "tabbar"

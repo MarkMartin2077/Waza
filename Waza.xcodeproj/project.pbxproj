@@ -278,8 +278,8 @@
 				028F9B502CECF2C2009B9F48 /* Frameworks */,
 				028F9B512CECF2C2009B9F48 /* Resources */,
 				022958C32CEFA29900765488 /* ShellScript */,
-				022958C42CEFA2DB00765488 /* ShellScript */,
 				9F72A5EB2F538DE2009EA87E /* Embed Foundation Extensions */,
+				022958C42CEFA2DB00765488 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -462,7 +462,6 @@
 		};
 		022958C42CEFA2DB00765488 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
@@ -478,6 +477,7 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
+				"$(DERIVED_FILE_DIR)/crashlytics-run-complete",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;

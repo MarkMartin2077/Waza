@@ -131,10 +131,22 @@ struct SettingsView: View {
                 action: { presenter.onContactUsPressed() }
             )
 
+            Divider().padding(.leading, 52)
+
+            settingsLinkRow(icon: "questionmark.circle", iconColor: .blue, label: "Support", urlString: Constants.supportUrlString)
+
+            Divider().padding(.leading, 52)
+
+            settingsLinkRow(icon: "doc.text", iconColor: .gray, label: "Terms of Service", urlString: Constants.termsOfServiceUrlString)
+
+            Divider().padding(.leading, 52)
+
+            settingsLinkRow(icon: "hand.raised", iconColor: .gray, label: "Privacy Policy", urlString: Constants.privacyPolicyUrlString)
+
             Divider()
                 .padding(.leading, 52)
 
-            Text("© 2025 Waza. All rights reserved.")
+            Text("© 2026 Mark Martin. All rights reserved.")
                 .font(.caption)
                 .foregroundStyle(.tertiary)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -276,6 +288,23 @@ struct SettingsView: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 14)
+    }
+
+    private func settingsLinkRow(icon: String, iconColor: Color, label: String, urlString: String) -> some View {
+        Link(destination: URL(string: urlString)!) {
+            HStack(spacing: 14) {
+                settingsIcon(systemName: icon, color: iconColor)
+                Text(label)
+                    .font(.subheadline)
+                    .foregroundStyle(.primary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Image(systemName: "arrow.up.right")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
+        }
     }
 }
 

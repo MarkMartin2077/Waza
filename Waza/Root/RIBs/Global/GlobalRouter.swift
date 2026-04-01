@@ -58,4 +58,21 @@ extension GlobalRouter {
     func dismissAlert() {
         router.dismissAlert()
     }
+
+    func showRatingsModal(onYesPressed: @escaping () -> Void, onNoPressed: @escaping () -> Void) {
+        router.showModal(transition: .fade, backgroundColor: Color.black.opacity(0.6)) {
+            CustomModalView(
+                title: "Are you enjoying Waza?",
+                subtitle: "We'd love to hear your feedback!",
+                primaryButtonTitle: "Yes",
+                primaryButtonAction: {
+                    onYesPressed()
+                },
+                secondaryButtonTitle: "No",
+                secondaryButtonAction: {
+                    onNoPressed()
+                }
+            )
+        }
+    }
 }
