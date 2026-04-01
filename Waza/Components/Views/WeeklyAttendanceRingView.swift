@@ -13,11 +13,11 @@ struct WeeklyAttendanceRingView: View {
         HStack(spacing: 14) {
             ZStack {
                 Circle()
-                    .stroke(Color.accentColor.opacity(0.15), lineWidth: 6)
+                    .stroke(Color.wazaAccent.opacity(0.15), lineWidth: 6)
                     .frame(width: 52, height: 52)
                 Circle()
                     .trim(from: 0, to: progress)
-                    .stroke(Color.accentColor, style: StrokeStyle(lineWidth: 6, lineCap: .round))
+                    .stroke(Color.wazaAccent, style: StrokeStyle(lineWidth: 6, lineCap: .round))
                     .frame(width: 52, height: 52)
                     .rotationEffect(.degrees(-90))
                     .animation(.easeInOut(duration: 0.4), value: progress)
@@ -44,7 +44,7 @@ struct WeeklyAttendanceRingView: View {
             }
         }
         .padding(14)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14))
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
     }
 }
 

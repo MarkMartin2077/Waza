@@ -12,6 +12,10 @@ class AchievementsPresenter {
     private let router: AchievementsRouter
 
     private(set) var earnedAchievements: [AchievementEarnedModel] = []
+    private(set) var sessionStats: SessionStats = .empty
+    private(set) var streakCount: Int = 0
+    private(set) var attendanceCount: Int = 0
+    private(set) var completedGoalCount: Int = 0
     var selectedAchievement: AchievementId?
 
     var sections: [AchievementSection] {
@@ -50,6 +54,20 @@ class AchievementsPresenter {
 
     private func loadData() {
         earnedAchievements = interactor.earnedAchievements
+        sessionStats = interactor.sessionStats
+        streakCount = interactor.currentStreakData.currentStreak ?? 0
+        attendanceCount = interactor.classAttendance.count
+        completedGoalCount = interactor.completedGoals.count
+    }
+
+    func progressHint(for achievementId: AchievementId) -> String? {
+        guard !isEarned(achievementId) else { return nil }
+        return achievementId.progressHint(
+            totalSessions: sessionStats.totalSessions,
+            thisWeekSessions: sessionStats.thisWeekSessions,
+            streakCount: streakCount,
+            attendanceCount: attendanceCount
+        )
     }
 }
 

@@ -20,8 +20,9 @@ struct TabBarView: View {
 
     @State var presenter: TabBarPresenter
     var tabs: [TabBarScreen]
+    var builder: CoreBuilder?
 
-    @AppStorage("waza_colorSchemeIndex") private var colorSchemeIndex: Int = 0
+    @AppStorage(Constants.colorSchemeStorageKey) private var colorSchemeIndex: Int = 0
 
     private var resolvedColorScheme: ColorScheme? {
         switch colorSchemeIndex {
@@ -43,20 +44,16 @@ struct TabBarView: View {
                         }
                 }
             }
-            .tint(presenter.beltAccentColor)
-            .onReceive(NotificationCenter.default.publisher(for: .achievementUnlocked)) { notification in
-                guard
-                    let userInfo = notification.userInfo as? [String: String],
-                    let rawValue = userInfo["achievementId"],
-                    let id = AchievementId(rawValue: rawValue)
-                else { return }
+            .tint(Color.wazaAccent)
+            .onChange(of: presenter.lastUnlockedAchievement) { _, newValue in
+                guard let id = newValue else { return }
                 presenter.onAchievementUnlocked(id)
             }
 
             if let achievement = presenter.pendingUnlockAchievement {
                 AchievementUnlockModal(
                     achievementId: achievement,
-                    accentColor: presenter.beltAccentColor,
+                    accentColor: Color.wazaAccent,
                     onDismiss: { presenter.onAchievementDismissed() }
                 )
                 .ignoresSafeArea()
@@ -65,6 +62,23 @@ struct TabBarView: View {
         }
         .animation(.easeInOut(duration: 0.2), value: presenter.pendingUnlockAchievement != nil)
         .preferredColorScheme(resolvedColorScheme)
+        .onReceive(NotificationCenter.default.publisher(for: .gymArrival)) { notification in
+            guard let gymId = (notification.userInfo as? [String: String])?["gymId"] else { return }
+            presenter.onGymArrival(gymId: gymId)
+        }
+        .sheet(isPresented: Binding(
+            get: { presenter.pendingCheckIn != nil },
+            set: { if !$0 { presenter.onCheckInDismissed() } }
+        )) {
+            if let pendingCheckIn = presenter.pendingCheckIn, let builder {
+                RouterView { router in
+                    builder.checkInView(
+                        router: router,
+                        delegate: CheckInDelegate(gym: pendingCheckIn.gym, matchedSchedule: pendingCheckIn.schedule, checkInMethod: .geofence)
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -74,6 +88,12 @@ extension CoreBuilder {
         TabBarView(
             presenter: TabBarPresenter(interactor: interactor),
             tabs: [
+                TabBarScreen(title: "Home", systemImage: "house.fill", screen: {
+                    RouterView { router in
+                        dashboardView(router: router)
+                    }
+                    .any()
+                }),
                 TabBarScreen(title: "Sessions", systemImage: "list.bullet", screen: {
                     RouterView { router in
                         sessionsView(router: router)
@@ -92,7 +112,8 @@ extension CoreBuilder {
                     }
                     .any()
                 })
-            ]
+            ],
+            builder: self
         )
     }
 
@@ -106,7 +127,7 @@ extension CoreBuilder {
         presenter: presenter,
         tabs: [
             TabBarScreen(title: "Sessions", systemImage: "list.bullet", screen: {
-                Color.blue.any()
+                Color.wazaAccent.any()
             }),
             TabBarScreen(title: "Progress", systemImage: "chart.line.uptrend.xyaxis", screen: {
                 Color.orange.any()
@@ -114,7 +135,8 @@ extension CoreBuilder {
             TabBarScreen(title: "Profile", systemImage: "person.fill", screen: {
                 Color.green.any()
             })
-        ]
+        ],
+        builder: nil
     )
 }
 

@@ -139,6 +139,57 @@ enum GoalType: String, Codable, CaseIterable {
     }
 }
 
+// MARK: - Goal Metric
+
+enum GoalMetric: String, Codable, CaseIterable {
+    case sessionsPerWeek = "sessions_per_week"
+    case sessionsPerMonth = "sessions_per_month"
+    case hoursPerMonth = "hours_per_month"
+    case focusAreaSessions = "focus_area_sessions"
+
+    var displayName: String {
+        switch self {
+        case .sessionsPerWeek:    return "Sessions per week"
+        case .sessionsPerMonth:   return "Sessions per month"
+        case .hoursPerMonth:      return "Hours per month"
+        case .focusAreaSessions:  return "Focus area sessions"
+        }
+    }
+
+    var iconName: String {
+        switch self {
+        case .sessionsPerWeek:    return "calendar"
+        case .sessionsPerMonth:   return "calendar.badge.clock"
+        case .hoursPerMonth:      return "clock.fill"
+        case .focusAreaSessions:  return "target"
+        }
+    }
+
+    var unitLabel: String {
+        switch self {
+        case .sessionsPerWeek, .sessionsPerMonth, .focusAreaSessions: return "sessions"
+        case .hoursPerMonth: return "hours"
+        }
+    }
+
+    func titleTemplate(target: Int, focusArea: String? = nil) -> String {
+        switch self {
+        case .sessionsPerWeek:    return "Train \(target)x per week"
+        case .sessionsPerMonth:   return "Train \(target)x per month"
+        case .hoursPerMonth:      return "Log \(target) hours per month"
+        case .focusAreaSessions:  return "Train \(focusArea ?? "focus area") \(target)x"
+        }
+    }
+
+    var resetLabel: String {
+        switch self {
+        case .sessionsPerWeek:    return "Resets weekly"
+        case .sessionsPerMonth, .hoursPerMonth: return "Resets monthly"
+        case .focusAreaSessions:  return "All time"
+        }
+    }
+}
+
 // MARK: - Injury Severity
 
 enum InjurySeverity: String, Codable, CaseIterable {
@@ -194,10 +245,7 @@ enum CheckInMethod: String, Codable, CaseIterable {
 
 enum AchievementEvent {
     case sessionLogged(totalCount: Int, streakCount: Int)
-    case streakReached(count: Int)
     case goalCompleted(goalId: String)
-    case beltPromoted(belt: BJJBelt)
-    case xpMilestone(points: Int)
     case classCheckedIn(totalCount: Int, isPerfectWeek: Bool, consecutivePerfectWeeks: Int)
 }
 
@@ -275,5 +323,19 @@ struct DateRange {
     static var lastYear: DateRange { lastDays(365) }
     static var allTime: DateRange {
         DateRange(start: Date(timeIntervalSince1970: 0), end: Date())
+    }
+
+    static var thisCalendarWeek: DateRange {
+        let calendar = Calendar.current
+        let now = Date()
+        let weekStart = calendar.dateInterval(of: .weekOfYear, for: now)?.start ?? now
+        return DateRange(start: weekStart, end: now)
+    }
+
+    static var thisCalendarMonth: DateRange {
+        let calendar = Calendar.current
+        let now = Date()
+        let monthStart = calendar.dateInterval(of: .month, for: now)?.start ?? now
+        return DateRange(start: monthStart, end: now)
     }
 }

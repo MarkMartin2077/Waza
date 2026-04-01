@@ -2,11 +2,10 @@ import SwiftUI
 
 @MainActor
 protocol TabBarInteractor: GlobalInteractor {
-    var currentBeltAccentColor: Color { get }
+    var gyms: [GymLocationModel] { get }
+    var lastUnlockedAchievement: AchievementId? { get }
+    func closestSchedule(forGymId gymId: String, at date: Date) -> ClassScheduleModel?
+    func consumeUnlockedAchievement()
 }
 
-extension CoreInteractor: TabBarInteractor {
-    var currentBeltAccentColor: Color {
-        currentBeltEnum.accentColor
-    }
-}
+extension CoreInteractor: TabBarInteractor { }

@@ -9,6 +9,7 @@ class AchievementManager {
     private var userId: String?
 
     private(set) var earnedAchievements: [AchievementEarnedModel] = []
+    private(set) var lastUnlockedAchievement: AchievementId?
 
     init(services: AchievementServices, logger: LogManager? = nil) {
         self.localService = services.local
@@ -40,6 +41,10 @@ class AchievementManager {
         earnedAchievements.contains { $0.achievementId == id.rawValue }
     }
 
+    func consumeUnlockedAchievement() {
+        lastUnlockedAchievement = nil
+    }
+
     // MARK: - Write
 
     @discardableResult
@@ -49,12 +54,8 @@ class AchievementManager {
             return checkSessionAchievements(totalCount: totalCount, streak: streak)
         case .goalCompleted:
             return award(.firstGoalCompleted)
-        case .beltPromoted:
-            return award(.firstBeltPromotion)
         case .classCheckedIn(let totalCount, let isPerfectWeek, let consecutivePerfectWeeks):
             return checkAttendanceAchievements(totalCount: totalCount, isPerfectWeek: isPerfectWeek, consecutivePerfectWeeks: consecutivePerfectWeeks)
-        default:
-            return []
         }
     }
 
@@ -114,11 +115,7 @@ class AchievementManager {
         let model = AchievementEarnedModel(achievementId: id.rawValue)
         try? localService.create(model)
         refresh()
-        NotificationCenter.default.post(
-            name: .achievementUnlocked,
-            object: nil,
-            userInfo: ["achievementId": id.rawValue]
-        )
+        lastUnlockedAchievement = id
         syncToRemote(model)
         return [id]
     }

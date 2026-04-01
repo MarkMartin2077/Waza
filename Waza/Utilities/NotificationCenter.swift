@@ -30,9 +30,6 @@ extension Notification.Name {
     /// userInfo: ["scheduleId": String]
     static let classReminder = Notification.Name("ClassReminder")
 
-    /// Posted when a new achievement is earned.
-    /// userInfo: ["achievementId": String]
-    static let achievementUnlocked = Notification.Name("AchievementUnlocked")
 }
 
 // The below code, postFCMToken + getFCMToken are examples of this.

@@ -7,12 +7,12 @@ struct SettingsView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
-                profileHeader
                 appearanceCard
                 accountCard
                 purchaseCard
                 storeCard
                 appInfoCard
+                dangerZoneCard
             }
             .padding(.horizontal, 16)
             .padding(.top, 8)
@@ -27,40 +27,6 @@ struct SettingsView: View {
         }
     }
 
-    // MARK: - Profile Header
-
-    private var profileHeader: some View {
-        VStack(spacing: 12) {
-            Circle()
-                .fill(presenter.beltAccentColor.opacity(0.15))
-                .frame(width: 72, height: 72)
-                .overlay {
-                    Circle()
-                        .stroke(presenter.beltAccentColor, lineWidth: 2)
-                    Text(presenter.userName.prefix(1).uppercased())
-                        .font(.title2)
-                        .fontWeight(.bold)
-                        .foregroundStyle(presenter.beltAccentColor)
-                }
-
-            VStack(spacing: 4) {
-                Text(presenter.userName)
-                    .font(.title3)
-                    .fontWeight(.semibold)
-
-                Text(presenter.beltDisplayName)
-                    .font(.caption)
-                    .fontWeight(.medium)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 4)
-                    .background(presenter.beltAccentColor.opacity(0.12), in: Capsule())
-                    .foregroundStyle(presenter.beltAccentColor)
-            }
-        }
-        .padding(.vertical, 20)
-        .frame(maxWidth: .infinity)
-    }
-
     // MARK: - Account Card
 
     private var accountCard: some View {
@@ -70,7 +36,7 @@ struct SettingsView: View {
             if presenter.isAnonymousUser {
                 settingsRow(
                     icon: "person.crop.circle.badge.plus",
-                    iconColor: presenter.beltAccentColor,
+                    iconColor: Color.wazaAccent,
                     label: "Save & back-up account",
                     action: { presenter.onCreateAccountPressed() }
                 )
@@ -82,8 +48,15 @@ struct SettingsView: View {
                     action: { presenter.onSignOutPressed() }
                 )
             }
+        }
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+    }
 
-            Divider().padding(.leading, 52)
+    // MARK: - Danger Zone Card
+
+    private var dangerZoneCard: some View {
+        VStack(spacing: 0) {
+            sectionHeader("Danger Zone")
 
             settingsRow(
                 icon: "trash",
@@ -93,7 +66,11 @@ struct SettingsView: View {
                 action: { presenter.onDeleteAccountPressed() }
             )
         }
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .background(Color.red.opacity(0.06), in: RoundedRectangle(cornerRadius: 16))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(Color.red.opacity(0.15), lineWidth: 1)
+        )
     }
 
     // MARK: - Purchase Card
@@ -102,27 +79,22 @@ struct SettingsView: View {
         VStack(spacing: 0) {
             sectionHeader("Membership")
 
-            HStack(spacing: 14) {
-                settingsIcon(systemName: presenter.isPremium ? "star.fill" : "star", color: .yellow)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(presenter.isPremium ? "Waza Premium" : "Free Plan")
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    Text(presenter.isPremium ? "Active subscription" : "Upgrade to unlock all features")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                }
-                if presenter.isPremium {
-                    Text("MANAGE")
-                        .font(.caption2)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(.secondary)
-                }
+            if presenter.isPremium {
+                settingsRow(
+                    icon: "creditcard",
+                    iconColor: Color.wazaAccent,
+                    label: "Manage Subscription",
+                    action: { presenter.onManageSubscriptionPressed() }
+                )
+            } else {
+                settingsRow(
+                    icon: "arrow.up.circle",
+                    iconColor: Color.wazaAccent,
+                    label: "Upgrade to Premium",
+                    labelColor: Color.wazaAccent,
+                    action: { presenter.onUpgradeToPremiumPressed() }
+                )
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 14)
         }
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
     }
@@ -153,9 +125,9 @@ struct SettingsView: View {
 
             settingsRow(
                 icon: "envelope",
-                iconColor: presenter.beltAccentColor,
+                iconColor: Color.wazaAccent,
                 label: "Contact us",
-                labelColor: presenter.beltAccentColor,
+                labelColor: Color.wazaAccent,
                 action: { presenter.onContactUsPressed() }
             )
 
@@ -225,11 +197,11 @@ struct SettingsView: View {
             Divider().padding(.leading, 52)
 
             ShareLink(
-                item: URL(string: "https://apps.apple.com/app/id123456789")!,
+                item: URL(string: "https://apps.apple.com/app/id6759821384")!,
                 message: Text("Check out Waza — the best BJJ training tracker!")
             ) {
                 HStack(spacing: 14) {
-                    settingsIcon(systemName: "square.and.arrow.up", color: presenter.beltAccentColor)
+                    settingsIcon(systemName: "square.and.arrow.up", color: Color.wazaAccent)
                     Text("Share the App")
                         .font(.subheadline)
                         .foregroundStyle(.primary)
@@ -265,7 +237,7 @@ struct SettingsView: View {
             .font(.subheadline)
             .foregroundStyle(color)
             .frame(width: 28, height: 28)
-            .background(color.opacity(0.12), in: RoundedRectangle(cornerRadius: 7))
+            .background(color.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
     }
 
     private func settingsRow(
@@ -275,21 +247,21 @@ struct SettingsView: View {
         labelColor: Color = .primary,
         action: @escaping () -> Void
     ) -> some View {
-        Button(action: action) {
-            HStack(spacing: 14) {
-                settingsIcon(systemName: icon, color: iconColor)
-                Text(label)
-                    .font(.subheadline)
-                    .foregroundStyle(labelColor)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                Image(systemName: "chevron.right")
-                    .font(.caption2)
-                    .foregroundStyle(.tertiary)
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 14)
+        HStack(spacing: 14) {
+            settingsIcon(systemName: icon, color: iconColor)
+            Text(label)
+                .font(.subheadline)
+                .foregroundStyle(labelColor)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            Image(systemName: "chevron.right")
+                .font(.caption2)
+                .foregroundStyle(.tertiary)
         }
-        .buttonStyle(.plain)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
+        .anyButton(.press) {
+            action()
+        }
     }
 
     private func settingsInfoRow(icon: String, iconColor: Color, label: String, value: String) -> some View {

@@ -142,11 +142,50 @@ class ClassScheduleManager: GeofenceCoordinatorDelegate {
         return (soonest, gym)
     }
 
+    /// The closest schedule to the given time for a specific gym on the same weekday.
+    func closestSchedule(forGymId gymId: String, at date: Date = Date()) -> ClassScheduleModel? {
+        let calendar = Calendar.current
+        let todayWeekday = calendar.component(.weekday, from: date)
+        let nowMinutes = calendar.component(.hour, from: date) * 60 + calendar.component(.minute, from: date)
+
+        let candidates = schedules.filter {
+            $0.gymId == gymId && $0.isActive && $0.dayOfWeek == todayWeekday
+        }
+
+        return candidates.min(by: {
+            abs(($0.startHour * 60 + $0.startMinute) - nowMinutes) < abs(($1.startHour * 60 + $1.startMinute) - nowMinutes)
+        })
+    }
+
     /// Number of check-ins during the calendar week containing the given date.
     func weeklyAttendanceCount(weekOf date: Date = Date()) -> Int {
         let calendar = Calendar.current
         guard let weekInterval = calendar.dateInterval(of: .weekOfYear, for: date) else { return 0 }
         return attendance.filter { weekInterval.contains($0.checkInDate) }.count
+    }
+
+    /// Count how many consecutive calendar weeks (ending with the current week)
+    /// the user met their weekly attendance target.
+    func consecutivePerfectWeeks(weeklyTarget: Int) -> Int {
+        guard weeklyTarget > 0 else { return 0 }
+        let calendar = Calendar.current
+        var count = 0
+        var weekDate = Date()
+
+        while true {
+            guard let weekInterval = calendar.dateInterval(of: .weekOfYear, for: weekDate) else { break }
+            let weekCount = attendance.filter { weekInterval.contains($0.checkInDate) }.count
+            if weekCount >= weeklyTarget {
+                count += 1
+            } else {
+                break
+            }
+            // Move to the previous week
+            guard let previousWeek = calendar.date(byAdding: .weekOfYear, value: -1, to: weekInterval.start) else { break }
+            weekDate = previousWeek
+        }
+
+        return count
     }
 
     // MARK: - Lifecycle

@@ -9,7 +9,7 @@ extension CoreInteractor {
     }
 
     var allSessions: [BJJSessionModel] {
-        sessionManager.getRecentSessions(limit: 50)
+        sessionManager.sessions
     }
 
     var sessionStats: SessionStats {
@@ -79,24 +79,7 @@ extension CoreInteractor {
         academy: String? = nil,
         notes: String? = nil
     ) throws -> BeltRecordModel {
-        // Capture current rank BEFORE saving so we can compare direction
-        let beltRanks = BJJBelt.allCases
-        let previousRank = beltRanks.firstIndex(of: currentBeltEnum) ?? 0
-        let previousStripes = currentBelt?.stripes ?? 0
-        let newRank = beltRanks.firstIndex(of: belt) ?? 0
-
-        let record = try beltManager.addPromotion(belt: belt, stripes: stripes, date: date, academy: academy, notes: notes)
-
-        // Only award if the new entry is strictly higher in rank, or the same belt with more stripes
-        let isPromotion = newRank > previousRank || (newRank == previousRank && stripes > previousStripes)
-        if isPromotion {
-            achievementManager.checkAndAward(
-                event: .beltPromoted(belt: belt),
-                sessionStats: sessionStats,
-                streakCount: currentStreakData.currentStreak ?? 0
-            )
-        }
-        return record
+        try beltManager.addPromotion(belt: belt, stripes: stripes, date: date, academy: academy, notes: notes)
     }
 
     func setInitialBelt(
@@ -155,6 +138,23 @@ extension CoreInteractor {
         try goalManager.deleteGoal(goal)
     }
 
+    @discardableResult
+    func createMetricGoal(metric: GoalMetric, targetValue: Double, focusArea: String? = nil) throws -> TrainingGoalModel {
+        try goalManager.createMetricGoal(metric: metric, targetValue: targetValue, focusArea: focusArea)
+    }
+
+    func computeProgress(for goal: TrainingGoalModel) -> Double {
+        goalManager.computeProgress(for: goal, sessions: sessionManager.sessions)
+    }
+
+    func currentValue(for goal: TrainingGoalModel) -> Double {
+        goalManager.currentValue(for: goal, sessions: sessionManager.sessions)
+    }
+
+    var distinctFocusAreas: [String] {
+        Array(Set(sessionManager.sessions.flatMap { $0.focusAreas })).sorted()
+    }
+
     // MARK: BJJ Achievements
 
     var earnedAchievements: [AchievementEarnedModel] {
@@ -163,6 +163,14 @@ extension CoreInteractor {
 
     func isAchievementEarned(_ id: AchievementId) -> Bool {
         achievementManager.isEarned(id)
+    }
+
+    var lastUnlockedAchievement: AchievementId? {
+        achievementManager.lastUnlockedAchievement
+    }
+
+    func consumeUnlockedAchievement() {
+        achievementManager.consumeUnlockedAchievement()
     }
 
     // MARK: AI Insights
@@ -181,6 +189,12 @@ extension CoreInteractor {
 
     func generateInsights(sessions: [BJJSessionModel], belt: BJJBelt) async throws -> [AITrainingInsight] {
         try await aiInsightsManager.generateInsights(sessions: sessions, belt: belt)
+    }
+
+    // MARK: Widget Data
+
+    func updateWidgetData(_ data: WazaWidgetData) {
+        WidgetDataStore.shared.update(data)
     }
 
     // MARK: Training Stats

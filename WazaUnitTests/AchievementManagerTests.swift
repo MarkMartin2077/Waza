@@ -382,38 +382,6 @@ struct AchievementManagerSpecialTests {
         #expect(manager.isEarned(.firstGoalCompleted))
     }
 
-    @Test("checkAndAward gives firstBeltPromotion on beltPromoted event")
-    func firstBeltPromotion() {
-        // GIVEN
-        let manager = makeManager()
-
-        // WHEN
-        let awarded = manager.checkAndAward(
-            event: .beltPromoted(belt: .blue),
-            sessionStats: .empty,
-            streakCount: 0
-        )
-
-        // THEN
-        #expect(awarded.contains(.firstBeltPromotion))
-        #expect(manager.isEarned(.firstBeltPromotion))
-    }
-
-    @Test("checkAndAward returns empty array for unhandled event types")
-    func unhandledEvent() {
-        // GIVEN
-        let manager = makeManager()
-
-        // WHEN
-        let awarded = manager.checkAndAward(
-            event: .xpMilestone(points: 500),
-            sessionStats: .empty,
-            streakCount: 0
-        )
-
-        // THEN
-        #expect(awarded.isEmpty)
-    }
 }
 
 // MARK: - Idempotency
@@ -466,7 +434,7 @@ struct AchievementManagerIdempotencyTests {
         // WHEN / THEN — nothing has been awarded
         #expect(!manager.isEarned(.hundredSessions))
         #expect(!manager.isEarned(.thirtyDayStreak))
-        #expect(!manager.isEarned(.firstBeltPromotion))
+        #expect(!manager.isEarned(.firstGoalCompleted))
     }
 
     @Test("clearAll removes all earned achievements")

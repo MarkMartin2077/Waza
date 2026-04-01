@@ -217,9 +217,9 @@ private struct ConfettiView: View {
     )
 }
 
-#Preview("Epic — Belt Promotion") {
+#Preview("Epic — On a Roll") {
     AchievementUnlockModal(
-        achievementId: .firstBeltPromotion,
+        achievementId: .fourWeekConsistency,
         accentColor: Color(hex: "7B2D8B"),
         onDismiss: { }
     )

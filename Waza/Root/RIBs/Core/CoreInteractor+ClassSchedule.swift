@@ -20,6 +20,10 @@ extension CoreInteractor {
         classScheduleManager.nextUpcomingClass
     }
 
+    func closestSchedule(forGymId gymId: String, at date: Date = Date()) -> ClassScheduleModel? {
+        classScheduleManager.closestSchedule(forGymId: gymId, at: date)
+    }
+
     func weeklyAttendanceCount(weekOf date: Date = Date()) -> Int {
         classScheduleManager.weeklyAttendanceCount(weekOf: date)
     }
@@ -59,10 +63,11 @@ extension CoreInteractor {
         let record = try classScheduleManager.checkIn(gymId: gymId, scheduleId: scheduleId, method: method, moodRating: moodRating)
         let totalCount = classScheduleManager.attendance.count
         let thisWeek = classScheduleManager.weeklyAttendanceCount()
-        let weeklyTarget = 3
+        let weeklyTarget = trainingGoalPerWeek ?? 3
         let isPerfectWeek = thisWeek >= weeklyTarget
+        let consecutivePerfect = classScheduleManager.consecutivePerfectWeeks(weeklyTarget: weeklyTarget)
         achievementManager.checkAndAward(
-            event: .classCheckedIn(totalCount: totalCount, isPerfectWeek: isPerfectWeek, consecutivePerfectWeeks: 0),
+            event: .classCheckedIn(totalCount: totalCount, isPerfectWeek: isPerfectWeek, consecutivePerfectWeeks: consecutivePerfect),
             sessionStats: sessionStats,
             streakCount: currentStreakData.currentStreak ?? 0
         )

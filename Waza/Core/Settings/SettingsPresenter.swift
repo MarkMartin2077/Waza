@@ -17,11 +17,9 @@ class SettingsPresenter {
     private(set) var isPremium: Bool = false
     private(set) var isAnonymousUser: Bool = false
 
-    private let colorSchemeKey = "waza_colorSchemeIndex"
-
-    var colorSchemeIndex: Int = UserDefaults.standard.integer(forKey: "waza_colorSchemeIndex") {
+    var colorSchemeIndex: Int = UserDefaults.standard.integer(forKey: Constants.colorSchemeStorageKey) {
         didSet {
-            UserDefaults.standard.set(colorSchemeIndex, forKey: colorSchemeKey)
+            UserDefaults.standard.set(colorSchemeIndex, forKey: Constants.colorSchemeStorageKey)
             interactor.trackEvent(event: Event.colorSchemeChanged(index: colorSchemeIndex))
         }
     }
@@ -40,15 +38,11 @@ class SettingsPresenter {
     }
     
     var beltAccentColor: Color {
-        interactor.currentBeltEnum.accentColor
+        .wazaAccent
     }
 
     var userName: String {
         interactor.currentUserName
-    }
-
-    var beltDisplayName: String {
-        interactor.currentBeltEnum.displayName
     }
 
     func onViewAppear() {
@@ -69,12 +63,12 @@ class SettingsPresenter {
         interactor.trackEvent(event: Event.contactUsPressed)
         let email = "hello@swiftful-thinking.com"
         let emailString = "mailto:\(email)"
-        
-        guard let url = URL(string: emailString), UIApplication.shared.canOpenURL(url) else {
+
+        guard let url = URL(string: emailString) else {
             return
         }
-        
-        UIApplication.shared.open(url)
+
+        router.openURL(url)
     }
     
     func onSignOutPressed() {
@@ -156,9 +150,9 @@ class SettingsPresenter {
 
     func onRateAppPressed() {
         interactor.trackEvent(event: Event.rateAppPressed)
-        let urlString = "itms-apps://itunes.apple.com/app/id123456789?action=write-review"
-        guard let url = URL(string: urlString), UIApplication.shared.canOpenURL(url) else { return }
-        UIApplication.shared.open(url)
+        let urlString = "itms-apps://itunes.apple.com/app/id6759821384?action=write-review"
+        guard let url = URL(string: urlString) else { return }
+        router.openURL(url)
     }
 
     func onShareAppPressed() {
@@ -168,7 +162,17 @@ class SettingsPresenter {
     func onNotificationsSettingsPressed() {
         interactor.trackEvent(event: Event.notificationsSettingsPressed)
         guard let url = URL(string: UIApplication.openNotificationSettingsURLString) else { return }
-        UIApplication.shared.open(url)
+        router.openURL(url)
+    }
+
+    func onManageSubscriptionPressed() {
+        interactor.trackEvent(event: Event.manageSubscriptionPressed)
+        router.showPaywallView()
+    }
+
+    func onUpgradeToPremiumPressed() {
+        interactor.trackEvent(event: Event.upgradeToPremiumPressed)
+        router.showPaywallView()
     }
 
 }
@@ -191,6 +195,8 @@ extension SettingsPresenter {
         case rateAppPressed
         case shareAppPressed
         case notificationsSettingsPressed
+        case manageSubscriptionPressed
+        case upgradeToPremiumPressed
 
         var eventName: String {
             switch self {
@@ -209,6 +215,8 @@ extension SettingsPresenter {
             case .rateAppPressed:                 return "SettingsView_RateApp_Pressed"
             case .shareAppPressed:                return "SettingsView_ShareApp_Pressed"
             case .notificationsSettingsPressed:   return "SettingsView_Notifications_Pressed"
+            case .manageSubscriptionPressed:      return "SettingsView_ManageSubscription_Pressed"
+            case .upgradeToPremiumPressed:        return "SettingsView_UpgradeToPremium_Pressed"
             }
         }
 
