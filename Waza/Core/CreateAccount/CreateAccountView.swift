@@ -45,7 +45,7 @@ struct CreateAccountView: View {
                 SignInAppleButtonView(
                     type: .signIn,
                     style: .black,
-                    cornerRadius: 10
+                    cornerRadius: 14
                 )
                 .frame(height: 55)
                 .frame(maxWidth: 400)
@@ -57,7 +57,7 @@ struct CreateAccountView: View {
                 SignInGoogleButtonView(
                     type: .signIn,
                     backgroundColor: .googleRed,
-                    cornerRadius: 10
+                    cornerRadius: 14
                 )
                 .frame(height: 55)
                 .frame(maxWidth: 400)

@@ -8,22 +8,27 @@ struct DashboardView: View {
         ScrollView {
             VStack(spacing: 24) {
                 greetingHeader
-                streakHeroCard
+                logSessionButton
+
                 if presenter.isNewUser {
                     activationCard
                 } else {
-                    quickStatsRow
+                    thisWeekSection
                 }
+
                 upcomingClassSection
+                recentSessionsSection
             }
             .padding(.horizontal, 16)
             .padding(.top, 8)
             .padding(.bottom, 16)
         }
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
+            #if !PROD
+            ToolbarItem(placement: .topBarTrailing) {
                 devSettingsButton
             }
+            #endif
         }
         .onAppear {
             presenter.onViewAppear()
@@ -33,27 +38,24 @@ struct DashboardView: View {
     // MARK: - Greeting Header
 
     private var greetingHeader: some View {
-        HStack(alignment: .center) {
-            Text("\(presenter.greeting), \(presenter.userFirstName)")
-                .font(.title2)
-                .fontWeight(.bold)
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-            Circle()
-                .fill(presenter.beltAccentColor)
-                .frame(width: 12, height: 12)
-        }
+        Text(presenter.greetingText)
+            .font(.title)
+            .fontWeight(.bold)
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    // MARK: - Streak Hero Card
+    // MARK: - Log Session Button
 
-    private var streakHeroCard: some View {
-        StreakHeroView(
-            streakCount: presenter.streakCount > 0 ? presenter.streakCount : nil,
-            accentColor: presenter.beltAccentColor
-        )
-        .padding(.vertical, 24)
-        .background(presenter.beltAccentColor.opacity(0.08), in: RoundedRectangle(cornerRadius: 20))
+    private var logSessionButton: some View {
+        Text("Log Session")
+            .font(.headline)
+            .foregroundStyle(.white)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 14)
+            .background(Color.wazaAccent, in: RoundedRectangle(cornerRadius: 14))
+            .anyButton(.press) {
+                presenter.onLogSessionTapped()
+            }
     }
 
     // MARK: - Activation Card (new user)
@@ -61,46 +63,57 @@ struct DashboardView: View {
     private var activationCard: some View {
         ActivationCardView(
             userName: presenter.userFirstName == "Athlete" ? nil : presenter.userFirstName,
-            accentColor: presenter.beltAccentColor,
-            isBeltSet: presenter.isBeltSet,
+            accentColor: Color.wazaAccent,
             isGymSet: presenter.isGymSet,
-            onLogSessionTapped: { presenter.onLogSessionTapped() },
-            onSetBeltTapped: { presenter.onSetBeltTapped() }
+            onLogSessionTapped: { presenter.onLogSessionTapped() }
         )
     }
 
-    // MARK: - Quick Stats Row
+    // MARK: - This Week Section
 
-    private var quickStatsRow: some View {
-        HStack(spacing: 0) {
-            quickStatCell(
-                value: "\(presenter.sessionsThisWeek)",
-                label: "sessions",
-                sublabel: "this week"
-            )
+    private var thisWeekSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            sectionHeader("This Week")
 
-            Divider()
-                .frame(height: 48)
+            HStack(spacing: 0) {
+                statCell(
+                    icon: "flame.fill",
+                    value: "\(presenter.streakCount)",
+                    label: "day streak"
+                )
 
-            quickStatCell(
-                value: presenter.totalTrainingTimeFormatted,
-                label: "trained",
-                sublabel: "all time"
-            )
+                Divider().frame(height: 36)
+
+                statCell(
+                    icon: "figure.wrestling",
+                    value: "\(presenter.sessionsThisWeek)",
+                    label: "sessions"
+                )
+
+                Divider().frame(height: 36)
+
+                statCell(
+                    icon: "clock.fill",
+                    value: presenter.hoursThisWeekFormatted,
+                    label: "trained"
+                )
+            }
+            .padding(.vertical, 14)
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
         }
-        .padding(.vertical, 16)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
     }
 
-    private func quickStatCell(value: String, label: String, sublabel: String) -> some View {
-        VStack(spacing: 2) {
-            Text(value)
-                .font(.wazaStat)
-                .foregroundStyle(presenter.beltAccentColor)
+    private func statCell(icon: String, value: String, label: String) -> some View {
+        VStack(spacing: 4) {
+            HStack(spacing: 4) {
+                Image(systemName: icon)
+                    .font(.caption2)
+                    .foregroundStyle(Color.wazaAccent)
+                Text(value)
+                    .font(.wazaTitle)
+                    .foregroundStyle(Color.wazaAccent)
+            }
             Text(label)
-                .font(.wazaLabel)
-                .foregroundStyle(.secondary)
-            Text(sublabel)
                 .font(.wazaLabel)
                 .foregroundStyle(.secondary)
         }
@@ -112,21 +125,49 @@ struct DashboardView: View {
     @ViewBuilder
     private var upcomingClassSection: some View {
         if let (schedule, gym) = presenter.nextUpcomingClass {
-            UpcomingClassCardView(
-                schedule: schedule,
-                gym: gym,
-                onTap: {
-                    presenter.onCheckInTapped(gym: gym, schedule: schedule)
-                }
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 14)
-                    .stroke(presenter.beltAccentColor, lineWidth: 2)
-            )
+            VStack(alignment: .leading, spacing: 10) {
+                sectionHeader("Next Class")
+
+                UpcomingClassCardView(
+                    schedule: schedule,
+                    gym: gym,
+                    onTap: {
+                        presenter.onCheckInTapped(gym: gym, schedule: schedule)
+                    }
+                )
+            }
         }
     }
 
-    // MARK: - Toolbar Buttons
+    // MARK: - Recent Sessions
+
+    @ViewBuilder
+    private var recentSessionsSection: some View {
+        if !presenter.sessions.isEmpty {
+            VStack(alignment: .leading, spacing: 10) {
+                sectionHeader("Recent Sessions")
+
+                ForEach(presenter.sessions.prefix(3), id: \.id) { session in
+                    SessionRowView(session: session, accentColor: Color.wazaAccent)
+                        .anyButton {
+                            presenter.onSessionTapped(session)
+                        }
+                }
+            }
+        }
+    }
+
+    // MARK: - Helpers
+
+    private func sectionHeader(_ title: String) -> some View {
+        Text(title)
+            .font(.subheadline)
+            .fontWeight(.semibold)
+            .foregroundStyle(.secondary)
+            .textCase(.uppercase)
+            .tracking(0.5)
+            .frame(maxWidth: .infinity, alignment: .leading)
+    }
 
     private var devSettingsButton: some View {
         Image(systemName: "gearshape")

@@ -6,6 +6,9 @@ struct TrainingGoalModel: Codable, Sendable, Identifiable, StringIdentifiable {
     var title: String
     var goalDescription: String?
     var goalType: GoalType
+    var goalMetric: GoalMetric?
+    var targetValue: Double?
+    var focusArea: String?
     var deadline: Date?
     var progress: Double
     var isCompleted: Bool
@@ -14,11 +17,16 @@ struct TrainingGoalModel: Codable, Sendable, Identifiable, StringIdentifiable {
 
     var id: String { goalId }
 
+    var isMetricGoal: Bool { goalMetric != nil }
+
     init(
         goalId: String = UUID().uuidString,
         title: String,
         goalDescription: String? = nil,
         goalType: GoalType = .custom,
+        goalMetric: GoalMetric? = nil,
+        targetValue: Double? = nil,
+        focusArea: String? = nil,
         deadline: Date? = nil,
         progress: Double = 0,
         isCompleted: Bool = false,
@@ -29,6 +37,9 @@ struct TrainingGoalModel: Codable, Sendable, Identifiable, StringIdentifiable {
         self.title = title
         self.goalDescription = goalDescription
         self.goalType = goalType
+        self.goalMetric = goalMetric
+        self.targetValue = targetValue
+        self.focusArea = focusArea
         self.deadline = deadline
         self.progress = min(max(progress, 0), 1.0)
         self.isCompleted = isCompleted
@@ -41,6 +52,9 @@ struct TrainingGoalModel: Codable, Sendable, Identifiable, StringIdentifiable {
         self.title = entity.title
         self.goalDescription = entity.goalDescription
         self.goalType = GoalType(rawValue: entity.goalTypeRaw) ?? .custom
+        self.goalMetric = entity.goalMetricRaw.flatMap { GoalMetric(rawValue: $0) }
+        self.targetValue = entity.targetValue
+        self.focusArea = entity.focusArea
         self.deadline = entity.deadline
         self.progress = entity.progress
         self.isCompleted = entity.isCompleted
@@ -75,6 +89,9 @@ struct TrainingGoalModel: Codable, Sendable, Identifiable, StringIdentifiable {
         case title
         case goalDescription = "goal_description"
         case goalType = "goal_type"
+        case goalMetric = "goal_metric"
+        case targetValue = "target_value"
+        case focusArea = "focus_area"
         case deadline
         case progress
         case isCompleted = "is_completed"
@@ -88,6 +105,9 @@ struct TrainingGoalModel: Codable, Sendable, Identifiable, StringIdentifiable {
         let dict: [String: Any?] = [
             "goal_id": goalId,
             "goal_type": goalType.rawValue,
+            "goal_metric": goalMetric?.rawValue,
+            "target_value": targetValue,
+            "focus_area": focusArea,
             "is_completed": isCompleted,
             "progress": progress
         ]
@@ -126,6 +146,13 @@ extension TrainingGoalModel {
                 goalDescription: "Build consistent training habit.",
                 goalType: .attendance,
                 progress: 0.75
+            ),
+            TrainingGoalModel(
+                goalId: "mock-goal-4",
+                title: "Train 4x per week",
+                goalType: .attendance,
+                goalMetric: .sessionsPerWeek,
+                targetValue: 4
             )
         ]
     }

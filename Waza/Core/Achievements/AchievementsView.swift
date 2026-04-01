@@ -42,12 +42,11 @@ struct AchievementsView: View {
         let isEarned = presenter.isEarned(achievementId)
         let rarityColor = achievementId.rarity.color
         return VStack(spacing: 28) {
-            Spacer()
             detailIcon(for: achievementId, isEarned: isEarned, rarityColor: rarityColor)
             detailInfo(for: achievementId, isEarned: isEarned, rarityColor: rarityColor)
             detailStatus(for: achievementId)
-            Spacer()
         }
+        .frame(maxHeight: .infinity)
         .padding(.horizontal, 32)
         .presentationDetents([.medium])
     }
@@ -96,12 +95,21 @@ struct AchievementsView: View {
                 .padding(.vertical, 8)
                 .background(.green.opacity(0.1), in: Capsule())
         } else {
-            Label("Not yet earned", systemImage: "lock.fill")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .padding(.horizontal, 14)
-                .padding(.vertical, 8)
-                .background(Color(.systemGray6), in: Capsule())
+            VStack(spacing: 10) {
+                Label("Not yet earned", systemImage: "lock.fill")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 8)
+                    .background(Color(.systemGray6), in: Capsule())
+
+                if let hint = presenter.progressHint(for: achievementId) {
+                    Text(hint)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                }
+            }
         }
     }
 }
@@ -127,6 +135,18 @@ extension CoreBuilder {
     let container = DevPreview.shared.container()
     let builder = CoreBuilder(interactor: CoreInteractor(container: container))
     return RouterView { router in
-        builder.achievementsView(router: router)
+        NavigationStack {
+            builder.achievementsView(router: router)
+        }
+    }
+}
+
+#Preview("Achievements - No Earned") {
+    let container = DevPreview.shared.container()
+    let builder = CoreBuilder(interactor: CoreInteractor(container: container))
+    return RouterView { router in
+        NavigationStack {
+            builder.achievementsView(router: router)
+        }
     }
 }

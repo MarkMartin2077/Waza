@@ -19,32 +19,52 @@ struct UpcomingClassCardView: View {
                         .fontWeight(.semibold)
                         .frame(maxWidth: .infinity, alignment: .leading)
 
-                    HStack(spacing: 4) {
-                        Text(gym.name)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                        Text("·")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                        Text(schedule.formattedTime)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                    Text(gym.name)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                    Text(timeText(for: schedule))
+                        .font(.caption)
+                        .foregroundStyle(Color.wazaAccent)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
 
                 Image(systemName: schedule.sessionType.iconName)
-                    .font(.title2)
-                    .foregroundStyle(.accent)
-                    .frame(width: 44, height: 44)
-                    .background(.accent.opacity(0.1), in: RoundedRectangle(cornerRadius: 10))
+                    .font(.subheadline)
+                    .foregroundStyle(Color.wazaAccent)
+                    .frame(width: 32, height: 32)
+                    .background(Color.wazaAccent.opacity(0.08), in: RoundedRectangle(cornerRadius: 8))
             }
             .padding(14)
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14))
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
             .anyButton(.press) {
                 onTap?()
             }
         }
+    }
+
+    private func timeText(for schedule: ClassScheduleModel) -> String {
+        let date = schedule.nextOccurrence
+        let calendar = Calendar.current
+        let time = formattedTime(for: schedule)
+        if calendar.isDateInToday(date) {
+            return "Today at \(time)"
+        } else if calendar.isDateInTomorrow(date) {
+            return "Tomorrow at \(time)"
+        } else {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "EEEE"
+            return "\(formatter.string(from: date)) at \(time)"
+        }
+    }
+
+    private func formattedTime(for schedule: ClassScheduleModel) -> String {
+        let hour = schedule.startHour
+        let minute = schedule.startMinute
+        let isPM = hour >= 12
+        let displayHour = hour == 0 ? 12 : (hour > 12 ? hour - 12 : hour)
+        return "\(displayHour):\(String(format: "%02d", minute)) \(isPM ? "PM" : "AM")"
     }
 }
 

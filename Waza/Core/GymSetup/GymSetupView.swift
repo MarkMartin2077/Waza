@@ -19,22 +19,16 @@ struct GymSetupView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
+                    // Button required by SwiftUI ToolbarItem API
                     Button("Cancel") { presenter.onCancelTapped() }
                         .foregroundStyle(.secondary)
                 }
                 ToolbarItem(placement: .topBarTrailing) {
+                    // Button required by SwiftUI ToolbarItem API
                     Button("Save") { presenter.onSaveTapped() }
                         .fontWeight(.semibold)
                         .disabled(!presenter.canSave)
                 }
-            }
-            .alert("Error", isPresented: Binding(
-                get: { presenter.errorMessage != nil },
-                set: { if !$0 { presenter.errorMessage = nil } }
-            )) {
-                Button("OK") { presenter.errorMessage = nil }
-            } message: {
-                Text(presenter.errorMessage ?? "")
             }
             .onAppear {
                 presenter.onViewAppear()
@@ -81,7 +75,7 @@ struct GymSetupView: View {
                     Marker(presenter.gymName.isEmpty ? "Gym" : presenter.gymName, coordinate: coord)
                 }
                 .frame(height: 160)
-                .clipShape(RoundedRectangle(cornerRadius: 10))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
                 .onTapGesture { /* allow map interaction */ }
 
                 Text(presenter.address.isEmpty ? "Tap the map to adjust" : presenter.address)
@@ -117,7 +111,7 @@ struct GymSetupView: View {
     private var radiusSection: some View {
         Section("Auto Check-In Radius: \(Int(presenter.radius)) m") {
             Slider(value: $presenter.radius, in: 50...500, step: 10)
-                .tint(.accent)
+                .tint(Color.wazaAccent)
         }
     }
 
@@ -125,9 +119,11 @@ struct GymSetupView: View {
 
     private var deleteSection: some View {
         Section {
-            Button("Delete Gym", role: .destructive) {
-                presenter.onDeleteTapped()
-            }
+            Text("Delete Gym")
+                .foregroundStyle(.red)
+                .anyButton {
+                    presenter.onDeleteTapped()
+                }
         }
     }
 }
@@ -168,5 +164,15 @@ extension CoreRouter {
 
     return RouterView { router in
         builder.gymSetupView(router: router)
+    }
+}
+
+#Preview("Edit Gym") {
+    let container = DevPreview.shared.container()
+    let builder = CoreBuilder(interactor: CoreInteractor(container: container))
+    let delegate = GymSetupDelegate(existingGym: .mock)
+
+    return RouterView { router in
+        builder.gymSetupView(router: router, delegate: delegate)
     }
 }

@@ -3,17 +3,15 @@ import SwiftUI
 struct ActivationCardView: View {
     let userName: String?
     let accentColor: Color?
-    let isBeltSet: Bool
     let isGymSet: Bool
     let onLogSessionTapped: (() -> Void)?
-    let onSetBeltTapped: (() -> Void)?
 
     private var resolvedAccent: Color {
         accentColor ?? .accentColor
     }
 
     private var showQuickSetup: Bool {
-        !isBeltSet || !isGymSet
+        !isGymSet
     }
 
     var body: some View {
@@ -76,20 +74,6 @@ struct ActivationCardView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             HStack(spacing: 8) {
-                if !isBeltSet {
-                    setupChip(
-                        label: "Set your belt",
-                        isDone: false,
-                        onTap: onSetBeltTapped
-                    )
-                } else {
-                    setupChip(
-                        label: "Belt set",
-                        isDone: true,
-                        onTap: nil
-                    )
-                }
-
                 if !isGymSet {
                     setupChip(
                         label: "Add a gym",
@@ -128,50 +112,22 @@ struct ActivationCardView: View {
 
 // MARK: - Previews
 
-#Preview("Full name, nothing set") {
+#Preview("New user, no gym") {
     ActivationCardView(
         userName: "Marcus",
-        accentColor: .blue,
-        isBeltSet: false,
+        accentColor: Color.wazaAccent,
         isGymSet: false,
-        onLogSessionTapped: { },
-        onSetBeltTapped: { }
+        onLogSessionTapped: { }
     )
     .padding()
 }
 
-#Preview("No name, belt set") {
-    ActivationCardView(
-        userName: nil,
-        accentColor: .purple,
-        isBeltSet: true,
-        isGymSet: false,
-        onLogSessionTapped: { },
-        onSetBeltTapped: nil
-    )
-    .padding()
-}
-
-#Preview("Everything set, no chips") {
+#Preview("Gym added") {
     ActivationCardView(
         userName: "Alex",
-        accentColor: .brown,
-        isBeltSet: true,
+        accentColor: Color.wazaAccent,
         isGymSet: true,
-        onLogSessionTapped: { },
-        onSetBeltTapped: nil
-    )
-    .padding()
-}
-
-#Preview("Compact, default accent") {
-    ActivationCardView(
-        userName: nil,
-        accentColor: nil,
-        isBeltSet: false,
-        isGymSet: true,
-        onLogSessionTapped: nil,
-        onSetBeltTapped: nil
+        onLogSessionTapped: { }
     )
     .padding()
 }

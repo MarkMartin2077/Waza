@@ -7,7 +7,9 @@ struct TrainingStatsView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 24) {
-                activeGoalsSection
+                if !presenter.activeGoals.isEmpty {
+                    activeGoalsSection
+                }
                 periodPicker
                 sessionStatsSection
                 typeBreakdownSection
@@ -15,13 +17,22 @@ struct TrainingStatsView: View {
             .padding(16)
         }
         .navigationTitle("Progress")
+        .toolbarTitleDisplayMode(.inlineLarge)
         .toolbar {
-            if presenter.isAIAvailable {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Image(systemName: "apple.intelligence")
+            ToolbarItem(placement: .topBarTrailing) {
+                HStack(spacing: 16) {
+                    if presenter.isAIAvailable {
+                        Image(systemName: "apple.intelligence")
+                            .font(.headline)
+                            .anyButton {
+                                presenter.onAIInsightsTapped()
+                            }
+                    }
+                    Image(systemName: "plus")
                         .font(.headline)
+                        .foregroundStyle(Color.wazaAccent)
                         .anyButton {
-                            presenter.onAIInsightsTapped()
+                            presenter.onManageGoalsTapped()
                         }
                 }
             }
@@ -34,64 +45,57 @@ struct TrainingStatsView: View {
     private var activeGoalsSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Text("Training Goals")
+                Text("Goals")
                     .font(.headline)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 Text("Manage")
                     .font(.caption)
-                    .foregroundStyle(.accent)
+                    .foregroundStyle(Color.wazaAccent)
                     .anyButton {
                         presenter.onManageGoalsTapped()
                     }
             }
 
-            if presenter.activeGoals.isEmpty {
-                Text("No active goals. Tap Manage to set your training targets.")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            } else {
-                ForEach(presenter.activeGoals, id: \.goalId) { goal in
-                    HStack(spacing: 10) {
-                        Image(systemName: goal.goalType.iconName)
-                            .foregroundStyle(.accent)
-                            .frame(width: 20)
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(goal.title)
-                                .font(.subheadline)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                            ProgressView(value: goal.progress)
-                                .tint(.accent)
-                        }
-                        Text("\(goal.progressPercentage)%")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .frame(width: 36, alignment: .trailing)
+            ForEach(presenter.activeGoals, id: \.goalId) { goal in
+                let progress = presenter.computedProgress(for: goal)
+                HStack(spacing: 10) {
+                    Image(systemName: goal.goalMetric?.iconName ?? goal.goalType.iconName)
+                        .foregroundStyle(Color.wazaAccent)
+                        .frame(width: 20)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(goal.title)
+                            .font(.subheadline)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        ProgressView(value: min(progress, 1.0))
+                            .tint(Color.wazaAccent)
                     }
+                    Text("\(Int(progress * 100))%")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .frame(width: 36, alignment: .trailing)
                 }
             }
         }
         .padding(14)
-        .background(Color(.systemGray6))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
     }
 
     private var periodPicker: some View {
         HStack(spacing: 0) {
-            ForEach(presenter.periodOptions, id: \.label) { option in
-                Text(option.label)
+            ForEach(presenter.periodLabels, id: \.self) { label in
+                Text(label)
                     .font(.subheadline)
-                    .fontWeight(presenter.selectedPeriodLabel == option.label ? .semibold : .regular)
+                    .fontWeight(presenter.selectedPeriodLabel == label ? .semibold : .regular)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 8)
-                    .background(presenter.selectedPeriodLabel == option.label ? Color.accentColor : Color(.systemGray6))
-                    .foregroundStyle(presenter.selectedPeriodLabel == option.label ? .white : .primary)
+                    .background(presenter.selectedPeriodLabel == label ? Color.wazaAccent : Color(.systemGray6))
+                    .foregroundStyle(presenter.selectedPeriodLabel == label ? .white : .primary)
                     .anyButton {
-                        presenter.onPeriodSelected(label: option.label, range: option.range)
+                        presenter.onPeriodSelected(label: label)
                     }
             }
         }
-        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
     private var sessionStatsSection: some View {
@@ -140,8 +144,7 @@ struct TrainingStatsView: View {
             }
         }
         .padding(14)
-        .background(Color(.systemGray6))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
     }
 
     private func typeRow(stat: TypeStat) -> some View {
@@ -162,7 +165,7 @@ struct TrainingStatsView: View {
                         .fill(Color(.systemGray4))
                         .frame(height: 6)
                     RoundedRectangle(cornerRadius: 4)
-                        .fill(Color.accentColor)
+                        .fill(Color.wazaAccent)
                         .frame(width: geo.size.width * stat.percentage, height: 6)
                 }
             }
@@ -174,10 +177,9 @@ struct TrainingStatsView: View {
         VStack(spacing: 6) {
             Image(systemName: icon)
                 .font(.title3)
-                .foregroundStyle(.accent)
+                .foregroundStyle(Color.wazaAccent)
             Text(value)
-                .font(.title2)
-                .fontWeight(.bold)
+                .font(.wazaTitle)
             Text(label)
                 .font(.caption2)
                 .foregroundStyle(.secondary)
@@ -185,8 +187,7 @@ struct TrainingStatsView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(12)
-        .background(Color(.systemGray6))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
     }
 }
 
@@ -206,6 +207,18 @@ extension CoreBuilder {
     let container = DevPreview.shared.container()
     let builder = CoreBuilder(interactor: CoreInteractor(container: container))
     return RouterView { router in
-        builder.trainingStatsView(router: router)
+        NavigationStack {
+            builder.trainingStatsView(router: router)
+        }
+    }
+}
+
+#Preview("Progress - Empty State") {
+    let container = DevPreview.shared.container()
+    let builder = CoreBuilder(interactor: CoreInteractor(container: container))
+    return RouterView { router in
+        NavigationStack {
+            builder.trainingStatsView(router: router)
+        }
     }
 }

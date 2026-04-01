@@ -155,7 +155,7 @@ struct NextClassWidgetView: View {
 } timeline: {
     NextClassEntry(date: .now, data: WazaWidgetData(
         streakCount: 3,
-        accentColorHex: "795548",
+        accentColorHex: "6366F1",
         beltDisplayName: "Brown Belt",
         sessionsThisWeek: 1,
         nextClassTypeDisplayName: nil,

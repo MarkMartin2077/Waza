@@ -11,10 +11,9 @@ class OnboardingPresenter {
     private let interactor: OnboardingInteractor
     private let router: OnboardingRouter
 
-    static let totalPages = 7
+    static let totalPages = 6
 
     var currentPage: Int = 0
-    var selectedBelt: String = "white"
     var enteredName: String = ""
     var selectedGoalId: String?
     var isCompletingOnboarding: Bool = false
@@ -50,12 +49,6 @@ class OnboardingPresenter {
 
     func onContinuePressed() {
         interactor.trackEvent(event: Event.continuePressed(fromPage: currentPage))
-        advance()
-    }
-
-    func onBeltSelected(_ beltId: String) {
-        interactor.trackEvent(event: Event.beltSelected(beltId: beltId))
-        selectedBelt = beltId
         advance()
     }
 
@@ -95,9 +88,6 @@ class OnboardingPresenter {
 
         Task {
             do {
-                let belt = BJJBelt(rawValue: selectedBelt) ?? .white
-                try interactor.setInitialBelt(belt: belt, stripes: 0, date: Date(), academy: nil, notes: nil)
-
                 let trimmedName = enteredName.trimmingCharacters(in: .whitespaces)
                 if !trimmedName.isEmpty {
                     try await interactor.saveUserName(name: trimmedName)
@@ -135,7 +125,6 @@ extension OnboardingPresenter {
         case pageChanged(page: Int)
         case continuePressed(fromPage: Int)
         case onboardingSkipped
-        case beltSelected(beltId: String)
         case goalSelected(goalId: String)
         case notificationsEnablePressed
         case notificationsSkipped
@@ -152,7 +141,6 @@ extension OnboardingPresenter {
             case .pageChanged:                 return "OnboardingView_Page_Changed"
             case .continuePressed:             return "OnboardingView_Continue_Pressed"
             case .onboardingSkipped:           return "OnboardingView_Skipped"
-            case .beltSelected:                return "OnboardingView_Belt_Selected"
             case .goalSelected:                return "OnboardingView_Goal_Selected"
             case .notificationsEnablePressed:  return "OnboardingView_Notifications_Enable"
             case .notificationsSkipped:        return "OnboardingView_Notifications_Skip"
@@ -172,8 +160,6 @@ extension OnboardingPresenter {
                 return ["page": page]
             case .continuePressed(fromPage: let page):
                 return ["from_page": page]
-            case .beltSelected(beltId: let beltId):
-                return ["belt_id": beltId]
             case .goalSelected(goalId: let goalId):
                 return ["goal_id": goalId]
             case .finishFail(error: let error):

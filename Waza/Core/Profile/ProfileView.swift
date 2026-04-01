@@ -16,31 +16,19 @@ struct ProfileView: View {
             VStack(spacing: 20) {
                 headerSection
                 statsSection
-                beltHistorySection
                 achievementsSection
                 trainingScheduleSection
-                AttendanceCalendarView(attendance: presenter.classAttendance)
             }
             .padding(.horizontal, 16)
             .padding(.top, 8)
             .padding(.bottom, 24)
         }
         .navigationTitle("Profile")
+        .toolbarTitleDisplayMode(.inlineLarge)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 settingsButton
             }
-        }
-        .sheet(isPresented: $presenter.showAddPromotionSheet) {
-            addPromotionSheet
-        }
-        .alert("Error", isPresented: Binding(
-            get: { presenter.errorMessage != nil },
-            set: { if !$0 { presenter.errorMessage = nil } }
-        )) {
-            Button("OK") { presenter.errorMessage = nil }
-        } message: {
-            Text(presenter.errorMessage ?? "")
         }
         .onAppear {
             presenter.onViewAppear(delegate: delegate)
@@ -56,21 +44,17 @@ struct ProfileView: View {
         VStack(spacing: 12) {
             ZStack {
                 Circle()
-                    .fill(Color(hex: presenter.currentBelt?.belt.colorHex ?? BJJBelt.white.colorHex).opacity(0.15))
+                    .fill(Color.wazaAccent.opacity(0.15))
                     .frame(width: 80, height: 80)
-                Text(String(presenter.beltDisplayName.prefix(1)).uppercased())
+                Text(String(presenter.userName.prefix(1)).uppercased())
                     .font(.largeTitle)
                     .fontWeight(.bold)
-                    .foregroundStyle(Color(hex: presenter.currentBelt?.belt.colorHex ?? BJJBelt.white.colorHex))
+                    .foregroundStyle(Color.wazaAccent)
             }
 
             Text(presenter.userName)
                 .font(.title2)
                 .fontWeight(.semibold)
-
-            Text(presenter.beltDisplayName)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
 
             if presenter.isPremium {
                 Label("Premium", systemImage: "star.fill")
@@ -88,10 +72,10 @@ struct ProfileView: View {
 
     private var statsSection: some View {
         LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-            profileStat(value: "\(presenter.sessionStats.totalSessions)", label: "Sessions")
-            profileStat(value: "\(presenter.sessionStats.thisWeekSessions)", label: "This Week")
-            profileStat(value: presenter.totalTrainingHoursText, label: "Hrs Trained")
             profileStat(value: "\(presenter.streakCount)", label: "Day Streak")
+            profileStat(value: "\(presenter.sessionStats.thisWeekSessions)", label: "This Week")
+            profileStat(value: "\(presenter.sessionStats.totalSessions)", label: "Sessions")
+            profileStat(value: presenter.totalTrainingHoursText, label: "Hrs Trained")
         }
     }
 
@@ -106,65 +90,7 @@ struct ProfileView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 14)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14))
-    }
-
-    // MARK: - Belt History
-
-    private var beltHistorySection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Text("Belt History")
-                    .font(.headline)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                Button {
-                    presenter.onAddPromotionTapped()
-                } label: {
-                    Image(systemName: "plus.circle")
-                        .font(.headline)
-                        .foregroundStyle(.accent)
-                }
-            }
-
-            if presenter.beltHistory.isEmpty {
-                VStack(spacing: 8) {
-                    Text("No belt history recorded yet.")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                    Button("Set your current belt") {
-                        presenter.onSetCurrentBeltTapped()
-                    }
-                    .font(.subheadline)
-                    .foregroundStyle(.accent)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.vertical, 8)
-            } else {
-                ForEach(presenter.beltHistory, id: \.id) { record in
-                    beltHistoryRow(record: record)
-                }
-            }
-        }
-        .padding(16)
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
-    }
-
-    private func beltHistoryRow(record: BeltRecordModel) -> some View {
-        HStack(spacing: 12) {
-            Circle()
-                .fill(Color(hex: record.belt.colorHex))
-                .frame(width: 12, height: 12)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(record.displayTitle)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                Text(record.promotionDateFormatted)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
-        }
     }
 
     // MARK: - Achievements
@@ -173,9 +99,9 @@ struct ProfileView: View {
         HStack(spacing: 14) {
             Image(systemName: "trophy.fill")
                 .font(.title3)
-                .foregroundStyle(presenter.beltAccentColor)
+                .foregroundStyle(Color.wazaAccent)
                 .frame(width: 44, height: 44)
-                .background(presenter.beltAccentColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
+                .background(Color.wazaAccent.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
 
             VStack(alignment: .leading, spacing: 2) {
                 Text("Achievements")
@@ -210,7 +136,7 @@ struct ProfileView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                 Text("Manage")
                     .font(.caption)
-                    .foregroundStyle(.accent)
+                    .foregroundStyle(Color.wazaAccent)
                     .anyButton {
                         presenter.onManageScheduleTapped()
                     }
@@ -225,7 +151,7 @@ struct ProfileView: View {
                 ForEach(presenter.gyms, id: \.gymId) { gym in
                     HStack(spacing: 10) {
                         Image(systemName: "mappin.circle.fill")
-                            .foregroundStyle(.accent)
+                            .foregroundStyle(Color.wazaAccent)
                         Text(gym.name)
                             .font(.subheadline)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -242,58 +168,43 @@ struct ProfileView: View {
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
     }
 
-    // MARK: - Add Promotion Sheet
-
-    private var addPromotionSheet: some View {
-        NavigationStack {
-            Form {
-                Section("Belt") {
-                    Picker("Belt", selection: $presenter.newBelt) {
-                        ForEach(BJJBelt.allCases, id: \.self) { belt in
-                            Text(belt.displayName).tag(belt)
-                        }
-                    }
-                    Stepper("Stripes: \(presenter.newStripes)", value: $presenter.newStripes, in: 0...4)
-                }
-                Section("Date & Location") {
-                    DatePicker("Promotion Date", selection: $presenter.newPromotionDate, displayedComponents: .date)
-                    TextField("Academy (optional)", text: $presenter.newAcademy)
-                    TextField("Notes (optional)", text: $presenter.newPromotionNotes, axis: .vertical)
-                        .lineLimit(2...4)
-                }
-            }
-            .navigationTitle(presenter.sheetTitle)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Button("Cancel") { presenter.onCancelPromotion() }
-                        .foregroundStyle(.secondary)
-                }
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Save") { presenter.onSavePromotion() }
-                        .fontWeight(.semibold)
-                }
-            }
-        }
-    }
-
     private var settingsButton: some View {
         Image(systemName: "gear")
             .font(.headline)
-            .foregroundStyle(.accent)
+            .foregroundStyle(Color.wazaAccent)
             .anyButton {
                 presenter.onSettingsButtonPressed()
             }
     }
 }
 
-#Preview {
+#Preview("Full Profile") {
     let container = DevPreview.shared.container()
     let builder = CoreBuilder(interactor: CoreInteractor(container: container))
     let delegate = ProfileDelegate()
 
     return RouterView { router in
         builder.profileView(router: router, delegate: delegate)
+    }
+}
+
+#Preview("Empty State") {
+    let preview = DevPreview(isSignedIn: false)
+    let container = preview.container()
+    let builder = CoreBuilder(interactor: CoreInteractor(container: container))
+    let delegate = ProfileDelegate()
+
+    return RouterView { router in
+        builder.profileView(router: router, delegate: delegate)
+    }
+}
+
+#Preview("No Belt Set") {
+    let container = DevPreview.shared.container()
+    let builder = CoreBuilder(interactor: CoreInteractor(container: container))
+
+    return RouterView { router in
+        builder.profileView(router: router)
     }
 }
 

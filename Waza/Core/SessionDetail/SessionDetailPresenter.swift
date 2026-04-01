@@ -9,8 +9,6 @@ class SessionDetailPresenter {
 
     var session: BJJSessionModel
     var isEditing: Bool = false
-    var showDeleteConfirm: Bool = false
-    var errorMessage: String?
 
     // Editable fields
     var editNotes: String = ""
@@ -54,7 +52,7 @@ class SessionDetailPresenter {
             isEditing = false
         } catch {
             interactor.trackEvent(event: Event.saveFail(error: error))
-            errorMessage = error.localizedDescription
+            router.showAlert(error: error)
         }
     }
 
@@ -66,11 +64,20 @@ class SessionDetailPresenter {
 
     func onDeletePressed() {
         interactor.trackEvent(event: Event.deletePressed)
-        showDeleteConfirm = true
+        router.showAlert(.alert, title: "Delete this session?", subtitle: "This action cannot be undone.") {
+            AnyView(
+                Group {
+                    Button("Delete", role: .destructive) { [weak self] in
+                        self?.onDeleteConfirmed()
+                    }
+                    Button("Cancel", role: .cancel) { }
+                }
+            )
+        }
     }
 
     var beltAccentColor: Color {
-        interactor.currentBeltEnum.accentColor
+        .wazaAccent
     }
 
     func onDeleteConfirmed() {
@@ -80,7 +87,7 @@ class SessionDetailPresenter {
             router.dismissScreen()
         } catch {
             interactor.trackEvent(event: Event.saveFail(error: error))
-            errorMessage = error.localizedDescription
+            router.showAlert(error: error)
         }
     }
 }

@@ -20,7 +20,7 @@ struct WelcomeView: View {
             Circle()
                 .fill(
                     RadialGradient(
-                        colors: [.accent.opacity(0.22), .clear],
+                        colors: [Color.wazaAccent.opacity(0.22), .clear],
                         center: .center,
                         startRadius: 0,
                         endRadius: 280
@@ -66,7 +66,7 @@ struct WelcomeView: View {
             // App icon with glow
             ZStack {
                 Circle()
-                    .fill(.accent.opacity(0.35))
+                    .fill(Color.wazaAccent.opacity(0.35))
                     .frame(width: 140, height: 140)
                     .blur(radius: 36)
 
@@ -100,7 +100,7 @@ struct WelcomeView: View {
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 15)
-                .background(.accent, in: Capsule())
+                .background(Color.wazaAccent, in: Capsule())
                 .anyButton(.press) {
                     presenter.onGetStartedPressed()
                 }

@@ -16,6 +16,7 @@ protocol DashboardInteractor: GlobalInteractor {
     var schedules: [ClassScheduleModel] { get }
     var trainingGoalPerWeek: Int? { get }
     func endTrainingLiveActivity() async
+    func updateWidgetData(_ data: WazaWidgetData)
 }
 
 extension CoreInteractor: DashboardInteractor { }

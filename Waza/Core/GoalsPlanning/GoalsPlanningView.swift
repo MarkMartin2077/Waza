@@ -7,7 +7,6 @@ struct GoalsPlanningView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
-                beltProgressCard
                 if presenter.activeGoals.isEmpty {
                     emptyStateView
                 } else {
@@ -21,61 +20,22 @@ struct GoalsPlanningView: View {
             .padding(.top, 8)
         }
         .navigationTitle("Goals")
+        .toolbarTitleDisplayMode(.inlineLarge)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    presenter.onAddGoalTapped()
-                } label: {
-                    Image(systemName: "plus")
-                        .fontWeight(.semibold)
-                }
+                Image(systemName: "plus")
+                    .fontWeight(.semibold)
+                    .anyButton {
+                        presenter.onAddGoalTapped()
+                    }
             }
         }
         .sheet(isPresented: $presenter.showAddGoalSheet) {
             addGoalSheet
         }
-        .alert("Error", isPresented: Binding(
-            get: { presenter.errorMessage != nil },
-            set: { if !$0 { presenter.errorMessage = nil } }
-        )) {
-            Button("OK") { presenter.errorMessage = nil }
-        } message: {
-            Text(presenter.errorMessage ?? "")
-        }
         .onAppear {
             presenter.onViewAppear()
         }
-    }
-
-    // MARK: - Belt Progress Card
-
-    private var beltProgressCard: some View {
-        HStack(spacing: 14) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Current Belt")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                Text(presenter.currentBelt.displayName)
-                    .font(.title3)
-                    .fontWeight(.bold)
-                Text(presenter.nextBeltText)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-
-            Circle()
-                .stroke(Color(hex: presenter.currentBelt.colorHex), lineWidth: 6)
-                .frame(width: 52, height: 52)
-                .overlay {
-                    Text(String(presenter.currentBelt.displayName.prefix(1)))
-                        .font(.headline)
-                        .fontWeight(.bold)
-                        .foregroundStyle(Color(hex: presenter.currentBelt.colorHex))
-                }
-        }
-        .padding(16)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
     }
 
     // MARK: - Active Goals
@@ -89,6 +49,8 @@ struct GoalsPlanningView: View {
             ForEach(presenter.activeGoals, id: \.id) { goal in
                 GoalCardView(
                     goal: goal,
+                    progressOverride: presenter.computedProgress(for: goal),
+                    progressLabel: presenter.progressLabel(for: goal),
                     onUpdateProgress: { newProgress in
                         presenter.onUpdateProgress(goal, newProgress: newProgress)
                     },
@@ -107,19 +69,17 @@ struct GoalsPlanningView: View {
 
     private var completedSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Button {
-                presenter.showCompletedGoals.toggle()
-            } label: {
-                HStack {
-                    Text("Completed (\(presenter.completedGoals.count))")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    Image(systemName: presenter.showCompletedGoals ? "chevron.up" : "chevron.down")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
+            HStack {
+                Text("Completed (\(presenter.completedGoals.count))")
+                    .font(.headline)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Image(systemName: presenter.showCompletedGoals ? "chevron.up" : "chevron.down")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
-            .buttonStyle(.plain)
+            .anyButton(.plain) {
+                presenter.showCompletedGoals.toggle()
+            }
 
             if presenter.showCompletedGoals {
                 ForEach(presenter.completedGoals, id: \.id) { goal in
@@ -146,73 +106,182 @@ struct GoalsPlanningView: View {
     // MARK: - Empty State
 
     private var emptyStateView: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "target")
-                .font(.system(size: 48))
-                .foregroundStyle(.secondary)
-            Text("No Active Goals")
-                .font(.headline)
-            Text("Set a goal to track your BJJ progress")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-            Text("Add Goal")
-                .font(.headline)
-                .foregroundStyle(.white)
-                .padding(.horizontal, 24)
-                .padding(.vertical, 12)
-                .background(.accent, in: Capsule())
-                .anyButton(.press) {
-                    presenter.onAddGoalTapped()
-                }
-        }
-        .padding(.vertical, 40)
-        .frame(maxWidth: .infinity)
+        EmptyStateView(
+            icon: "target",
+            title: "No Active Goals",
+            subtitle: "Set a goal to track your BJJ progress",
+            actionTitle: "Add Goal",
+            onAction: { presenter.onAddGoalTapped() }
+        )
     }
 
     // MARK: - Add Goal Sheet
 
     private var addGoalSheet: some View {
         NavigationStack {
-            Form {
-                Section("Goal Details") {
-                    TextField("Goal title", text: $presenter.newGoalTitle)
-                    TextField("Description (optional)", text: $presenter.newGoalDescription, axis: .vertical)
-                        .lineLimit(3...5)
-                }
-
-                Section("Type") {
-                    Picker("Type", selection: $presenter.newGoalType) {
-                        ForEach(GoalType.allCases, id: \.self) { type in
-                            Label(type.displayName, systemImage: type.iconName).tag(type)
-                        }
+            ScrollView {
+                VStack(spacing: 24) {
+                    metricPickerSection
+                    targetSection
+                    if presenter.selectedMetric == .focusAreaSessions {
+                        focusAreaSection
                     }
                 }
-
-                Section("Deadline") {
-                    Toggle("Set deadline", isOn: $presenter.newGoalHasDeadline)
-                    if presenter.newGoalHasDeadline {
-                        DatePicker("Deadline", selection: $presenter.newGoalDeadline, displayedComponents: .date)
-                    }
-                }
+                .padding(16)
             }
             .navigationTitle("New Goal")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
+                    // Button required by SwiftUI ToolbarItem API
                     Button("Cancel") {
                         presenter.onCancelAddGoal()
                     }
                     .foregroundStyle(.secondary)
                 }
                 ToolbarItem(placement: .topBarTrailing) {
+                    // Button required by SwiftUI ToolbarItem API
                     Button("Save") {
                         presenter.onSaveNewGoal()
                     }
                     .fontWeight(.semibold)
-                    .disabled(presenter.newGoalTitle.isEmpty)
+                    .disabled(presenter.selectedMetric == .focusAreaSessions && presenter.selectedFocusArea.isEmpty)
                 }
             }
+        }
+    }
+
+    // MARK: - Metric Picker
+
+    private var metricPickerSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("What do you want to track?")
+                .font(.headline)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            VStack(spacing: 10) {
+                ForEach(GoalMetric.allCases, id: \.self) { metric in
+                    let isSelected = presenter.selectedMetric == metric
+                    HStack(spacing: 12) {
+                        Image(systemName: metric.iconName)
+                            .font(.title3)
+                            .foregroundStyle(isSelected ? .white : Color.wazaAccent)
+                            .frame(width: 40, height: 40)
+                            .background(
+                                isSelected ? Color.wazaAccent : Color.wazaAccent.opacity(0.12),
+                                in: RoundedRectangle(cornerRadius: 12)
+                            )
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(metric.displayName)
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            Text(metric.resetLabel)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+
+                        if isSelected {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundStyle(Color.wazaAccent)
+                        }
+                    }
+                    .padding(12)
+                    .background(
+                        isSelected ? Color.wazaAccent.opacity(0.08) : Color.clear,
+                        in: RoundedRectangle(cornerRadius: 16)
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(isSelected ? Color.wazaAccent : Color(.systemGray4), lineWidth: 1)
+                    )
+                    .anyButton {
+                        presenter.selectedMetric = metric
+                        presenter.onFormInteraction()
+                    }
+                }
+            }
+        }
+    }
+
+    // MARK: - Target
+
+    private var targetSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Set your target")
+                .font(.headline)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            HStack(spacing: 20) {
+                Image(systemName: "minus.circle.fill")
+                    .font(.title2)
+                    .foregroundStyle(Color.wazaAccent)
+                    .anyButton {
+                        if presenter.newGoalTarget > 1 {
+                            presenter.newGoalTarget -= 1
+                            presenter.onFormInteraction()
+                        }
+                    }
+
+                VStack(spacing: 2) {
+                    Text("\(presenter.newGoalTarget)")
+                        .font(.system(size: 36, weight: .bold, design: .rounded))
+                        .foregroundStyle(Color.wazaAccent)
+                    Text(presenter.selectedMetric.unitLabel)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .frame(minWidth: 80)
+
+                Image(systemName: "plus.circle.fill")
+                    .font(.title2)
+                    .foregroundStyle(Color.wazaAccent)
+                    .anyButton {
+                        presenter.newGoalTarget += 1
+                        presenter.onFormInteraction()
+                    }
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 16)
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        }
+    }
+
+    // MARK: - Focus Area
+
+    private var focusAreaSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Which focus area?")
+                .font(.headline)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            if !presenter.focusAreaOptions.isEmpty {
+                FlowLayout(spacing: 8) {
+                    ForEach(presenter.focusAreaOptions, id: \.self) { area in
+                        let isSelected = presenter.selectedFocusArea == area
+                        Text(area)
+                            .font(.caption)
+                            .fontWeight(.medium)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 7)
+                            .background(
+                                isSelected ? Color.wazaAccent : Color(.systemGray6),
+                                in: Capsule()
+                            )
+                            .foregroundStyle(isSelected ? .white : .primary)
+                            .anyButton(.press) {
+                                presenter.selectedFocusArea = area
+                                presenter.onFormInteraction()
+                            }
+                    }
+                }
+            }
+
+            TextField("Or type a focus area...", text: $presenter.selectedFocusArea)
+                .font(.subheadline)
+                .padding(12)
+                .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 12))
         }
     }
 }
@@ -221,18 +290,32 @@ struct GoalsPlanningView: View {
 
 private struct GoalCardView: View {
     let goal: TrainingGoalModel
+    var progressOverride: Double?
+    var progressLabel: String?
     let onUpdateProgress: (Double) -> Void
     let onComplete: () -> Void
     let onDelete: () -> Void
 
+    private var displayProgress: Double {
+        progressOverride ?? goal.progress
+    }
+
+    private var displayPercentage: Int {
+        Int(displayProgress * 100)
+    }
+
+    private var iconName: String {
+        goal.goalMetric?.iconName ?? goal.goalType.iconName
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Image(systemName: goal.goalType.iconName)
+                Image(systemName: iconName)
                     .font(.subheadline)
-                    .foregroundStyle(.accent)
+                    .foregroundStyle(Color.wazaAccent)
                     .frame(width: 28, height: 28)
-                    .background(.accent.opacity(0.1), in: RoundedRectangle(cornerRadius: 8))
+                    .background(Color.wazaAccent.opacity(0.1), in: RoundedRectangle(cornerRadius: 12))
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(goal.title)
@@ -249,7 +332,9 @@ private struct GoalCardView: View {
                 }
 
                 Menu {
-                    Button("Mark Complete") { onComplete() }
+                    if !goal.isMetricGoal {
+                        Button("Mark Complete") { onComplete() }
+                    }
                     Divider()
                     Button("Delete", role: .destructive) { onDelete() }
                 } label: {
@@ -261,22 +346,33 @@ private struct GoalCardView: View {
             }
 
             HStack(spacing: 8) {
-                ProgressView(value: goal.progress)
-                    .tint(.accent)
-                Text("\(goal.progressPercentage)%")
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-                    .frame(width: 30, alignment: .trailing)
+                ProgressView(value: min(displayProgress, 1.0))
+                    .tint(Color.wazaAccent)
+
+                if let progressLabel {
+                    Text(progressLabel)
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                } else {
+                    Text("\(displayPercentage)%")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                        .frame(width: 30, alignment: .trailing)
+                }
             }
 
-            if let days = goal.daysUntilDeadline {
+            if let metric = goal.goalMetric {
+                Text(metric.resetLabel)
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+            } else if let days = goal.daysUntilDeadline {
                 Text(days > 0 ? "\(days) days left" : "Overdue")
                     .font(.caption2)
                     .foregroundStyle(days > 7 ? Color.secondary : Color.red)
             }
         }
         .padding(14)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14))
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
     }
 }
 
@@ -315,5 +411,16 @@ extension CoreBuilder {
 
     return RouterView { router in
         builder.goalsPlanningView(router: router)
+    }
+}
+
+#Preview("Goals - Navigation Stack") {
+    let container = DevPreview.shared.container()
+    let builder = CoreBuilder(interactor: CoreInteractor(container: container))
+
+    return RouterView { router in
+        NavigationStack {
+            builder.goalsPlanningView(router: router)
+        }
     }
 }

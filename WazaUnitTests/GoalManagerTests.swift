@@ -348,3 +348,128 @@ struct GoalManagerLifecycleTests {
         #expect(manager.goals.first?.title == "My original goal")
     }
 }
+
+// MARK: - Metric Goals
+
+@Suite("GoalManager - Metric Goals") @MainActor
+struct GoalManagerMetricTests {
+
+    func makeGoalManager() -> GoalManager {
+        GoalManager(services: MockGoalServices(), logger: nil)
+    }
+
+    func makeSessionManager() -> SessionManager {
+        SessionManager(services: MockBJJSessionServices(), logger: nil)
+    }
+
+    @Test("createMetricGoal generates correct title")
+    func createMetricGoalTitle() throws {
+        // GIVEN
+        let goals = makeGoalManager()
+
+        // WHEN
+        let goal = try goals.createMetricGoal(metric: .sessionsPerWeek, targetValue: 4)
+
+        // THEN
+        #expect(goal.title == "Train 4x per week")
+        #expect(goal.goalMetric == .sessionsPerWeek)
+        #expect(goal.targetValue == 4)
+        #expect(goal.isMetricGoal == true)
+    }
+
+    @Test("createMetricGoal with focusArea generates correct title")
+    func createMetricGoalFocusAreaTitle() throws {
+        // GIVEN
+        let goals = makeGoalManager()
+
+        // WHEN
+        let goal = try goals.createMetricGoal(metric: .focusAreaSessions, targetValue: 5, focusArea: "Guard")
+
+        // THEN
+        #expect(goal.title == "Train Guard 5x")
+        #expect(goal.focusArea == "Guard")
+    }
+
+    @Test("computeProgress for sessionsPerWeek")
+    func sessionsPerWeekProgress() throws {
+        // GIVEN
+        let goals = makeGoalManager()
+        let sessions = makeSessionManager()
+        try sessions.createSession(date: Date(), duration: 3600)
+        try sessions.createSession(date: Date(), duration: 3600)
+
+        // WHEN
+        let goal = try goals.createMetricGoal(metric: .sessionsPerWeek, targetValue: 4)
+        let progress = goals.computeProgress(for: goal, sessions: sessions.sessions)
+
+        // THEN
+        #expect(progress == 0.5) // 2/4
+    }
+
+    @Test("computeProgress clamps at 1.0")
+    func progressClamp() throws {
+        // GIVEN
+        let goals = makeGoalManager()
+        let sessions = makeSessionManager()
+        for _ in 0..<6 {
+            try sessions.createSession(date: Date(), duration: 3600)
+        }
+
+        // WHEN
+        let goal = try goals.createMetricGoal(metric: .sessionsPerWeek, targetValue: 3)
+        let progress = goals.computeProgress(for: goal, sessions: sessions.sessions)
+
+        // THEN
+        #expect(progress == 1.0)
+    }
+
+    @Test("computeProgress for focusAreaSessions")
+    func focusAreaProgress() throws {
+        // GIVEN
+        let goals = makeGoalManager()
+        let sessions = makeSessionManager()
+        try sessions.createSession(focusAreas: ["Guard", "Passing"])
+        try sessions.createSession(focusAreas: ["Takedowns"])
+        try sessions.createSession(focusAreas: ["Guard"])
+
+        // WHEN
+        let goal = try goals.createMetricGoal(metric: .focusAreaSessions, targetValue: 5, focusArea: "Guard")
+        let progress = goals.computeProgress(for: goal, sessions: sessions.sessions)
+
+        // THEN
+        #expect(progress == 0.4) // 2/5
+    }
+
+    @Test("legacy goals use stored progress")
+    func legacyGoalProgress() throws {
+        // GIVEN
+        let goals = makeGoalManager()
+        let sessions = makeSessionManager()
+        let goal = try goals.createGoal(title: "Custom goal", goalType: .custom)
+        try goals.updateProgress(goalId: goal.goalId, progress: 0.7)
+
+        // WHEN
+        let updatedGoal = goals.activeGoals.first!
+        let progress = goals.computeProgress(for: updatedGoal, sessions: sessions.sessions)
+
+        // THEN
+        #expect(progress == 0.7)
+    }
+
+    @Test("currentValue returns raw count for metric goals")
+    func currentValueForMetricGoal() throws {
+        // GIVEN
+        let goals = makeGoalManager()
+        let sessions = makeSessionManager()
+        try sessions.createSession(date: Date(), duration: 3600)
+        try sessions.createSession(date: Date(), duration: 3600)
+        try sessions.createSession(date: Date(), duration: 3600)
+
+        // WHEN
+        let goal = try goals.createMetricGoal(metric: .sessionsPerWeek, targetValue: 5)
+        let value = goals.currentValue(for: goal, sessions: sessions.sessions)
+
+        // THEN
+        #expect(value == 3.0)
+    }
+}

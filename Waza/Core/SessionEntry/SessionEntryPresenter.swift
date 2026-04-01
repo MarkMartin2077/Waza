@@ -22,8 +22,18 @@ class SessionEntryPresenter {
     var keyInsights: String = ""
     var showMoodSection: Bool = false
 
+    // Focus Areas
+    var selectedFocusAreas: Set<String> = []
+    var customFocusAreaText: String = ""
+
+    static let presetFocusAreas = ["Guard", "Passing", "Takedowns", "Sweeps", "Submissions", "Escapes"]
+
+    // Gym Selection
+    var savedGyms: [GymLocationModel] = []
+    var selectedGymId: String?
+    var isCustomAcademy: Bool = false
+
     var isLoading: Bool = false
-    var errorMessage: String?
 
     init(interactor: SessionEntryInteractor, router: SessionEntryRouter, delegate: SessionEntryDelegate) {
         self.interactor = interactor
@@ -33,6 +43,53 @@ class SessionEntryPresenter {
 
     func onViewAppear() {
         interactor.trackScreenEvent(event: Event.onAppear)
+        savedGyms = interactor.gyms
+        if savedGyms.count == 1 {
+            selectedGymId = savedGyms.first?.gymId
+            academy = savedGyms.first?.name ?? ""
+        }
+    }
+
+    // MARK: - Focus Areas
+
+    func onFocusAreaToggled(_ area: String) {
+        interactor.trackEvent(event: Event.focusAreaToggled(area: area))
+        interactor.playHaptic(option: .selection)
+        if selectedFocusAreas.contains(area) {
+            selectedFocusAreas.remove(area)
+        } else {
+            selectedFocusAreas.insert(area)
+        }
+    }
+
+    func onAddCustomFocusArea() {
+        let trimmed = customFocusAreaText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        let normalized = trimmed.capitalized
+        guard !selectedFocusAreas.contains(where: { $0.caseInsensitiveCompare(normalized) == .orderedSame }) else {
+            customFocusAreaText = ""
+            return
+        }
+        interactor.trackEvent(event: Event.customFocusAreaAdded(area: normalized))
+        interactor.playHaptic(option: .selection)
+        selectedFocusAreas.insert(normalized)
+        customFocusAreaText = ""
+    }
+
+    // MARK: - Gym Selection
+
+    func onGymSelected(_ gymId: String?) {
+        interactor.trackEvent(event: Event.gymSelected(gymId: gymId))
+        interactor.playHaptic(option: .selection)
+        if let gymId, let gym = savedGyms.first(where: { $0.gymId == gymId }) {
+            selectedGymId = gymId
+            academy = gym.name
+            isCustomAcademy = false
+        } else {
+            selectedGymId = nil
+            academy = ""
+            isCustomAcademy = true
+        }
     }
 
     func onSessionTypeSelected(_ type: SessionType) {
@@ -82,7 +139,6 @@ class SessionEntryPresenter {
 
     private func saveSession() async {
         isLoading = true
-        errorMessage = nil
 
         do {
             let params = SessionEntryParams(
@@ -91,7 +147,7 @@ class SessionEntryPresenter {
                 sessionType: sessionType,
                 academy: academy.isEmpty ? nil : academy,
                 instructor: instructor.isEmpty ? nil : instructor,
-                focusAreas: [],
+                focusAreas: Array(selectedFocusAreas),
                 notes: notes.isEmpty ? nil : notes,
                 preSessionMood: showMoodSection ? preSessionMood : nil,
                 postSessionMood: showMoodSection ? postSessionMood : nil,
@@ -103,17 +159,18 @@ class SessionEntryPresenter {
             let session = try await interactor.logSessionWithGamification(params)
             interactor.trackEvent(event: Event.saveSuccess(sessionId: session.id))
             interactor.playHaptic(option: .success)
+            delegate.onSessionSaved?(session)
             router.dismissScreen()
         } catch {
             interactor.trackEvent(event: Event.saveFail(error: error))
-            errorMessage = error.localizedDescription
+            router.showAlert(error: error)
         }
 
         isLoading = false
     }
 
     var beltAccentColor: Color {
-        interactor.currentBeltEnum.accentColor
+        .wazaAccent
     }
 
     var durationText: String {
@@ -134,15 +191,21 @@ extension SessionEntryPresenter {
         case saveFail(error: Error)
         case cancelTapped
         case sessionTypeSelected(type: SessionType)
+        case focusAreaToggled(area: String)
+        case customFocusAreaAdded(area: String)
+        case gymSelected(gymId: String?)
 
         var eventName: String {
             switch self {
-            case .onAppear:             return "SessionEntryView_Appear"
-            case .saveTapped:           return "SessionEntryView_Save_Tap"
-            case .saveSuccess:          return "SessionEntryView_Save_Success"
-            case .saveFail:             return "SessionEntryView_Save_Fail"
-            case .cancelTapped:         return "SessionEntryView_Cancel_Tap"
-            case .sessionTypeSelected:  return "SessionEntryView_SessionType_Select"
+            case .onAppear:               return "SessionEntryView_Appear"
+            case .saveTapped:             return "SessionEntryView_Save_Tap"
+            case .saveSuccess:            return "SessionEntryView_Save_Success"
+            case .saveFail:               return "SessionEntryView_Save_Fail"
+            case .cancelTapped:           return "SessionEntryView_Cancel_Tap"
+            case .sessionTypeSelected:    return "SessionEntryView_SessionType_Select"
+            case .focusAreaToggled:       return "SessionEntryView_FocusArea_Toggle"
+            case .customFocusAreaAdded:   return "SessionEntryView_FocusArea_Custom_Add"
+            case .gymSelected:            return "SessionEntryView_Gym_Select"
             }
         }
 
@@ -154,6 +217,10 @@ extension SessionEntryPresenter {
                 return error.eventParameters
             case .sessionTypeSelected(type: let type):
                 return ["session_type": type.rawValue]
+            case .focusAreaToggled(area: let area), .customFocusAreaAdded(area: let area):
+                return ["focus_area": area]
+            case .gymSelected(gymId: let gymId):
+                return ["gym_id": gymId ?? "custom"]
             default:
                 return nil
             }
@@ -169,5 +236,6 @@ extension SessionEntryPresenter {
 }
 
 struct SessionEntryDelegate {
+    var onSessionSaved: ((BJJSessionModel) -> Void)?
     var eventParameters: [String: Any]? { nil }
 }

@@ -3,11 +3,10 @@ import SwiftUI
 @Observable
 @MainActor
 class SessionsPresenter {
-    let router: any SessionsRouter
-    let interactor: any SessionsInteractor
+    private let router: any SessionsRouter
+    private let interactor: any SessionsInteractor
 
     private(set) var nextUpcomingClass: (ClassScheduleModel, GymLocationModel)?
-    private var gymArrivalObserver: NSObjectProtocol?
 
     init(router: any SessionsRouter, interactor: any SessionsInteractor) {
         self.router = router
@@ -19,7 +18,7 @@ class SessionsPresenter {
     }
 
     var beltAccentColor: Color {
-        interactor.currentBeltEnum.accentColor
+        .wazaAccent
     }
 
     var sessionCount: Int { sessions.count }
@@ -27,7 +26,6 @@ class SessionsPresenter {
     func onViewAppear() {
         interactor.trackScreenEvent(event: Event.onAppear)
         loadData()
-        observeGymArrival()
     }
 
     func onSessionTapped(_ session: BJJSessionModel) {
@@ -42,6 +40,20 @@ class SessionsPresenter {
         })
     }
 
+    func onDeleteSwipeTapped(_ session: BJJSessionModel) {
+        interactor.trackEvent(event: Event.deleteSwipeTapped)
+        router.showAlert(.alert, title: "Delete Session?", subtitle: "This action cannot be undone.") {
+            AnyView(
+                Group {
+                    Button("Delete", role: .destructive) { [weak self] in
+                        self?.onDeleteConfirmed(session)
+                    }
+                    Button("Cancel", role: .cancel) { }
+                }
+            )
+        }
+    }
+
     func onDeleteConfirmed(_ session: BJJSessionModel) {
         interactor.trackEvent(event: Event.deleteConfirmed)
         do {
@@ -53,7 +65,7 @@ class SessionsPresenter {
 
     func onCheckInTapped(gym: GymLocationModel, schedule: ClassScheduleModel?) {
         interactor.trackEvent(event: Event.checkInTapped)
-        router.showCheckInView(gym: gym, schedule: schedule, onDismiss: { [weak self] in
+        router.showCheckInView(gym: gym, schedule: schedule, checkInMethod: .manual, onDismiss: { [weak self] in
             self?.loadData()
         })
     }
@@ -68,9 +80,9 @@ class SessionsPresenter {
     private func updateWidgets() {
         let streak = interactor.currentStreakData.currentStreak ?? 0
         let stats = interactor.sessionStats
-        WidgetDataStore.shared.update(WazaWidgetData(
+        interactor.updateWidgetData(WazaWidgetData(
             streakCount: streak,
-            accentColorHex: interactor.currentBeltEnum.accentColorHex,
+            accentColorHex: Color.wazaAccentHex,
             beltDisplayName: interactor.currentBeltEnum.displayName,
             sessionsThisWeek: stats.thisWeekSessions,
             nextClassTypeDisplayName: nextUpcomingClass?.0.sessionType.displayName,
@@ -81,25 +93,6 @@ class SessionsPresenter {
         ))
     }
 
-    private func observeGymArrival() {
-        guard gymArrivalObserver == nil else { return }
-        gymArrivalObserver = NotificationCenter.default.addObserver(
-            forName: .gymArrival,
-            object: nil,
-            queue: nil
-        ) { [weak self] notification in
-            let gymId = notification.userInfo?["gymId"] as? String
-            Task { @MainActor [weak self] in
-                guard let self, let gymId else { return }
-                if let gym = self.interactor.gyms.first(where: { $0.gymId == gymId }) {
-                    let schedule = self.interactor.schedules.first(where: {
-                        $0.gymId == gymId && $0.isActive
-                    })
-                    self.router.showCheckInView(gym: gym, schedule: schedule, onDismiss: nil)
-                }
-            }
-        }
-    }
 }
 
 extension SessionsPresenter {
@@ -108,17 +101,19 @@ extension SessionsPresenter {
         case sessionTapped
         case logTapped
         case checkInTapped
+        case deleteSwipeTapped
         case deleteConfirmed
         case deleteFailed(error: Error)
 
         var eventName: String {
             switch self {
-            case .onAppear:        return "SessionsView_Appear"
-            case .sessionTapped:   return "SessionsView_SessionTap"
-            case .logTapped:       return "SessionsView_LogTap"
-            case .checkInTapped:   return "SessionsView_CheckIn_Tap"
-            case .deleteConfirmed: return "SessionsView_Delete_Confirm"
-            case .deleteFailed:    return "SessionsView_Delete_Fail"
+            case .onAppear:          return "SessionsView_Appear"
+            case .sessionTapped:     return "SessionsView_SessionTap"
+            case .logTapped:         return "SessionsView_LogTap"
+            case .checkInTapped:     return "SessionsView_CheckIn_Tap"
+            case .deleteSwipeTapped: return "SessionsView_Delete_Swipe_Tap"
+            case .deleteConfirmed:   return "SessionsView_Delete_Confirm"
+            case .deleteFailed:      return "SessionsView_Delete_Fail"
             }
         }
 

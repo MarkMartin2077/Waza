@@ -9,13 +9,11 @@ class DashboardPresenter {
 
     private(set) var sessions: [BJJSessionModel] = []
     private(set) var sessionStats: SessionStats = .empty
-    private(set) var currentBelt: BeltRecordModel?
     private(set) var streakCount: Int = 0
     private(set) var totalXP: Int = 0
     private(set) var isPremium: Bool = false
     private(set) var isAIAvailable: Bool = false
     private(set) var nextUpcomingClass: (ClassScheduleModel, GymLocationModel)?
-    private var gymArrivalObserver: NSObjectProtocol?
 
     init(interactor: DashboardInteractor, router: DashboardRouter, delegate: DashboardDelegate) {
         self.interactor = interactor
@@ -26,22 +24,20 @@ class DashboardPresenter {
     func onViewAppear() {
         interactor.trackScreenEvent(event: Event.onAppear)
         loadData()
-        observeGymArrival()
     }
 
     func loadData() {
         sessions = interactor.recentSessions
         sessionStats = interactor.sessionStats
-        currentBelt = interactor.currentBelt
         streakCount = interactor.currentStreakData.currentStreak ?? 0
         totalXP = interactor.currentExperiencePointsData.pointsAllTime ?? 0
         isPremium = interactor.isPremium
         isAIAvailable = interactor.isAIAvailable
         nextUpcomingClass = interactor.nextUpcomingClass
 
-        WidgetDataStore.shared.update(WazaWidgetData(
+        interactor.updateWidgetData(WazaWidgetData(
             streakCount: streakCount,
-            accentColorHex: interactor.currentBeltEnum.accentColorHex,
+            accentColorHex: Color.wazaAccentHex,
             beltDisplayName: interactor.currentBeltEnum.displayName,
             sessionsThisWeek: sessionStats.thisWeekSessions,
             nextClassTypeDisplayName: nextUpcomingClass?.0.sessionType.displayName,
@@ -56,10 +52,6 @@ class DashboardPresenter {
 
     var isNewUser: Bool {
         sessionStats.totalSessions == 0
-    }
-
-    var isBeltSet: Bool {
-        currentBelt != nil
     }
 
     var isGymSet: Bool {
@@ -78,10 +70,6 @@ class DashboardPresenter {
         sessionStats.thisWeekSessions
     }
 
-    var beltDisplayName: String {
-        currentBelt?.displayTitle ?? interactor.currentBeltEnum.displayName
-    }
-
     var greeting: String {
         let hour = Calendar.current.component(.hour, from: Date())
         switch hour {
@@ -96,8 +84,23 @@ class DashboardPresenter {
         interactor.currentUserName.components(separatedBy: " ").first ?? "Athlete"
     }
 
-    var beltAccentColor: Color {
-        interactor.currentBeltEnum.accentColor
+    var greetingText: String {
+        let name = userFirstName
+        if name == "Athlete" || name.isEmpty {
+            return greeting
+        }
+        return "\(greeting), \(name)"
+    }
+
+    var hoursThisWeekFormatted: String {
+        let range = DateRange.thisCalendarWeek
+        let weekSessions = sessions.filter { $0.date >= range.start && $0.date <= range.end }
+        let totalSeconds = Int(weekSessions.reduce(0) { $0 + $1.duration })
+        let hours = totalSeconds / 3600
+        let minutes = (totalSeconds % 3600) / 60
+        if hours == 0 { return "\(minutes)m" }
+        if minutes == 0 { return "\(hours)h" }
+        return "\(hours)h \(minutes)m"
     }
 
     var totalTrainingTimeFormatted: String {
@@ -128,13 +131,9 @@ class DashboardPresenter {
 
     func onCheckInTapped(gym: GymLocationModel, schedule: ClassScheduleModel?) {
         interactor.trackEvent(event: Event.checkInTapped)
-        router.showCheckInView(gym: gym, schedule: schedule, onDismiss: { [weak self] in
+        router.showCheckInView(gym: gym, schedule: schedule, checkInMethod: .manual, onDismiss: { [weak self] in
             self?.loadData()
         })
-    }
-
-    func onSetBeltTapped() {
-        interactor.trackEvent(event: Event.setBeltTapped)
     }
 
     func onAIInsightsTapped() {
@@ -152,28 +151,6 @@ class DashboardPresenter {
         router.showDevSettingsView()
     }
 
-    // MARK: - Private
-
-    private func observeGymArrival() {
-        guard gymArrivalObserver == nil else { return }
-        gymArrivalObserver = NotificationCenter.default.addObserver(
-            forName: .gymArrival,
-            object: nil,
-            queue: nil
-        ) { [weak self] notification in
-            // Extract String (Sendable) before hopping actors — Notification is not Sendable
-            let gymId = notification.userInfo?["gymId"] as? String
-            Task { @MainActor [weak self] in
-                guard let self, let gymId else { return }
-                if let gym = self.interactor.gyms.first(where: { $0.gymId == gymId }) {
-                    let schedule = self.interactor.schedules.first(where: {
-                        $0.gymId == gymId && $0.isActive
-                    })
-                    self.router.showCheckInView(gym: gym, schedule: schedule, onDismiss: nil)
-                }
-            }
-        }
-    }
 }
 
 // MARK: - Events
@@ -187,7 +164,6 @@ extension DashboardPresenter {
         case aiInsightsTapped
         case upgradeTapped
         case devSettingsTapped
-        case setBeltTapped
 
         var eventName: String {
             switch self {
@@ -198,7 +174,6 @@ extension DashboardPresenter {
             case .aiInsightsTapped:  return "DashboardView_AIInsights_Tap"
             case .upgradeTapped:     return "DashboardView_Upgrade_Tap"
             case .devSettingsTapped: return "DashboardView_DevSettings_Tap"
-            case .setBeltTapped:     return "DashboardView_SetBelt_Tap"
             }
         }
 

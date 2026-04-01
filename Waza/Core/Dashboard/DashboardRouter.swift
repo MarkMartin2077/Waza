@@ -7,7 +7,7 @@ protocol DashboardRouter: GlobalRouter {
     func showPaywallView()
     func showDevSettingsView()
     func showAIInsightsView()
-    func showCheckInView(gym: GymLocationModel, schedule: ClassScheduleModel?, onDismiss: (() -> Void)?)
+    func showCheckInView(gym: GymLocationModel, schedule: ClassScheduleModel?, checkInMethod: CheckInMethod, onDismiss: (() -> Void)?)
 }
 
 extension CoreRouter: DashboardRouter { }

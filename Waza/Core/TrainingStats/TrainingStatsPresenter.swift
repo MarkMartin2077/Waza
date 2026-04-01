@@ -6,18 +6,26 @@ class TrainingStatsPresenter {
     let router: any TrainingStatsRouter
     let interactor: any TrainingStatsInteractor
 
-    var selectedPeriod: DateRange = .lastMonth
     var selectedPeriodLabel: String = "Month"
 
-    var snapshot: TrainingSnapshot = .empty
-    private(set) var activeGoals: [TrainingGoalModel] = []
+    let periodLabels = ["Week", "Month", "Year", "All Time"]
 
-    let periodOptions: [(label: String, range: DateRange)] = [
-        ("Week", .lastWeek),
-        ("Month", .lastMonth),
-        ("Year", .lastYear),
-        ("All Time", .allTime)
-    ]
+    var snapshot: TrainingSnapshot {
+        interactor.getTrainingSnapshot(period: currentPeriod)
+    }
+
+    var activeGoals: [TrainingGoalModel] {
+        interactor.activeGoals
+    }
+
+    private var currentPeriod: DateRange {
+        switch selectedPeriodLabel {
+        case "Week":     return .lastWeek
+        case "Year":     return .lastYear
+        case "All Time": return .allTime
+        default:         return .lastMonth
+        }
+    }
 
     init(router: any TrainingStatsRouter, interactor: any TrainingStatsInteractor) {
         self.router = router
@@ -26,8 +34,6 @@ class TrainingStatsPresenter {
 
     func onViewAppear() {
         interactor.trackScreenEvent(event: Event.onAppear)
-        loadStats()
-        activeGoals = interactor.activeGoals
     }
 
     func onManageGoalsTapped() {
@@ -44,15 +50,13 @@ class TrainingStatsPresenter {
         interactor.isAIAvailable
     }
 
-    func onPeriodSelected(label: String, range: DateRange) {
+    func onPeriodSelected(label: String) {
         interactor.trackEvent(event: Event.periodChanged(label: label))
         selectedPeriodLabel = label
-        selectedPeriod = range
-        loadStats()
     }
 
-    private func loadStats() {
-        snapshot = interactor.getTrainingSnapshot(period: selectedPeriod)
+    func computedProgress(for goal: TrainingGoalModel) -> Double {
+        goal.isMetricGoal ? interactor.computeProgress(for: goal) : goal.progress
     }
 }
 

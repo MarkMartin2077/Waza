@@ -15,7 +15,6 @@ class GymSetupPresenter {
     var searchText: String = ""
     var searchResults: [MKMapItem] = []
     var isLoading: Bool = false
-    var errorMessage: String?
 
     var canSave: Bool {
         !gymName.isEmpty && selectedCoordinate != nil
@@ -105,7 +104,7 @@ class GymSetupPresenter {
             router.dismissScreen()
         } catch {
             interactor.trackEvent(event: Event.saveFail(error: error))
-            errorMessage = error.localizedDescription
+            router.showAlert(error: error)
         }
         isLoading = false
     }
@@ -119,7 +118,7 @@ class GymSetupPresenter {
             router.dismissScreen()
         } catch {
             interactor.trackEvent(event: Event.saveFail(error: error))
-            errorMessage = error.localizedDescription
+            router.showAlert(error: error)
         }
     }
 }

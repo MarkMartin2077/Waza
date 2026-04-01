@@ -19,6 +19,7 @@ struct SessionEntryParams {
 @MainActor
 protocol SessionEntryInteractor: GlobalInteractor {
     var currentBeltEnum: BJJBelt { get }
+    var gyms: [GymLocationModel] { get }
     func logSessionWithGamification(_ params: SessionEntryParams) async throws -> BJJSessionModel
 }
 

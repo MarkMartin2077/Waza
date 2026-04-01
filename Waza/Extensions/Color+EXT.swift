@@ -8,6 +8,10 @@ import SwiftUI
 
 public extension Color {
 
+    /// App-wide accent color used throughout Waza
+    static let wazaAccent = Color(hex: "6366F1")
+    static let wazaAccentHex = "6366F1"
+
     init(hex: String) {
         let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
         var int: UInt64 = 0

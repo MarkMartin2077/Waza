@@ -13,15 +13,15 @@ struct OnboardingView: View {
 
             VStack(spacing: 0) {
                 skipButton
+                    .padding()
 
                 TabView(selection: $presenter.currentPage) {
                     welcomePage.tag(0)
-                    beltPage.tag(1)
-                    namePage.tag(2)
-                    trainingGoalPage.tag(3)
-                    notificationsPage.tag(4)
-                    locationPage.tag(5)
-                    readyPage.tag(6)
+                    namePage.tag(1)
+                    trainingGoalPage.tag(2)
+                    notificationsPage.tag(3)
+                    locationPage.tag(4)
+                    readyPage.tag(5)
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
                 .animation(.easeInOut(duration: 0.35), value: presenter.currentPage)
@@ -79,14 +79,13 @@ struct OnboardingView: View {
     }
 
     private var beltColor: Color {
-        (BJJBelt(rawValue: presenter.selectedBelt) ?? .white).accentColor
+        .wazaAccent
     }
 
     // MARK: - Top Controls
 
     private var skipButton: some View {
         HStack {
-            Spacer()
             Text("Skip")
                 .font(.subheadline)
                 .foregroundStyle(.white.opacity(0.5))
@@ -97,6 +96,7 @@ struct OnboardingView: View {
                 .opacity(presenter.isLastPage ? 0 : 1)
                 .animation(.easeInOut(duration: 0.22), value: presenter.isLastPage)
         }
+        .frame(maxWidth: .infinity, alignment: .trailing)
         .frame(height: 44)
         .padding(.top, 56)
     }
@@ -152,7 +152,7 @@ struct OnboardingView: View {
             .foregroundStyle(.white)
             .frame(maxWidth: .infinity)
             .frame(height: 52)
-            .background(Color.accentColor)
+            .background(Color.wazaAccent)
             .clipShape(RoundedRectangle(cornerRadius: 14))
             .anyButton(.press) {
                 presenter.onContinuePressed()
@@ -171,7 +171,7 @@ struct OnboardingView: View {
         }
         .frame(maxWidth: .infinity)
         .frame(height: 52)
-        .background(Color.accentColor)
+        .background(Color.wazaAccent)
         .clipShape(RoundedRectangle(cornerRadius: 14))
         .anyButton(.press) {
             if !presenter.isCompletingOnboarding {
@@ -191,7 +191,7 @@ struct OnboardingView: View {
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity)
                 .frame(height: 52)
-                .background(Color.accentColor)
+                .background(Color.wazaAccent)
                 .clipShape(RoundedRectangle(cornerRadius: 14))
                 .anyButton(.press) { onPrimary() }
 
@@ -212,8 +212,6 @@ struct OnboardingView: View {
 
     private var welcomePage: some View {
         VStack(spacing: 0) {
-            Spacer()
-
             ZStack {
                 Circle()
                     .fill(beltColor.opacity(0.1))
@@ -227,7 +225,7 @@ struct OnboardingView: View {
                     .foregroundStyle(beltColor)
             }
 
-            Spacer().frame(height: 44)
+            Color.clear.frame(height: 44)
 
             VStack(spacing: 14) {
                 Text("Welcome to Waza.")
@@ -242,123 +240,48 @@ struct OnboardingView: View {
                     .lineSpacing(4)
             }
             .padding(.horizontal, 36)
-
-            Spacer()
         }
-        .frame(maxWidth: .infinity)
-    }
-
-    private var beltPage: some View {
-        VStack(spacing: 0) {
-            Spacer().frame(height: 8)
-
-            VStack(spacing: 8) {
-                Text("What belt are you?")
-                    .font(.title2.weight(.bold))
-                    .foregroundStyle(.white)
-                    .multilineTextAlignment(.center)
-                Text("We'll track your journey from here.")
-                    .font(.subheadline)
-                    .foregroundStyle(.white.opacity(0.6))
-            }
-            .padding(.horizontal, 32)
-
-            Spacer().frame(height: 24)
-
-            VStack(spacing: 10) {
-                beltRow(id: "white", color: Color(hex: "5A6A7A"), name: "White")
-                beltRow(id: "blue", color: Color(hex: "1E56A0"), name: "Blue")
-                beltRow(id: "purple", color: Color(hex: "7B2D8B"), name: "Purple")
-                beltRow(id: "brown", color: Color(hex: "795548"), name: "Brown")
-                beltRow(id: "black", color: Color(hex: "C9A84C"), name: "Black")
-            }
-            .padding(.horizontal, 24)
-
-            Spacer()
-        }
-        .frame(maxWidth: .infinity)
-    }
-
-    private func beltRow(id: String, color: Color, name: String) -> some View {
-        let isSelected = presenter.selectedBelt == id
-
-        return HStack(spacing: 14) {
-            Circle()
-                .fill(color)
-                .frame(width: 26, height: 26)
-                .overlay(Circle().strokeBorder(Color.white.opacity(0.2), lineWidth: 1))
-
-            Text(name)
-                .font(.subheadline.weight(.medium))
-                .foregroundStyle(.white)
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-            if isSelected {
-                Image(systemName: "checkmark.circle.fill")
-                    .font(.body)
-                    .foregroundStyle(color)
-            }
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 14)
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(isSelected ? color.opacity(0.15) : Color.white.opacity(0.06))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .strokeBorder(isSelected ? color.opacity(0.5) : Color.clear, lineWidth: 1)
-        )
-        .animation(.spring(response: 0.28, dampingFraction: 0.7), value: isSelected)
-        .anyButton(.press) {
-            presenter.onBeltSelected(id)
-        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     private var namePage: some View {
-        VStack(spacing: 0) {
-            Spacer()
-
-            VStack(spacing: 36) {
-                VStack(spacing: 10) {
-                    Text("What should we call you?")
-                        .font(.title2.weight(.bold))
-                        .foregroundStyle(.white)
-                        .multilineTextAlignment(.center)
-                    Text("Just your first name.")
-                        .font(.subheadline)
-                        .foregroundStyle(.white.opacity(0.6))
-                        .multilineTextAlignment(.center)
-                }
-                .padding(.horizontal, 32)
-
-                TextField(
-                    "Your name",
-                    text: Binding(
-                        get: { presenter.enteredName },
-                        set: { presenter.enteredName = $0 }
-                    )
-                )
-                .foregroundStyle(Color.black)
-                .font(.body)
-                .padding(14)
-                .background(Color.white)
-                .clipShape(RoundedRectangle(cornerRadius: 10))
-                .padding(.horizontal, 24)
-                .submitLabel(.done)
-                .onSubmit {
-                    presenter.onContinuePressed()
-                }
+        VStack(spacing: 36) {
+            VStack(spacing: 10) {
+                Text("What should we call you?")
+                    .font(.title2.weight(.bold))
+                    .foregroundStyle(.white)
+                    .multilineTextAlignment(.center)
+                Text("Just your first name.")
+                    .font(.subheadline)
+                    .foregroundStyle(.white.opacity(0.6))
+                    .multilineTextAlignment(.center)
             }
+            .padding(.horizontal, 32)
 
-            Spacer()
+            TextField(
+                "Your name",
+                text: Binding(
+                    get: { presenter.enteredName },
+                    set: { presenter.enteredName = $0 }
+                )
+            )
+            .foregroundStyle(Color.black)
+            .font(.body)
+            .padding(14)
+            .background(Color.white)
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+            .padding(.horizontal, 24)
+            .submitLabel(.done)
+            .onSubmit {
+                presenter.onContinuePressed()
+            }
         }
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     private var trainingGoalPage: some View {
         VStack(spacing: 0) {
-            Spacer().frame(height: 8)
+            Color.clear.frame(height: 8)
 
             VStack(spacing: 8) {
                 Text("How often do you want to train?")
@@ -371,7 +294,7 @@ struct OnboardingView: View {
                     .foregroundStyle(.white.opacity(0.6))
             }
 
-            Spacer().frame(height: 24)
+            Color.clear.frame(height: 24)
 
             VStack(spacing: 10) {
                 goalRow(id: "2", label: "1–2×", detail: "Light schedule")
@@ -380,10 +303,8 @@ struct OnboardingView: View {
                 goalRow(id: "5", label: "5×+", detail: "Competitor")
             }
             .padding(.horizontal, 24)
-
-            Spacer()
         }
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
 
     private func goalRow(id: String, label: String, detail: String) -> some View {
@@ -428,40 +349,34 @@ struct OnboardingView: View {
         title: String,
         subtitle: String
     ) -> some View {
-        VStack(spacing: 0) {
-            Spacer()
-
-            VStack(spacing: 40) {
-                ZStack {
-                    Circle()
-                        .fill(iconColor.opacity(0.12))
-                        .frame(width: 120, height: 120)
-                    Circle()
-                        .strokeBorder(iconColor.opacity(0.3), lineWidth: 1.5)
-                        .frame(width: 120, height: 120)
-                    Image(systemName: iconName)
-                        .font(.system(size: 46, weight: .medium))
-                        .symbolRenderingMode(.hierarchical)
-                        .foregroundStyle(iconColor)
-                }
-
-                VStack(spacing: 12) {
-                    Text(title)
-                        .font(.title2.weight(.bold))
-                        .foregroundStyle(.white)
-                        .multilineTextAlignment(.center)
-                    Text(subtitle)
-                        .font(.subheadline)
-                        .foregroundStyle(.white.opacity(0.6))
-                        .multilineTextAlignment(.center)
-                        .lineSpacing(3)
-                }
-                .padding(.horizontal, 36)
+        VStack(spacing: 40) {
+            ZStack {
+                Circle()
+                    .fill(iconColor.opacity(0.12))
+                    .frame(width: 120, height: 120)
+                Circle()
+                    .strokeBorder(iconColor.opacity(0.3), lineWidth: 1.5)
+                    .frame(width: 120, height: 120)
+                Image(systemName: iconName)
+                    .font(.system(size: 46, weight: .medium))
+                    .symbolRenderingMode(.hierarchical)
+                    .foregroundStyle(iconColor)
             }
 
-            Spacer()
+            VStack(spacing: 12) {
+                Text(title)
+                    .font(.title2.weight(.bold))
+                    .foregroundStyle(.white)
+                    .multilineTextAlignment(.center)
+                Text(subtitle)
+                    .font(.subheadline)
+                    .foregroundStyle(.white.opacity(0.6))
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(3)
+            }
+            .padding(.horizontal, 36)
         }
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     private var notificationsPage: some View {
@@ -483,47 +398,69 @@ struct OnboardingView: View {
     }
 
     private var readyPage: some View {
-        VStack(spacing: 0) {
-            Spacer()
-
-            VStack(spacing: 36) {
-                ZStack {
-                    Circle()
-                        .fill(beltColor.opacity(0.12))
-                        .frame(width: 120, height: 120)
-                    Circle()
-                        .strokeBorder(beltColor.opacity(0.3), lineWidth: 1.5)
-                        .frame(width: 120, height: 120)
-                    Image(systemName: "checkmark")
-                        .font(.system(size: 50, weight: .semibold))
-                        .foregroundStyle(beltColor)
-                }
-
-                VStack(spacing: 12) {
-                    Text("You're all set.")
-                        .font(.title.weight(.bold))
-                        .foregroundStyle(.white)
-                        .multilineTextAlignment(.center)
-                    Text("The mats are waiting.\nTime to track your journey.")
-                        .font(.subheadline)
-                        .foregroundStyle(.white.opacity(0.6))
-                        .multilineTextAlignment(.center)
-                        .lineSpacing(4)
-                }
+        VStack(spacing: 36) {
+            ZStack {
+                Circle()
+                    .fill(beltColor.opacity(0.12))
+                    .frame(width: 120, height: 120)
+                Circle()
+                    .strokeBorder(beltColor.opacity(0.3), lineWidth: 1.5)
+                    .frame(width: 120, height: 120)
+                Image(systemName: "checkmark")
+                    .font(.system(size: 50, weight: .semibold))
+                    .foregroundStyle(beltColor)
             }
 
-            Spacer()
+            VStack(spacing: 12) {
+                Text("You're all set.")
+                    .font(.title.weight(.bold))
+                    .foregroundStyle(.white)
+                    .multilineTextAlignment(.center)
+                Text("The mats are waiting.\nTime to track your journey.")
+                    .font(.subheadline)
+                    .foregroundStyle(.white.opacity(0.6))
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(4)
+            }
         }
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 
-#Preview {
+#Preview("Welcome Page") {
     let container = DevPreview.shared.container()
     let builder = CoreBuilder(interactor: CoreInteractor(container: container))
 
     return RouterView { router in
         builder.onboardingView(router: router, delegate: OnboardingDelegate())
+    }
+}
+
+#Preview("Name Page") {
+    let container = DevPreview.shared.container()
+    let builder = CoreBuilder(interactor: CoreInteractor(container: container))
+
+    RouterView { router in
+        let presenter = OnboardingPresenter(
+            interactor: CoreInteractor(container: container),
+            router: CoreRouter(router: router, builder: builder)
+        )
+        presenter.currentPage = 1
+        return OnboardingView(presenter: presenter, delegate: OnboardingDelegate())
+    }
+}
+
+#Preview("Ready Page") {
+    let container = DevPreview.shared.container()
+    let builder = CoreBuilder(interactor: CoreInteractor(container: container))
+
+    RouterView { router in
+        let presenter = OnboardingPresenter(
+            interactor: CoreInteractor(container: container),
+            router: CoreRouter(router: router, builder: builder)
+        )
+        presenter.currentPage = 5
+        return OnboardingView(presenter: presenter, delegate: OnboardingDelegate())
     }
 }
 

@@ -16,6 +16,8 @@ struct Constants {
     static let xpKey = "general" // general XP
     static let progressKey = "general" // general progress
 
+    static let colorSchemeStorageKey = "waza_colorSchemeIndex"
+
     static var mixpanelDistinctId: String? {
         #if MOCK
         return nil

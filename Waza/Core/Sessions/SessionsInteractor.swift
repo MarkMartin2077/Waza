@@ -10,6 +10,7 @@ protocol SessionsInteractor: GlobalInteractor {
     var schedules: [ClassScheduleModel] { get }
     var currentStreakData: CurrentStreakData { get }
     func deleteSession(_ session: BJJSessionModel) throws
+    func updateWidgetData(_ data: WazaWidgetData)
 }
 
 extension CoreInteractor: SessionsInteractor { }

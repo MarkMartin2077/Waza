@@ -10,9 +10,9 @@ struct ClassScheduleRowView: View {
             HStack(spacing: 12) {
                 Image(systemName: schedule.sessionType.iconName)
                     .font(.subheadline)
-                    .foregroundStyle(.accent)
+                    .foregroundStyle(Color.wazaAccent)
                     .frame(width: 32, height: 32)
-                    .background(.accent.opacity(0.1), in: RoundedRectangle(cornerRadius: 8))
+                    .background(Color.wazaAccent.opacity(0.1), in: RoundedRectangle(cornerRadius: 12))
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(schedule.name)

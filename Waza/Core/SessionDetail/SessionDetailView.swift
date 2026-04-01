@@ -22,54 +22,38 @@ struct SessionDetailView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 if presenter.isEditing {
+                    // Button required by SwiftUI ToolbarItem API
                     Button("Save") {
                         presenter.onSaveEditPressed()
                     }
                     .fontWeight(.semibold)
-                    .foregroundStyle(presenter.beltAccentColor)
+                    .foregroundStyle(Color.wazaAccent)
                 } else {
                     Menu {
+                        // Button required by SwiftUI Menu API
                         Button("Edit Notes") {
                             presenter.onEditPressed()
                         }
                         Divider()
+                        // Button required by SwiftUI Menu API
                         Button("Delete Session", role: .destructive) {
                             presenter.onDeletePressed()
                         }
                     } label: {
                         Image(systemName: "ellipsis.circle")
-                            .foregroundStyle(presenter.beltAccentColor)
+                            .foregroundStyle(Color.wazaAccent)
                     }
                 }
             }
             if presenter.isEditing {
                 ToolbarItem(placement: .topBarLeading) {
+                    // Button required by SwiftUI ToolbarItem API
                     Button("Cancel") {
                         presenter.onCancelEditPressed()
                     }
                     .foregroundStyle(.secondary)
                 }
             }
-        }
-        .confirmationDialog(
-            "Delete this session?",
-            isPresented: $presenter.showDeleteConfirm,
-            titleVisibility: .visible
-        ) {
-            Button("Delete", role: .destructive) {
-                presenter.onDeleteConfirmed()
-            }
-            Button("Cancel", role: .cancel) { }
-        } message: {
-            Text("This action cannot be undone.")
-        }
-        .alert("Error", isPresented: Binding(
-            get: { presenter.errorMessage != nil },
-            set: { if !$0 { presenter.errorMessage = nil } }
-        )) {
-            Button("OK") { presenter.errorMessage = nil }
-        } message: {
-            Text(presenter.errorMessage ?? "")
         }
         .onAppear {
             presenter.onViewAppear()
@@ -83,10 +67,10 @@ struct SessionDetailView: View {
             HStack(alignment: .center, spacing: 14) {
                 Image(systemName: presenter.session.sessionType.iconName)
                     .font(.title)
-                    .foregroundStyle(presenter.beltAccentColor)
+                    .foregroundStyle(Color.wazaAccent)
                     .frame(width: 60, height: 60)
-                    .background(presenter.beltAccentColor.opacity(0.1), in: RoundedRectangle(cornerRadius: 16))
-                    .overlay(RoundedRectangle(cornerRadius: 16).stroke(presenter.beltAccentColor.opacity(0.2), lineWidth: 1))
+                    .background(Color.wazaAccent.opacity(0.1), in: RoundedRectangle(cornerRadius: 16))
+                    .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.wazaAccent.opacity(0.2), lineWidth: 1))
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(presenter.session.sessionType.displayName)
@@ -108,8 +92,8 @@ struct SessionDetailView: View {
                 if let academy = presenter.session.academy {
                     detailPill(icon: "mappin", value: academy)
                 }
-                Spacer(minLength: 0)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(16)
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
@@ -122,10 +106,10 @@ struct SessionDetailView: View {
             Text(value)
                 .font(.caption)
         }
-        .foregroundStyle(presenter.beltAccentColor)
+        .foregroundStyle(Color.wazaAccent)
         .padding(.horizontal, 10)
         .padding(.vertical, 6)
-        .background(presenter.beltAccentColor.opacity(0.1), in: Capsule())
+        .background(Color.wazaAccent.opacity(0.1), in: Capsule())
     }
 
     // MARK: - Focus Areas
@@ -143,8 +127,8 @@ struct SessionDetailView: View {
                         .fontWeight(.medium)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 5)
-                        .background(presenter.beltAccentColor.opacity(0.12), in: Capsule())
-                        .foregroundStyle(presenter.beltAccentColor)
+                        .background(Color.wazaAccent.opacity(0.12), in: Capsule())
+                        .foregroundStyle(Color.wazaAccent)
                 }
             }
         }
@@ -199,7 +183,7 @@ struct SessionDetailView: View {
         HStack(alignment: .top, spacing: 10) {
             Image(systemName: icon)
                 .font(.subheadline)
-                .foregroundStyle(presenter.beltAccentColor)
+                .foregroundStyle(Color.wazaAccent)
                 .frame(width: 20)
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
@@ -305,50 +289,6 @@ struct SessionDetailView: View {
         case 4: return "🙂"
         case 5: return "😄"
         default: return "😐"
-        }
-    }
-}
-
-// MARK: - Simple Flow Layout
-
-private struct FlowLayout: Layout {
-    var spacing: CGFloat = 8
-
-    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
-        let width = proposal.width ?? 0
-        var height: CGFloat = 0
-        var xPos: CGFloat = 0
-        var rowHeight: CGFloat = 0
-
-        for view in subviews {
-            let size = view.sizeThatFits(.unspecified)
-            if xPos + size.width > width, xPos > 0 {
-                height += rowHeight + spacing
-                xPos = 0
-                rowHeight = 0
-            }
-            xPos += size.width + spacing
-            rowHeight = max(rowHeight, size.height)
-        }
-        height += rowHeight
-        return CGSize(width: width, height: height)
-    }
-
-    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
-        var xPos = bounds.minX
-        var yPos = bounds.minY
-        var rowHeight: CGFloat = 0
-
-        for view in subviews {
-            let size = view.sizeThatFits(.unspecified)
-            if xPos + size.width > bounds.maxX, xPos > bounds.minX {
-                yPos += rowHeight + spacing
-                xPos = bounds.minX
-                rowHeight = 0
-            }
-            view.place(at: CGPoint(x: xPos, y: yPos), proposal: ProposedViewSize(size))
-            xPos += size.width + spacing
-            rowHeight = max(rowHeight, size.height)
         }
     }
 }

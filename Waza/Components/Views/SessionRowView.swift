@@ -7,27 +7,20 @@ struct SessionRowView: View {
     private var resolvedAccent: Color { accentColor ?? .accentColor }
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 10) {
             Image(systemName: session.sessionType.iconName)
-                .font(.title3)
+                .font(.subheadline)
                 .foregroundStyle(resolvedAccent)
-                .frame(width: 44, height: 44)
-                .background(resolvedAccent.opacity(0.1), in: RoundedRectangle(cornerRadius: 12))
-                .overlay(RoundedRectangle(cornerRadius: 12).stroke(resolvedAccent.opacity(0.2), lineWidth: 1))
+                .frame(width: 32, height: 32)
+                .background(resolvedAccent.opacity(0.08), in: RoundedRectangle(cornerRadius: 8))
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text(session.sessionType.displayName)
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+            VStack(alignment: .leading, spacing: 3) {
+                HStack {
+                    Text(session.sessionType.displayName)
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .frame(maxWidth: .infinity, alignment: .leading)
 
-                HStack(spacing: 4) {
-                    Text(session.dateFormatted)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    Text("·")
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
                     Text(session.durationFormatted)
                         .font(.caption)
                         .foregroundStyle(.secondary)
@@ -38,27 +31,45 @@ struct SessionRowView: View {
                         ForEach(session.focusAreas.prefix(2), id: \.self) { area in
                             Text(area)
                                 .font(.caption2)
-                                .fontWeight(.medium)
                                 .padding(.horizontal, 6)
                                 .padding(.vertical, 2)
-                                .background(resolvedAccent.opacity(0.1), in: Capsule())
-                                .foregroundStyle(resolvedAccent)
+                                .background(Color(.systemGray5), in: Capsule())
+                                .foregroundStyle(.secondary)
                         }
                         if session.focusAreas.count > 2 {
                             Text("+\(session.focusAreas.count - 2)")
                                 .font(.caption2)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(.tertiary)
                         }
                     }
                 }
+
+                Text(relativeDate(session.date))
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
             }
 
             Image(systemName: "chevron.right")
-                .font(.caption)
-                .foregroundStyle(.tertiary)
+                .font(.caption2)
+                .foregroundStyle(.quaternary)
         }
-        .padding(12)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14))
+        .padding(10)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+    }
+
+    private func relativeDate(_ date: Date) -> String {
+        let calendar = Calendar.current
+        if calendar.isDateInToday(date) { return "Today" }
+        if calendar.isDateInYesterday(date) { return "Yesterday" }
+        let daysAgo = calendar.dateComponents([.day], from: date, to: Date()).day ?? 0
+        if daysAgo < 7 {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "EEEE"
+            return formatter.string(from: date)
+        }
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMM d"
+        return formatter.string(from: date)
     }
 }
 

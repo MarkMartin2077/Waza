@@ -9,18 +9,14 @@ class GoalsPlanningPresenter {
 
     private(set) var activeGoals: [TrainingGoalModel] = []
     private(set) var completedGoals: [TrainingGoalModel] = []
-    private(set) var currentBelt: BJJBelt = .white
 
     var showAddGoalSheet: Bool = false
     var showCompletedGoals: Bool = false
-    var errorMessage: String?
 
     // New goal form
-    var newGoalTitle: String = ""
-    var newGoalDescription: String = ""
-    var newGoalType: GoalType = .custom
-    var newGoalDeadline: Date = Calendar.current.date(byAdding: .month, value: 1, to: Date()) ?? Date()
-    var newGoalHasDeadline: Bool = false
+    var selectedMetric: GoalMetric = .sessionsPerWeek
+    var newGoalTarget: Int = 3
+    var selectedFocusArea: String = ""
 
     init(interactor: GoalsPlanningInteractor, router: GoalsPlanningRouter, delegate: GoalsPlanningDelegate) {
         self.interactor = interactor
@@ -36,7 +32,6 @@ class GoalsPlanningPresenter {
     func loadData() {
         activeGoals = interactor.activeGoals
         completedGoals = interactor.completedGoals
-        currentBelt = interactor.currentBeltEnum
     }
 
     func onAddGoalTapped() {
@@ -47,21 +42,20 @@ class GoalsPlanningPresenter {
 
     func onSaveNewGoal() {
         interactor.trackEvent(event: Event.saveGoalTapped)
-        guard !newGoalTitle.isEmpty else { return }
 
         do {
-            _ = try interactor.createGoal(
-                title: newGoalTitle,
-                description: newGoalDescription.isEmpty ? nil : newGoalDescription,
-                goalType: newGoalType,
-                deadline: newGoalHasDeadline ? newGoalDeadline : nil
+            let focus: String? = selectedMetric == .focusAreaSessions && !selectedFocusArea.isEmpty ? selectedFocusArea : nil
+            _ = try interactor.createMetricGoal(
+                metric: selectedMetric,
+                targetValue: Double(newGoalTarget),
+                focusArea: focus
             )
             showAddGoalSheet = false
             loadData()
             interactor.playHaptic(option: .success)
         } catch {
             interactor.trackEvent(event: Event.saveFail(error: error))
-            errorMessage = error.localizedDescription
+            router.showAlert(error: error)
         }
     }
 
@@ -70,17 +64,25 @@ class GoalsPlanningPresenter {
         showAddGoalSheet = false
     }
 
+    func onFormInteraction() {
+        interactor.playHaptic(option: .light)
+    }
+
     func onUpdateProgress(_ goal: TrainingGoalModel, newProgress: Double) {
+        guard !goal.isMetricGoal else { return }
+        interactor.trackEvent(event: Event.updateProgressTapped)
         do {
             try interactor.updateGoalProgress(goalId: goal.id, progress: newProgress)
             loadData()
+            interactor.trackEvent(event: Event.updateProgressSuccess)
         } catch {
             interactor.trackEvent(event: Event.updateProgressFail(error: error))
-            errorMessage = error.localizedDescription
+            router.showAlert(error: error)
         }
     }
 
     func onCompleteGoal(_ goal: TrainingGoalModel) {
+        guard !goal.isMetricGoal else { return }
         interactor.trackEvent(event: Event.goalCompleted)
         do {
             try interactor.completeGoal(goalId: goal.id)
@@ -88,7 +90,7 @@ class GoalsPlanningPresenter {
             interactor.playHaptic(option: .success)
         } catch {
             interactor.trackEvent(event: Event.completeGoalFail(error: error))
-            errorMessage = error.localizedDescription
+            router.showAlert(error: error)
         }
     }
 
@@ -99,22 +101,43 @@ class GoalsPlanningPresenter {
             loadData()
         } catch {
             interactor.trackEvent(event: Event.deleteGoalFail(error: error))
-            errorMessage = error.localizedDescription
+            router.showAlert(error: error)
         }
     }
 
     private func resetNewGoalForm() {
-        newGoalTitle = ""
-        newGoalDescription = ""
-        newGoalType = .custom
-        newGoalDeadline = Calendar.current.date(byAdding: .month, value: 1, to: Date()) ?? Date()
-        newGoalHasDeadline = false
+        selectedMetric = .sessionsPerWeek
+        newGoalTarget = 3
+        selectedFocusArea = ""
     }
 
-    var nextBeltText: String {
-        guard let next = currentBelt.nextBelt else { return "You've reached black belt!" }
-        return "Working towards \(next.displayName) belt"
+    // MARK: - Focus Area Options
+
+    var focusAreaOptions: [String] {
+        interactor.distinctFocusAreas
     }
+
+    // MARK: - Progress Helpers
+
+    func computedProgress(for goal: TrainingGoalModel) -> Double {
+        goal.isMetricGoal ? interactor.computeProgress(for: goal) : goal.progress
+    }
+
+    func progressLabel(for goal: TrainingGoalModel) -> String? {
+        guard let metric = goal.goalMetric, let target = goal.targetValue else { return nil }
+        let current = interactor.currentValue(for: goal)
+        switch metric {
+        case .sessionsPerWeek:
+            return "\(Int(current))/\(Int(target)) this week"
+        case .sessionsPerMonth:
+            return "\(Int(current))/\(Int(target)) this month"
+        case .hoursPerMonth:
+            return String(format: "%.1f/%.0f hours this month", current, target)
+        case .focusAreaSessions:
+            return "\(Int(current))/\(Int(target)) sessions"
+        }
+    }
+
 }
 
 extension GoalsPlanningPresenter {
@@ -125,6 +148,8 @@ extension GoalsPlanningPresenter {
         case saveGoalTapped
         case goalCompleted
         case goalDeleted
+        case updateProgressTapped
+        case updateProgressSuccess
         case saveFail(error: Error)
         case updateProgressFail(error: Error)
         case completeGoalFail(error: Error)
@@ -138,6 +163,8 @@ extension GoalsPlanningPresenter {
             case .saveGoalTapped:       return "GoalsPlanningView_SaveGoal_Tap"
             case .goalCompleted:        return "GoalsPlanningView_Goal_Complete"
             case .goalDeleted:          return "GoalsPlanningView_Goal_Delete"
+            case .updateProgressTapped: return "GoalsPlanningView_UpdateProgress_Tap"
+            case .updateProgressSuccess: return "GoalsPlanningView_UpdateProgress_Success"
             case .saveFail:             return "GoalsPlanningView_Save_Fail"
             case .updateProgressFail:   return "GoalsPlanningView_UpdateProgress_Fail"
             case .completeGoalFail:     return "GoalsPlanningView_CompleteGoal_Fail"

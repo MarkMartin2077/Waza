@@ -18,7 +18,7 @@ struct WazaWidgetData: Codable {
     static var placeholder: WazaWidgetData {
         WazaWidgetData(
             streakCount: 7,
-            accentColorHex: "1E56A0",
+            accentColorHex: "6366F1",
             beltDisplayName: "Blue Belt",
             sessionsThisWeek: 3,
             nextClassTypeDisplayName: "Gi",

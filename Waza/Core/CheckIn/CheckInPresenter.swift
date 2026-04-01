@@ -11,7 +11,6 @@ class CheckInPresenter {
     var isConfirmed: Bool = false
     var aiMessage: String = ""
     var isStreamingAI: Bool = false
-    var errorMessage: String?
     private(set) var checkedInRecord: ClassAttendanceModel?
 
     init(interactor: CheckInInteractor, router: CheckInRouter, delegate: CheckInDelegate) {
@@ -44,7 +43,7 @@ class CheckInPresenter {
             interactor.startTrainingLiveActivity(
                 sessionTypeDisplayName: delegate.matchedSchedule?.sessionType.displayName ?? delegate.gym.name,
                 gymName: delegate.gym.name,
-                beltAccentColorHex: interactor.currentBeltEnum.accentColorHex
+                beltAccentColorHex: Color.wazaAccentHex
             )
             Task {
                 interactor.playHaptic(option: .medium)
@@ -57,13 +56,13 @@ class CheckInPresenter {
             delegate.onCheckedIn?(record)
         } catch {
             interactor.trackEvent(event: Event.checkInFail(error: error))
-            errorMessage = error.localizedDescription
+            router.showAlert(error: error)
         }
     }
 
     func onLogSessionTapped() {
         interactor.trackEvent(event: Event.logSessionTapped)
-        router.showSessionEntryView { [weak self] in
+        router.showSessionEntryView(attendanceRecord: checkedInRecord) { [weak self] in
             self?.router.dismissScreen()
         }
     }
@@ -77,7 +76,7 @@ class CheckInPresenter {
     var scheduleName: String? { delegate.matchedSchedule?.name }
 
     var beltAccentColor: Color {
-        interactor.currentBeltEnum.accentColor
+        .wazaAccent
     }
 
     // MARK: - AI
@@ -87,7 +86,7 @@ class CheckInPresenter {
         let classesThisWeek = interactor.weeklyAttendanceCount(weekOf: Date())
         let belt = interactor.currentBeltEnum
         let totalAttendance = interactor.classAttendance.count
-        let weeklyTarget = 3
+        let weeklyTarget = interactor.trainingGoalPerWeek ?? 3
         let userName = interactor.currentUserName
 
         isStreamingAI = true

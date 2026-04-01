@@ -18,7 +18,7 @@ struct CustomPaywallView: View {
     
     var body: some View {
         ZStack {
-            Color.blue.ignoresSafeArea()
+            Color.wazaAccent.ignoresSafeArea()
             
             VStack(spacing: 0) {
                 Spacer(minLength: 0)

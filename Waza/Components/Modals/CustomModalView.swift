@@ -35,7 +35,7 @@ struct CustomModalView: View {
                 Text(primaryButtonTitle)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
-                    .background(.accent)
+                    .background(Color.wazaAccent)
                     .foregroundStyle(.white)
                     .cornerRadius(16)
                     .anyButton(.press) {
@@ -61,20 +61,39 @@ struct CustomModalView: View {
     }
 }
 
-#Preview {
+#Preview("With Subtitle") {
     ZStack {
         Color.black.ignoresSafeArea()
-        
+
         CustomModalView(
             title: "Are you enjoying AIChat?",
             subtitle: "We'd love to hear your feedback!",
             primaryButtonTitle: "Yes",
             primaryButtonAction: {
-                
+
             },
             secondaryButtonTitle: "No",
             secondaryButtonAction: {
-                
+
+            }
+        )
+    }
+}
+
+#Preview("Without Subtitle") {
+    ZStack {
+        Color.black.ignoresSafeArea()
+
+        CustomModalView(
+            title: "Are you sure?",
+            subtitle: nil,
+            primaryButtonTitle: "Confirm",
+            primaryButtonAction: {
+
+            },
+            secondaryButtonTitle: "Cancel",
+            secondaryButtonAction: {
+
             }
         )
     }

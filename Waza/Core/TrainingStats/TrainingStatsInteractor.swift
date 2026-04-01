@@ -7,6 +7,8 @@ protocol TrainingStatsInteractor: GlobalInteractor {
     var isAIAvailable: Bool { get }
     func getTrainingSnapshot(period: DateRange) -> TrainingSnapshot
     func getTypeBreakdown(for period: DateRange) -> [TypeStat]
+    func computeProgress(for goal: TrainingGoalModel) -> Double
+    func currentValue(for goal: TrainingGoalModel) -> Double
 }
 
 extension CoreInteractor: TrainingStatsInteractor { }

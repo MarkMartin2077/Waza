@@ -31,6 +31,7 @@ class PaywallPresenter {
     }
     
     func onLoadProducts() async {
+        interactor.trackEvent(event: Event.loadProductsStart)
         do {
             products = try await interactor.getProducts(productIds: productIds)
         } catch {

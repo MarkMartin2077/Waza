@@ -91,7 +91,7 @@ struct AIInsightsView: View {
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 13)
-                    .background(.accent, in: RoundedRectangle(cornerRadius: 12))
+                    .background(Color.wazaAccent, in: RoundedRectangle(cornerRadius: 14))
                     .anyButton(.press) {
                         presenter.onStreamSummaryTapped()
                     }
@@ -128,7 +128,7 @@ struct AIInsightsView: View {
                 }
                 Text("Regenerate Insights")
                     .font(.subheadline)
-                    .foregroundStyle(.accent)
+                    .foregroundStyle(Color.wazaAccent)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 10)
                     .anyButton {
@@ -140,7 +140,7 @@ struct AIInsightsView: View {
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 13)
-                    .background(.accent, in: RoundedRectangle(cornerRadius: 12))
+                    .background(Color.wazaAccent, in: RoundedRectangle(cornerRadius: 14))
                     .anyButton(.press) {
                         presenter.onGenerateInsightsTapped()
                     }
@@ -198,17 +198,17 @@ private struct InsightCardView: View {
             HStack(spacing: 6) {
                 Image(systemName: "arrow.right.circle.fill")
                     .font(.caption)
-                    .foregroundStyle(.accent)
+                    .foregroundStyle(Color.wazaAccent)
                 Text(insight.actionItem)
                     .font(.caption)
                     .fontWeight(.medium)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
             .padding(10)
-            .background(.accent.opacity(0.08), in: RoundedRectangle(cornerRadius: 8))
+            .background(Color.wazaAccent.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
         }
         .padding(14)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
     }
 
     private func categoryIcon(_ category: String) -> String {
@@ -223,11 +223,11 @@ private struct InsightCardView: View {
 
     private func categoryColor(_ category: String) -> Color {
         switch category.lowercased() {
-        case "pattern":     return .blue
+        case "pattern":     return .wazaAccent
         case "strength":    return .green
         case "opportunity": return .orange
         case "warning":     return .red
-        default:            return .accent
+        default:            return .wazaAccent
         }
     }
 }

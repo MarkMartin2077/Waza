@@ -33,10 +33,12 @@ struct ClassScheduleView: View {
     // MARK: - Empty State
 
     private var emptyStateView: some View {
-        ContentUnavailableView(
-            "No Gyms Added",
-            systemImage: "mappin.circle",
-            description: Text("Add your gym to set up recurring class reminders and automatic check-ins.")
+        EmptyStateView(
+            icon: "mappin.circle",
+            title: "No Gyms Added",
+            subtitle: "Add your gym to set up recurring class reminders and automatic check-ins.",
+            actionTitle: nil,
+            onAction: nil
         )
         .padding(.top, 32)
     }
@@ -59,7 +61,7 @@ struct ClassScheduleView: View {
                 }
                 Image(systemName: "pencil")
                     .font(.subheadline)
-                    .foregroundStyle(.accent)
+                    .foregroundStyle(Color.wazaAccent)
                     .anyButton {
                         presenter.onEditGymTapped(gym)
                     }
@@ -84,7 +86,7 @@ struct ClassScheduleView: View {
 
             Label("Add Class", systemImage: "plus")
                 .font(.subheadline)
-                .foregroundStyle(.accent)
+                .foregroundStyle(Color.wazaAccent)
                 .anyButton {
                     presenter.onAddScheduleTapped(gymId: gym.gymId)
                 }
@@ -99,7 +101,7 @@ struct ClassScheduleView: View {
     private var addGymButton: some View {
         Image(systemName: "plus")
             .font(.headline)
-            .foregroundStyle(.accent)
+            .foregroundStyle(Color.wazaAccent)
             .anyButton {
                 presenter.onAddGymTapped()
             }
@@ -133,7 +135,10 @@ extension CoreRouter {
 
     func showAddScheduleSheet(gymId: String, existingSchedule: ClassScheduleModel?, onDismiss: (() -> Void)? = nil) {
         router.showScreen(.sheet) { router in
-            builder.addScheduleView(router: router, gymId: gymId, existingSchedule: existingSchedule, onSaved: onDismiss)
+            builder.addScheduleView(
+                router: router,
+                delegate: AddScheduleDelegate(gymId: gymId, existingSchedule: existingSchedule, onSaved: onDismiss)
+            )
         }
     }
 

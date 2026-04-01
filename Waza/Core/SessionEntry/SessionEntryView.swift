@@ -5,7 +5,7 @@ struct SessionEntryView: View {
     let delegate: SessionEntryDelegate
 
     @State private var locationExpanded = false
-    @State private var reflectionExpanded = false
+    @State private var reflectionExpanded = true
     @State private var statsExpanded = false
 
     private let moodEmojis = ["😞", "😕", "😐", "🙂", "😄"]
@@ -15,6 +15,7 @@ struct SessionEntryView: View {
             ScrollView {
                 VStack(spacing: 16) {
                     typeCard
+                    focusAreasCard
                     dateAndDurationCard
                     locationCard
                     reflectionCard
@@ -29,17 +30,10 @@ struct SessionEntryView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
+                    // Button required by SwiftUI ToolbarItem API
                     Button("Cancel") { presenter.onCancelPressed() }
                         .foregroundStyle(.secondary)
                 }
-            }
-            .alert("Error", isPresented: Binding(
-                get: { presenter.errorMessage != nil },
-                set: { if !$0 { presenter.errorMessage = nil } }
-            )) {
-                Button("OK") { presenter.errorMessage = nil }
-            } message: {
-                Text(presenter.errorMessage ?? "")
             }
         }
         .onAppear {
@@ -69,7 +63,7 @@ struct SessionEntryView: View {
                         }
                         .frame(width: 76, height: 70)
                         .background(
-                            isSelected ? presenter.beltAccentColor : Color(.systemGray6),
+                            isSelected ? Color.wazaAccent : Color(.systemGray6),
                             in: RoundedRectangle(cornerRadius: 12)
                         )
                         .foregroundStyle(isSelected ? .white : .primary)
@@ -78,6 +72,58 @@ struct SessionEntryView: View {
                         }
                     }
                 }
+            }
+        }
+        .padding(16)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+    }
+
+    // MARK: - Focus Areas Card
+
+    private var focusAreasCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Focus Areas")
+                .font(.subheadline)
+                .fontWeight(.semibold)
+
+            let customAreas = presenter.selectedFocusAreas
+                .filter { area in !SessionEntryPresenter.presetFocusAreas.contains(where: { $0.caseInsensitiveCompare(area) == .orderedSame }) }
+                .sorted()
+            let allAreas = SessionEntryPresenter.presetFocusAreas + customAreas
+
+            FlowLayout(spacing: 8) {
+                ForEach(allAreas, id: \.self) { area in
+                    let isSelected = presenter.selectedFocusAreas.contains(area)
+                    Text(area)
+                        .font(.caption)
+                        .fontWeight(.medium)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 7)
+                        .background(
+                            isSelected ? Color.wazaAccent : Color(.systemGray6),
+                            in: Capsule()
+                        )
+                        .foregroundStyle(isSelected ? .white : .primary)
+                        .anyButton(.press) {
+                            presenter.onFocusAreaToggled(area)
+                        }
+                }
+            }
+
+            HStack(spacing: 8) {
+                TextField("Add custom area...", text: $presenter.customFocusAreaText)
+                    .font(.subheadline)
+                    .padding(10)
+                    .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 10))
+                    .submitLabel(.done)
+                    .onSubmit { presenter.onAddCustomFocusArea() }
+
+                Image(systemName: "plus.circle.fill")
+                    .font(.title3)
+                    .foregroundStyle(Color.wazaAccent)
+                    .anyButton {
+                        presenter.onAddCustomFocusArea()
+                    }
             }
         }
         .padding(16)
@@ -99,26 +145,24 @@ struct SessionEntryView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
 
                 HStack(spacing: 28) {
-                    Button {
-                        presenter.onDurationDecreased()
-                    } label: {
-                        Image(systemName: "minus.circle.fill")
-                            .font(.title)
-                            .foregroundStyle(presenter.beltAccentColor)
-                    }
+                    Image(systemName: "minus.circle.fill")
+                        .font(.title)
+                        .foregroundStyle(Color.wazaAccent)
+                        .anyButton {
+                            presenter.onDurationDecreased()
+                        }
 
                     Text(presenter.durationText)
                         .font(.wazaStat)
-                        .foregroundStyle(presenter.beltAccentColor)
+                        .foregroundStyle(Color.wazaAccent)
                         .frame(minWidth: 90, alignment: .center)
 
-                    Button {
-                        presenter.onDurationIncreased()
-                    } label: {
-                        Image(systemName: "plus.circle.fill")
-                            .font(.title)
-                            .foregroundStyle(presenter.beltAccentColor)
-                    }
+                    Image(systemName: "plus.circle.fill")
+                        .font(.title)
+                        .foregroundStyle(Color.wazaAccent)
+                        .anyButton {
+                            presenter.onDurationIncreased()
+                        }
                 }
                 .frame(maxWidth: .infinity)
             }
@@ -143,9 +187,33 @@ struct SessionEntryView: View {
                     .padding(.horizontal, 16)
 
                 VStack(spacing: 10) {
-                    TextField("Academy (optional)", text: $presenter.academy)
-                        .padding(12)
-                        .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 10))
+                    if !presenter.savedGyms.isEmpty {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Academy")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 8) {
+                                    ForEach(presenter.savedGyms) { gym in
+                                        gymChip(gym: gym)
+                                    }
+                                    otherGymChip
+                                }
+                            }
+
+                            if presenter.isCustomAcademy {
+                                TextField("Academy name", text: $presenter.academy)
+                                    .padding(12)
+                                    .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 10))
+                            }
+                        }
+                    } else {
+                        TextField("Academy (optional)", text: $presenter.academy)
+                            .padding(12)
+                            .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 10))
+                    }
+
                     TextField("Instructor (optional)", text: $presenter.instructor)
                         .padding(12)
                         .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 10))
@@ -157,32 +225,98 @@ struct SessionEntryView: View {
         .clipped()
     }
 
+    private func gymChip(gym: GymLocationModel) -> some View {
+        let isSelected = presenter.selectedGymId == gym.gymId
+        return Text(gym.name)
+            .font(.caption)
+            .fontWeight(.medium)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(
+                isSelected ? Color.wazaAccent : Color(.systemGray6),
+                in: Capsule()
+            )
+            .foregroundStyle(isSelected ? .white : .primary)
+            .anyButton(.press) {
+                presenter.onGymSelected(gym.gymId)
+            }
+    }
+
+    private var otherGymChip: some View {
+        Text("Other")
+            .font(.caption)
+            .fontWeight(.medium)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(
+                presenter.isCustomAcademy ? Color.wazaAccent : Color(.systemGray6),
+                in: Capsule()
+            )
+            .foregroundStyle(presenter.isCustomAcademy ? .white : .primary)
+            .anyButton(.press) {
+                presenter.onGymSelected(nil)
+            }
+    }
+
     // MARK: - Reflection Card
 
     private var reflectionCard: some View {
         VStack(alignment: .leading, spacing: 0) {
-            let hasData = [presenter.notes, presenter.whatWorkedWell, presenter.needsImprovement, presenter.keyInsights].contains { !$0.isEmpty }
-            collapsibleCardHeader(
-                title: "Reflection",
-                badge: hasData ? "•" : nil,
-                isExpanded: $reflectionExpanded
-            )
+            let hasData = [presenter.whatWorkedWell, presenter.needsImprovement].contains(where: { !$0.isEmpty })
+            reflectionCardHeader(hasData: hasData)
 
             if reflectionExpanded {
                 Divider()
                     .padding(.horizontal, 16)
 
                 VStack(spacing: 10) {
-                    reflectionField("Notes", text: $presenter.notes, lines: 3...6)
-                    reflectionField("What worked well?", text: $presenter.whatWorkedWell, lines: 2...4)
-                    reflectionField("Needs improvement", text: $presenter.needsImprovement, lines: 2...4)
-                    reflectionField("Key insights", text: $presenter.keyInsights, lines: 2...4)
+                    reflectionField("What went well? Techniques that clicked, wins...", text: $presenter.whatWorkedWell, lines: 3...6)
+                    reflectionField("What to work on? Struggles, areas to drill next...", text: $presenter.needsImprovement, lines: 3...6)
                 }
                 .padding(16)
             }
         }
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
         .clipped()
+    }
+
+    private func reflectionCardHeader(hasData: Bool) -> some View {
+        HStack {
+            HStack(spacing: 6) {
+                Image(systemName: "pencil.and.list.clipboard")
+                    .font(.caption)
+                    .foregroundStyle(Color.wazaAccent)
+                Text("Reflection")
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            if hasData {
+                Text("•")
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(Color.wazaAccent)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 3)
+                    .background(Color.wazaAccent.opacity(0.12), in: Capsule())
+            }
+
+            Image(systemName: "chevron.right")
+                .font(.caption2)
+                .fontWeight(.semibold)
+                .foregroundStyle(.tertiary)
+                .rotationEffect(.degrees(reflectionExpanded ? 90 : 0))
+                .animation(.easeInOut(duration: 0.2), value: reflectionExpanded)
+        }
+        .padding(16)
+        .contentShape(Rectangle())
+        .anyButton(.plain) {
+            presenter.onSectionHeaderTapped()
+            withAnimation(.easeInOut(duration: 0.2)) {
+                reflectionExpanded.toggle()
+            }
+        }
     }
 
     private func reflectionField(_ label: String, text: Binding<String>, lines: ClosedRange<Int>) -> some View {
@@ -242,12 +376,12 @@ struct SessionEntryView: View {
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 6)
                         .background(
-                            value.wrappedValue == rating ? presenter.beltAccentColor.opacity(0.15) : Color.clear,
-                            in: RoundedRectangle(cornerRadius: 8)
+                            value.wrappedValue == rating ? Color.wazaAccent.opacity(0.15) : Color.clear,
+                            in: RoundedRectangle(cornerRadius: 12)
                         )
                         .overlay(
-                            RoundedRectangle(cornerRadius: 8)
-                                .stroke(value.wrappedValue == rating ? presenter.beltAccentColor : Color.clear, lineWidth: 1.5)
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(value.wrappedValue == rating ? Color.wazaAccent : Color.clear, lineWidth: 1.5)
                         )
                         .anyButton {
                             presenter.onMoodSelected(isBefore: isBefore, rating: rating)
@@ -273,7 +407,7 @@ struct SessionEntryView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 16)
-        .background(presenter.beltAccentColor, in: RoundedRectangle(cornerRadius: 14))
+        .background(Color.wazaAccent, in: RoundedRectangle(cornerRadius: 14))
         .anyButton(.press) {
             presenter.onSavePressed()
         }
@@ -282,39 +416,37 @@ struct SessionEntryView: View {
     // MARK: - Collapsible Card Header
 
     private func collapsibleCardHeader(title: String, badge: String?, isExpanded: Binding<Bool>) -> some View {
-        Button {
+        HStack {
+            Text(title)
+                .font(.subheadline)
+                .fontWeight(.semibold)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            if let badge {
+                Text(badge)
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(Color.wazaAccent)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 3)
+                    .background(Color.wazaAccent.opacity(0.12), in: Capsule())
+            }
+
+            Image(systemName: "chevron.right")
+                .font(.caption2)
+                .fontWeight(.semibold)
+                .foregroundStyle(.tertiary)
+                .rotationEffect(.degrees(isExpanded.wrappedValue ? 90 : 0))
+                .animation(.easeInOut(duration: 0.2), value: isExpanded.wrappedValue)
+        }
+        .padding(16)
+        .contentShape(Rectangle())
+        .anyButton(.plain) {
             presenter.onSectionHeaderTapped()
             withAnimation(.easeInOut(duration: 0.2)) {
                 isExpanded.wrappedValue.toggle()
             }
-        } label: {
-            HStack {
-                Text(title)
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-
-                if let badge {
-                    Text(badge)
-                        .font(.caption)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(presenter.beltAccentColor)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 3)
-                        .background(presenter.beltAccentColor.opacity(0.12), in: Capsule())
-                }
-
-                Image(systemName: "chevron.right")
-                    .font(.caption2)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(.tertiary)
-                    .rotationEffect(.degrees(isExpanded.wrappedValue ? 90 : 0))
-                    .animation(.easeInOut(duration: 0.2), value: isExpanded.wrappedValue)
-            }
-            .padding(16)
-            .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
     }
 }
 

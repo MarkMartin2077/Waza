@@ -99,6 +99,66 @@ class GoalManager {
         deleteFromRemote(id: model.goalId)
     }
 
+    // MARK: - Metric Goals
+
+    @discardableResult
+    func createMetricGoal(metric: GoalMetric, targetValue: Double, focusArea: String? = nil) throws -> TrainingGoalModel {
+        let title = metric.titleTemplate(target: Int(targetValue), focusArea: focusArea)
+        let model = TrainingGoalModel(
+            title: title,
+            goalType: .attendance,
+            goalMetric: metric,
+            targetValue: targetValue,
+            focusArea: focusArea
+        )
+        try localService.create(model)
+        refresh()
+        syncToRemote(model)
+        return model
+    }
+
+    func computeProgress(for goal: TrainingGoalModel, sessions: [BJJSessionModel]) -> Double {
+        guard let metric = goal.goalMetric, let target = goal.targetValue, target > 0 else {
+            return goal.progress
+        }
+        let current: Double
+        switch metric {
+        case .sessionsPerWeek:
+            let range = DateRange.thisCalendarWeek
+            current = Double(sessions.filter { $0.date >= range.start && $0.date <= range.end }.count)
+        case .sessionsPerMonth:
+            let range = DateRange.thisCalendarMonth
+            current = Double(sessions.filter { $0.date >= range.start && $0.date <= range.end }.count)
+        case .hoursPerMonth:
+            let range = DateRange.thisCalendarMonth
+            current = sessions.filter { $0.date >= range.start && $0.date <= range.end }.reduce(0) { $0 + $1.duration } / 3600.0
+        case .focusAreaSessions:
+            guard let focus = goal.focusArea else { return 0 }
+            current = Double(sessions.filter { $0.focusAreas.contains(where: { $0.caseInsensitiveCompare(focus) == .orderedSame }) }.count)
+        }
+        return min(current / target, 1.0)
+    }
+
+    func currentValue(for goal: TrainingGoalModel, sessions: [BJJSessionModel]) -> Double {
+        guard let metric = goal.goalMetric, let target = goal.targetValue, target > 0 else {
+            return goal.progress * (goal.targetValue ?? 1)
+        }
+        switch metric {
+        case .sessionsPerWeek:
+            let range = DateRange.thisCalendarWeek
+            return Double(sessions.filter { $0.date >= range.start && $0.date <= range.end }.count)
+        case .sessionsPerMonth:
+            let range = DateRange.thisCalendarMonth
+            return Double(sessions.filter { $0.date >= range.start && $0.date <= range.end }.count)
+        case .hoursPerMonth:
+            let range = DateRange.thisCalendarMonth
+            return sessions.filter { $0.date >= range.start && $0.date <= range.end }.reduce(0) { $0 + $1.duration } / 3600.0
+        case .focusAreaSessions:
+            guard let focus = goal.focusArea else { return 0 }
+            return Double(sessions.filter { $0.focusAreas.contains(where: { $0.caseInsensitiveCompare(focus) == .orderedSame }) }.count)
+        }
+    }
+
     // MARK: - Wipe
 
     func clearAll() {

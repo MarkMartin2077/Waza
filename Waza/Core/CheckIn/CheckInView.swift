@@ -5,6 +5,7 @@ struct CheckInView: View {
     let delegate: CheckInDelegate
 
     private let moodEmojis = ["😴", "😐", "🙂", "😊", "🔥"]
+    private let moodLabels = ["Tired", "Okay", "Good", "Great", "Fired Up"]
     @State private var celebrationOpacity: Double = 0
 
     var body: some View {
@@ -27,24 +28,17 @@ struct CheckInView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
+                    // Button required by SwiftUI ToolbarItem API
                     Button("Done") { presenter.onDismissTapped() }
                         .foregroundStyle(.secondary)
                 }
-            }
-            .alert("Error", isPresented: Binding(
-                get: { presenter.errorMessage != nil },
-                set: { if !$0 { presenter.errorMessage = nil } }
-            )) {
-                Button("OK") { presenter.errorMessage = nil }
-            } message: {
-                Text(presenter.errorMessage ?? "")
             }
             .onAppear {
                 presenter.onViewAppear()
             }
         }
         .overlay(alignment: .center) {
-            presenter.beltAccentColor
+            Color.wazaAccent
                 .opacity(celebrationOpacity)
                 .ignoresSafeArea()
                 .allowsHitTesting(false)
@@ -62,7 +56,7 @@ struct CheckInView: View {
         VStack(spacing: 8) {
             Image(systemName: "mappin.circle.fill")
                 .font(.system(size: 48))
-                .foregroundStyle(.accent)
+                .foregroundStyle(Color.wazaAccent)
 
             Text(presenter.gymName)
                 .font(.title2)
@@ -82,29 +76,39 @@ struct CheckInView: View {
 
     private var moodSection: some View {
         VStack(spacing: 12) {
-            Text("How are you feeling?")
-                .font(.headline)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            HStack(spacing: 4) {
+                Text("How are you feeling?")
+                    .font(.headline)
+                Text("(optional)")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
 
             HStack(spacing: 12) {
                 ForEach(1...5, id: \.self) { rating in
-                    Text(moodEmojis[rating - 1])
-                        .font(.system(size: 36))
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 8)
-                        .background(
-                            presenter.selectedMood == rating
-                                ? Color.accentColor.opacity(0.15)
-                                : Color.clear,
-                            in: RoundedRectangle(cornerRadius: 10)
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 10)
-                                .stroke(presenter.selectedMood == rating ? Color.accentColor : Color.clear, lineWidth: 2)
-                        )
-                        .anyButton {
-                            presenter.onMoodSelected(rating)
-                        }
+                    VStack(spacing: 4) {
+                        Text(moodEmojis[rating - 1])
+                            .font(.system(size: 36))
+                        Text(moodLabels[rating - 1])
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 8)
+                    .background(
+                        presenter.selectedMood == rating
+                            ? Color.wazaAccent.opacity(0.15)
+                            : Color.clear,
+                        in: RoundedRectangle(cornerRadius: 12)
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(presenter.selectedMood == rating ? Color.wazaAccent : Color.clear, lineWidth: 2)
+                    )
+                    .anyButton {
+                        presenter.onMoodSelected(rating)
+                    }
                 }
             }
         }
@@ -120,7 +124,7 @@ struct CheckInView: View {
             .foregroundStyle(.white)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 16)
-            .background(.accent, in: RoundedRectangle(cornerRadius: 14))
+            .background(Color.wazaAccent, in: RoundedRectangle(cornerRadius: 14))
             .anyButton(.press) {
                 presenter.onConfirmTapped()
             }
@@ -151,7 +155,7 @@ struct CheckInView: View {
             HStack(spacing: 6) {
                 Image(systemName: "apple.intelligence")
                     .font(.caption)
-                    .foregroundStyle(.accent)
+                    .foregroundStyle(Color.wazaAccent)
                 Text("Coach says…")
                     .font(.caption)
                     .fontWeight(.medium)
@@ -173,7 +177,7 @@ struct CheckInView: View {
             }
         }
         .padding(16)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14))
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
         .frame(maxWidth: .infinity)
     }
 
@@ -181,10 +185,10 @@ struct CheckInView: View {
         Text("Log Full Session")
             .font(.subheadline)
             .fontWeight(.medium)
-            .foregroundStyle(.accent)
+            .foregroundStyle(Color.wazaAccent)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 14)
-            .background(.accent.opacity(0.1), in: RoundedRectangle(cornerRadius: 12))
+            .background(Color.wazaAccent.opacity(0.1), in: RoundedRectangle(cornerRadius: 12))
             .anyButton(.press) {
                 presenter.onLogSessionTapped()
             }
@@ -210,10 +214,24 @@ extension CoreBuilder {
 
 extension CoreRouter {
 
-    func showCheckInView(gym: GymLocationModel, schedule: ClassScheduleModel?, onDismiss: (() -> Void)? = nil) {
-        let delegate = CheckInDelegate(gym: gym, matchedSchedule: schedule, checkInMethod: .manual)
+    func showCheckInView(gym: GymLocationModel, schedule: ClassScheduleModel?, checkInMethod: CheckInMethod = .manual, onDismiss: (() -> Void)? = nil) {
+        let delegate = CheckInDelegate(gym: gym, matchedSchedule: schedule, checkInMethod: checkInMethod)
         router.showScreen(.sheet, onDismiss: onDismiss) { router in
             builder.checkInView(router: router, delegate: delegate)
+        }
+    }
+
+    func showSessionEntryView(attendanceRecord: ClassAttendanceModel? = nil, onDismiss: (() -> Void)? = nil) {
+        let interactor = builder.interactor
+        let delegate = SessionEntryDelegate(
+            onSessionSaved: attendanceRecord != nil ? { session in
+                guard var record = attendanceRecord else { return }
+                record.linkedSessionId = session.id
+                try? interactor.updateAttendance(record)
+            } : nil
+        )
+        router.showScreen(.sheet, onDismiss: onDismiss) { router in
+            builder.sessionEntryView(router: router, delegate: delegate)
         }
     }
 

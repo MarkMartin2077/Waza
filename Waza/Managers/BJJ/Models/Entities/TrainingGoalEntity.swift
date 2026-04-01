@@ -7,6 +7,9 @@ final class TrainingGoalEntity {
     var title: String
     var goalDescription: String?
     var goalTypeRaw: String
+    var goalMetricRaw: String?
+    var targetValue: Double?
+    var focusArea: String?
     var deadline: Date?
     var progress: Double
     var isCompleted: Bool
@@ -18,6 +21,9 @@ final class TrainingGoalEntity {
         title: String = "",
         goalDescription: String? = nil,
         goalTypeRaw: String = "custom",
+        goalMetricRaw: String? = nil,
+        targetValue: Double? = nil,
+        focusArea: String? = nil,
         deadline: Date? = nil,
         progress: Double = 0,
         isCompleted: Bool = false,
@@ -28,6 +34,9 @@ final class TrainingGoalEntity {
         self.title = title
         self.goalDescription = goalDescription
         self.goalTypeRaw = goalTypeRaw
+        self.goalMetricRaw = goalMetricRaw
+        self.targetValue = targetValue
+        self.focusArea = focusArea
         self.deadline = deadline
         self.progress = min(max(progress, 0), 1.0)
         self.isCompleted = isCompleted
@@ -41,6 +50,9 @@ final class TrainingGoalEntity {
             title: model.title,
             goalDescription: model.goalDescription,
             goalTypeRaw: model.goalType.rawValue,
+            goalMetricRaw: model.goalMetric?.rawValue,
+            targetValue: model.targetValue,
+            focusArea: model.focusArea,
             deadline: model.deadline,
             progress: model.progress,
             isCompleted: model.isCompleted,
@@ -55,6 +67,9 @@ final class TrainingGoalEntity {
             title: title,
             goalDescription: goalDescription,
             goalType: GoalType(rawValue: goalTypeRaw) ?? .custom,
+            goalMetric: goalMetricRaw.flatMap { GoalMetric(rawValue: $0) },
+            targetValue: targetValue,
+            focusArea: focusArea,
             deadline: deadline,
             progress: progress,
             isCompleted: isCompleted,
@@ -67,6 +82,9 @@ final class TrainingGoalEntity {
         title = model.title
         goalDescription = model.goalDescription
         goalTypeRaw = model.goalType.rawValue
+        goalMetricRaw = model.goalMetric?.rawValue
+        targetValue = model.targetValue
+        focusArea = model.focusArea
         deadline = model.deadline
         progress = min(max(model.progress, 0), 1.0)
         isCompleted = model.isCompleted
