@@ -347,4 +347,27 @@ struct DateRange {
         let monthStart = calendar.dateInterval(of: .month, for: now)?.start ?? now
         return DateRange(start: monthStart, end: now)
     }
+
+    static var previousCalendarMonth: DateRange {
+        let calendar = Calendar.current
+        let now = Date()
+        guard let monthStart = calendar.dateInterval(of: .month, for: now)?.start,
+              let prevStart = calendar.date(byAdding: .month, value: -1, to: monthStart) else {
+            return .lastMonth
+        }
+        let prevEnd = calendar.date(byAdding: .second, value: -1, to: monthStart) ?? monthStart
+        return DateRange(start: prevStart, end: prevEnd)
+    }
+
+    static func calendarMonth(monthsAgo: Int) -> DateRange {
+        let calendar = Calendar.current
+        let now = Date()
+        guard let currentMonthStart = calendar.dateInterval(of: .month, for: now)?.start,
+              let targetStart = calendar.date(byAdding: .month, value: -monthsAgo, to: currentMonthStart),
+              let targetEndExclusive = calendar.date(byAdding: .month, value: -monthsAgo + 1, to: currentMonthStart) else {
+            return .lastMonth
+        }
+        let targetEnd = calendar.date(byAdding: .second, value: -1, to: targetEndExclusive) ?? targetEndExclusive
+        return DateRange(start: targetStart, end: targetEnd)
+    }
 }

@@ -5,6 +5,7 @@ protocol ProfileRouter: GlobalRouter {
     func showSettingsView()
     func showClassScheduleView()
     func showAchievementsView()
+    func showMonthlyReportView()
 }
 
 extension CoreRouter: ProfileRouter {

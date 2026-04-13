@@ -31,6 +31,10 @@ struct ProfileView: View {
                     .scaleAppear(delay: 0.06)
                 achievementsSection
                     .scaleAppear(delay: 0.12)
+                if presenter.hasMonthlyReport {
+                    monthlyReportSection
+                        .scaleAppear(delay: 0.15)
+                }
                 trainingScheduleSection
                     .scaleAppear(delay: 0.18)
             }
@@ -152,6 +156,39 @@ struct ProfileView: View {
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
         .anyButton(.press) {
             presenter.onAchievementsTapped()
+        }
+    }
+
+    // MARK: - Monthly Report
+
+    private var monthlyReportSection: some View {
+        HStack(spacing: 14) {
+            Image(systemName: "chart.bar.doc.horizontal.fill")
+                .font(.title3)
+                .foregroundStyle(Color.wazaAccent)
+                .frame(width: 44, height: 44)
+                .background(Color.wazaAccent.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Monthly Report")
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Text("Stats and highlights from last month")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+
+            Image(systemName: "chevron.right")
+                .font(.caption)
+                .fontWeight(.semibold)
+                .foregroundStyle(.tertiary)
+        }
+        .padding(16)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .anyButton(.press) {
+            presenter.onMonthlyReportTapped()
         }
     }
 

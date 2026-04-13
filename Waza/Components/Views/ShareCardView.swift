@@ -7,6 +7,7 @@ enum ShareCardType {
     case weekInReview(sessions: Int, hours: String, streakCount: Int)
     case levelUp(level: Int, title: String)
     case streakFlex(streakCount: Int, tier: StreakTier)
+    case monthlyReport(month: String, sessions: Int, hours: String, streakDays: Int, level: Int, title: String)
 }
 
 // MARK: - Share Card View
@@ -89,6 +90,8 @@ struct ShareCardView: View {
             levelUpContent(level: level, title: title)
         case .streakFlex(let streakCount, let tier):
             streakFlexContent(streakCount: streakCount, tier: tier)
+        case .monthlyReport(let month, let sessions, let hours, let streakDays, let level, let title):
+            monthlyReportContent(month: month, sessions: sessions, hours: hours, streakDays: streakDays, level: level, title: title)
         }
     }
 
@@ -275,6 +278,60 @@ struct ShareCardView: View {
         }
     }
 
+    // MARK: - Monthly Report
+
+    // swiftlint:disable:next function_parameter_count
+    private func monthlyReportContent(month: String, sessions: Int, hours: String, streakDays: Int, level: Int, title: String) -> some View {
+        VStack(spacing: 24) {
+            Text("MONTHLY REPORT")
+                .font(.caption)
+                .fontWeight(.bold)
+                .tracking(2)
+                .foregroundStyle(accentColor)
+
+            Text(month)
+                .font(.title2)
+                .fontWeight(.bold)
+                .foregroundStyle(.white)
+
+            VStack(spacing: 6) {
+                Text("\(sessions)")
+                    .font(.system(size: 72, weight: .bold, design: .rounded))
+                    .foregroundStyle(.white)
+                Text(sessions == 1 ? "session logged" : "sessions logged")
+                    .font(.subheadline)
+                    .foregroundStyle(.white.opacity(0.5))
+            }
+
+            divider
+
+            HStack(spacing: 32) {
+                statColumn(value: "\(hours)h", label: "on the mats")
+                if streakDays > 0 {
+                    statColumn(
+                        value: "\(streakDays)",
+                        label: streakDays == 1 ? "day streak" : "day streak"
+                    )
+                }
+            }
+
+            divider
+
+            HStack(spacing: 6) {
+                Image(systemName: "bolt.fill")
+                    .font(.caption2)
+                Text("Lvl \(level) · \(title)")
+                    .font(.caption)
+                    .fontWeight(.semibold)
+            }
+            .foregroundStyle(accentColor)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+            .background(accentColor.opacity(0.1), in: Capsule())
+            .overlay(Capsule().stroke(accentColor.opacity(0.2), lineWidth: 1))
+        }
+    }
+
     // MARK: - Shared Components
 
     private func statPill(icon: String, value: String) -> some View {
@@ -376,6 +433,14 @@ enum ShareCardRenderer {
     ShareCardView(
         cardType: .weekInReview(sessions: 1, hours: "1h 30m", streakCount: 1),
         userName: "Alex",
+        accentColor: .cyan
+    )
+}
+
+#Preview("Monthly Report") {
+    ShareCardView(
+        cardType: .monthlyReport(month: "March 2026", sessions: 12, hours: "18.5", streakDays: 4, level: 8, title: "Scrapper 3"),
+        userName: "Mark",
         accentColor: .cyan
     )
 }

@@ -54,6 +54,17 @@ class ProfilePresenter {
         router.showAchievementsView()
     }
 
+    // MARK: - Monthly Report
+
+    var hasMonthlyReport: Bool {
+        interactor.sessionStats.totalSessions > 0
+    }
+
+    func onMonthlyReportTapped() {
+        interactor.trackEvent(event: Event.monthlyReportTapped)
+        router.showMonthlyReportView()
+    }
+
     // MARK: - Computed display values
 
     var beltAccentColor: Color {
@@ -101,6 +112,7 @@ extension ProfilePresenter {
         case settingsPressed
         case manageScheduleTapped
         case achievementsTapped
+        case monthlyReportTapped
 
         var eventName: String {
             switch self {
@@ -109,6 +121,7 @@ extension ProfilePresenter {
             case .settingsPressed:      return "ProfileView_Settings_Pressed"
             case .manageScheduleTapped: return "ProfileView_ManageSchedule_Tap"
             case .achievementsTapped:   return "ProfileView_Achievements_Tap"
+            case .monthlyReportTapped:  return "ProfileView_MonthlyReport_Tap"
             }
         }
 

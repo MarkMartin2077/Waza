@@ -237,4 +237,124 @@ extension CoreInteractor {
         trainingStatsManager.getTypeBreakdown(for: period)
     }
 
+    // MARK: Monthly Report
+
+    func getMonthlyReportData(for dateRange: DateRange) -> MonthlyReportData {
+        let sessions = sessionManager.getSessions(in: dateRange)
+        let prevRange = DateRange.calendarMonth(monthsAgo: 2)
+        let prevSessions = sessionManager.getSessions(in: prevRange)
+
+        let totalTime = sessions.reduce(0.0) { $0 + $1.duration }
+        let totalHours = totalTime / 3600
+        let avgDuration = sessions.isEmpty ? 0 : Int(totalTime / Double(sessions.count) / 60)
+        let daysTrained = countDistinctDays(in: sessions)
+        let longestStreak = computeLongestStreak(in: sessions, range: dateRange)
+        let typeBreakdown = trainingStatsManager.getTypeBreakdown(for: dateRange)
+        let topFocusAreas = computeTopFocusAreas(from: sessions)
+        let gymDistribution = computeGymDistribution(from: sessions)
+        let avgPreMood = averageMood(sessions.compactMap { $0.preSessionMood })
+        let avgPostMood = averageMood(sessions.compactMap { $0.postSessionMood })
+        let bestDay = bestTrainingDay(from: sessions)
+        let goalsCompleted = goalManager.completedGoals.filter {
+            guard let date = $0.completedDate else { return false }
+            return date >= dateRange.start && date <= dateRange.end
+        }.count
+        let achievementsEarned = achievementManager.earnedAchievements.filter {
+            $0.earnedDate >= dateRange.start && $0.earnedDate <= dateRange.end
+        }.count
+        let totalXP = currentExperiencePointsData.pointsAllTime ?? 0
+        let levelInfo = XPLevelSystem.levelInfo(forXP: totalXP)
+        let prevTotalTime = prevSessions.reduce(0.0) { $0 + $1.duration }
+
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMMM yyyy"
+        let monthLabel = formatter.string(from: dateRange.start)
+
+        return MonthlyReportData(
+            monthLabel: monthLabel,
+            dateRange: dateRange,
+            totalSessions: sessions.count,
+            totalHours: totalHours,
+            avgDurationMinutes: avgDuration,
+            daysTrained: daysTrained,
+            longestStreakInMonth: longestStreak,
+            typeBreakdown: typeBreakdown,
+            topFocusAreas: topFocusAreas,
+            avgPreMood: avgPreMood,
+            avgPostMood: avgPostMood,
+            bestTrainingDay: bestDay,
+            gymDistribution: gymDistribution,
+            goalsCompletedCount: goalsCompleted,
+            achievementsEarnedCount: achievementsEarned,
+            levelInfo: levelInfo,
+            previousMonthSessions: prevSessions.count,
+            previousMonthHours: prevTotalTime / 3600
+        )
+    }
+
+    // MARK: - Monthly Report Helpers
+
+    private func countDistinctDays(in sessions: [BJJSessionModel]) -> Int {
+        let calendar = Calendar.current
+        return Set(sessions.map { calendar.startOfDay(for: $0.date) }).count
+    }
+
+    private func computeLongestStreak(in sessions: [BJJSessionModel], range: DateRange) -> Int {
+        let calendar = Calendar.current
+        let trainedDays = Set(sessions.map { calendar.startOfDay(for: $0.date) })
+        guard !trainedDays.isEmpty else { return 0 }
+
+        var current = calendar.startOfDay(for: range.start)
+        let end = calendar.startOfDay(for: range.end)
+        var longestRun = 0
+        var currentRun = 0
+
+        while current <= end {
+            if trainedDays.contains(current) {
+                currentRun += 1
+                longestRun = max(longestRun, currentRun)
+            } else {
+                currentRun = 0
+            }
+            current = calendar.date(byAdding: .day, value: 1, to: current) ?? current
+        }
+        return longestRun
+    }
+
+    private func computeTopFocusAreas(from sessions: [BJJSessionModel]) -> [(name: String, count: Int)] {
+        var counts: [String: Int] = [:]
+        for session in sessions {
+            for area in session.focusAreas {
+                counts[area, default: 0] += 1
+            }
+        }
+        return counts.sorted { $0.value > $1.value }
+            .prefix(5)
+            .map { (name: $0.key, count: $0.value) }
+    }
+
+    private func computeGymDistribution(from sessions: [BJJSessionModel]) -> [(name: String, count: Int)] {
+        var counts: [String: Int] = [:]
+        for session in sessions {
+            guard let academy = session.academy, !academy.isEmpty else { continue }
+            counts[academy, default: 0] += 1
+        }
+        return counts.sorted { $0.value > $1.value }
+            .map { (name: $0.key, count: $0.value) }
+    }
+
+    private func averageMood(_ moods: [Int]) -> Double? {
+        guard !moods.isEmpty else { return nil }
+        return Double(moods.reduce(0, +)) / Double(moods.count)
+    }
+
+    private func bestTrainingDay(from sessions: [BJJSessionModel]) -> (date: Date, postMood: Int)? {
+        sessions
+            .compactMap { session -> (date: Date, postMood: Int)? in
+                guard let mood = session.postSessionMood else { return nil }
+                return (date: session.date, postMood: mood)
+            }
+            .max { $0.postMood < $1.postMood }
+    }
+
 }
