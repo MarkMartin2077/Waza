@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftfulRouting
 
 struct AchievementsView: View {
     @State var presenter: AchievementsPresenter
@@ -29,30 +30,34 @@ struct AchievementsView: View {
         .listStyle(.insetGrouped)
         .navigationTitle("Achievements")
         .navigationBarTitleDisplayMode(.large)
-        .sheet(item: $presenter.selectedAchievement) { achievementId in
-            achievementDetailSheet(achievementId: achievementId)
-        }
         .onAppear {
             presenter.onViewAppear()
         }
     }
 
-    // MARK: - Achievement Detail Sheet
+}
 
-    private func achievementDetailSheet(achievementId: AchievementId) -> some View {
-        let isEarned = presenter.isEarned(achievementId)
-        let rarityColor = achievementId.rarity.color
-        return VStack(spacing: 28) {
-            detailIcon(for: achievementId, isEarned: isEarned, rarityColor: rarityColor)
-            detailInfo(for: achievementId, isEarned: isEarned, rarityColor: rarityColor)
-            detailStatus(for: achievementId)
+// MARK: - Achievement Detail Sheet
+
+struct AchievementDetailSheetView: View {
+    let achievementId: AchievementId
+    let isEarned: Bool
+    let earnedDate: Date?
+    let progressHint: String?
+
+    private var rarityColor: Color { achievementId.rarity.color }
+
+    var body: some View {
+        VStack(spacing: 28) {
+            detailIcon
+            detailInfo
+            detailStatus
         }
         .frame(maxHeight: .infinity)
         .padding(.horizontal, 32)
-        .presentationDetents([.medium])
     }
 
-    private func detailIcon(for achievementId: AchievementId, isEarned: Bool, rarityColor: Color) -> some View {
+    private var detailIcon: some View {
         ZStack {
             Circle().fill(rarityColor.opacity(0.05)).frame(width: 130, height: 130)
             Circle().fill(rarityColor.opacity(0.10)).frame(width: 108, height: 108)
@@ -67,7 +72,7 @@ struct AchievementsView: View {
         .opacity(isEarned ? 1 : 0.55)
     }
 
-    private func detailInfo(for achievementId: AchievementId, isEarned: Bool, rarityColor: Color) -> some View {
+    private var detailInfo: some View {
         VStack(spacing: 10) {
             Text(achievementId.displayName)
                 .font(.wazaTitle)
@@ -87,8 +92,8 @@ struct AchievementsView: View {
     }
 
     @ViewBuilder
-    private func detailStatus(for achievementId: AchievementId) -> some View {
-        if let earnedDate = presenter.earnedDate(for: achievementId) {
+    private var detailStatus: some View {
+        if let earnedDate {
             Label(earnedDate.formatted(date: .long, time: .omitted), systemImage: "checkmark.seal.fill")
                 .font(.caption)
                 .foregroundStyle(.green)
@@ -104,8 +109,8 @@ struct AchievementsView: View {
                     .padding(.vertical, 8)
                     .background(Color(.systemGray6), in: Capsule())
 
-                if let hint = presenter.progressHint(for: achievementId) {
-                    Text(hint)
+                if let progressHint {
+                    Text(progressHint)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
@@ -113,6 +118,24 @@ struct AchievementsView: View {
             }
         }
     }
+}
+
+// MARK: - CoreRouter Extension
+
+extension CoreRouter {
+
+    func showAchievementDetail(achievementId: AchievementId, isEarned: Bool, earnedDate: Date?, progressHint: String?) {
+        let config = ResizableSheetConfig(detents: [.medium], selection: nil, dragIndicator: .visible)
+        router.showScreen(.sheetConfig(config: config)) { _ in
+            AchievementDetailSheetView(
+                achievementId: achievementId,
+                isEarned: isEarned,
+                earnedDate: earnedDate,
+                progressHint: progressHint
+            )
+        }
+    }
+
 }
 
 // MARK: - CoreBuilder Extension

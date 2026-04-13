@@ -209,7 +209,7 @@ struct SettingsView: View {
             Divider().padding(.leading, 52)
 
             ShareLink(
-                item: URL(string: "https://apps.apple.com/app/id6759821384")!,
+                item: URL(string: "https://apps.apple.com/app/id6759821384") ?? URL(string: "https://apple.com")!,
                 message: Text("Check out Waza — the best BJJ training tracker!")
             ) {
                 HStack(spacing: 14) {
@@ -290,20 +290,23 @@ struct SettingsView: View {
         .padding(.vertical, 14)
     }
 
+    @ViewBuilder
     private func settingsLinkRow(icon: String, iconColor: Color, label: String, urlString: String) -> some View {
-        Link(destination: URL(string: urlString)!) {
-            HStack(spacing: 14) {
-                settingsIcon(systemName: icon, color: iconColor)
-                Text(label)
-                    .font(.subheadline)
-                    .foregroundStyle(.primary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                Image(systemName: "arrow.up.right")
-                    .font(.caption2)
-                    .foregroundStyle(.tertiary)
+        if let url = URL(string: urlString) {
+            Link(destination: url) {
+                HStack(spacing: 14) {
+                    settingsIcon(systemName: icon, color: iconColor)
+                    Text(label)
+                        .font(.subheadline)
+                        .foregroundStyle(.primary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    Image(systemName: "arrow.up.right")
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 14)
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 14)
         }
     }
 }

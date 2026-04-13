@@ -4,8 +4,8 @@ struct CheckInView: View {
     @State var presenter: CheckInPresenter
     let delegate: CheckInDelegate
 
-    private let moodEmojis = ["😴", "😐", "🙂", "😊", "🔥"]
-    private let moodLabels = ["Tired", "Okay", "Good", "Great", "Fired Up"]
+    private let moodEmojis = Mood.emojis
+    private let moodLabels = Mood.labels
     @State private var celebrationOpacity: Double = 0
 
     var body: some View {
@@ -109,6 +109,7 @@ struct CheckInView: View {
                     )
                     .scaleEffect(isSelected ? 1.1 : 1.0)
                     .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isSelected)
+                    .accessibilityLabel("\(moodLabels[rating - 1]), mood \(rating) of 5")
                     .anyButton {
                         presenter.onMoodSelected(rating)
                     }

@@ -33,12 +33,6 @@ struct ClassScheduleRowView: View {
                 }
             }
             .padding(12)
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
-            .swipeActions(edge: .trailing) {
-                if let onDelete {
-                    Button("Delete", role: .destructive) { onDelete() }
-                }
-            }
         }
     }
 }

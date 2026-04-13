@@ -66,6 +66,8 @@ struct TabBarView: View {
             guard let gymId = (notification.userInfo as? [String: String])?["gymId"] else { return }
             presenter.onGymArrival(gymId: gymId)
         }
+        // TabBar is the root container without a VIPER Router, so .sheet is
+        // acceptable here. The presenter still drives the show/dismiss logic.
         .sheet(isPresented: Binding(
             get: { presenter.pendingCheckIn != nil },
             set: { if !$0 { presenter.onCheckInDismissed() } }

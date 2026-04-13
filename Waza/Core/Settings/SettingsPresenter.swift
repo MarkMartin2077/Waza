@@ -101,9 +101,9 @@ class SettingsPresenter {
             subtitle: "This action is permanent and cannot be undone. Your data will be deleted from our server forever.",
             buttons: {
                 AnyView(
-                    Button("Delete", role: .destructive, action: {
+                    Button("Delete", role: .destructive) {
                         self.showDeleteAccountReauthAlert()
-                    })
+                    }
                 )
             }
         )
@@ -116,9 +116,9 @@ class SettingsPresenter {
             subtitle: "As a safety precaution in order to delete your account, you must first sign again.",
             buttons: {
                 AnyView(
-                    Button("Delete", role: .destructive, action: {
+                    Button("Delete", role: .destructive) {
                         self.onDeleteAccountConfirmed()
-                    })
+                    }
                 )
             }
         )

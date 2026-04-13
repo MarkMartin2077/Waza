@@ -8,7 +8,8 @@ struct SessionEntryView: View {
     @State private var reflectionExpanded = true
     @State private var statsExpanded = false
 
-    private let moodEmojis = ["😞", "😕", "😐", "🙂", "😄"]
+    private let moodEmojis = Mood.emojis
+    private let moodLabels = Mood.labels
 
     var body: some View {
         NavigationStack {
@@ -125,6 +126,7 @@ struct SessionEntryView: View {
                 Image(systemName: "plus.circle.fill")
                     .font(.title3)
                     .foregroundStyle(Color.wazaAccent)
+                    .accessibilityLabel("Add custom focus area")
                     .anyButton {
                         presenter.onAddCustomFocusArea()
                     }
@@ -152,6 +154,7 @@ struct SessionEntryView: View {
                     Image(systemName: "minus.circle.fill")
                         .font(.title)
                         .foregroundStyle(Color.wazaAccent)
+                        .accessibilityLabel("Decrease duration")
                         .anyButton {
                             presenter.onDurationDecreased()
                         }
@@ -166,6 +169,7 @@ struct SessionEntryView: View {
                     Image(systemName: "plus.circle.fill")
                         .font(.title)
                         .foregroundStyle(Color.wazaAccent)
+                        .accessibilityLabel("Increase duration")
                         .anyButton {
                             presenter.onDurationIncreased()
                         }
@@ -393,6 +397,7 @@ struct SessionEntryView: View {
                         )
                         .scaleEffect(isSelected ? 1.15 : 1.0)
                         .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isSelected)
+                        .accessibilityLabel("\(moodLabels[rating - 1]), mood \(rating) of 5")
                         .anyButton {
                             presenter.onMoodSelected(isBefore: isBefore, rating: rating)
                         }
@@ -418,9 +423,11 @@ struct SessionEntryView: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 16)
         .background(Color.wazaAccent, in: RoundedRectangle(cornerRadius: 14))
+        .opacity(presenter.isLoading ? 0.6 : 1)
         .anyButton(.press) {
             presenter.onSavePressed()
         }
+        .disabled(presenter.isLoading)
     }
 
     // MARK: - Collapsible Card Header

@@ -4,16 +4,11 @@ import SwiftUI
 protocol DashboardInteractor: GlobalInteractor {
     var recentSessions: [BJJSessionModel] { get }
     var sessionStats: SessionStats { get }
-    var currentBelt: BeltRecordModel? { get }
     var currentBeltEnum: BJJBelt { get }
     var currentUserName: String { get }
     var currentStreakData: CurrentStreakData { get }
-    var currentExperiencePointsData: CurrentExperiencePointsData { get }
-    var isPremium: Bool { get }
-    var isAIAvailable: Bool { get }
     var nextUpcomingClass: (ClassScheduleModel, GymLocationModel)? { get }
     var gyms: [GymLocationModel] { get }
-    var schedules: [ClassScheduleModel] { get }
     var trainingGoalPerWeek: Int? { get }
     func endTrainingLiveActivity() async
     func updateWidgetData(_ data: WazaWidgetData)

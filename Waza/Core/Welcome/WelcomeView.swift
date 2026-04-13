@@ -119,18 +119,22 @@ struct WelcomeView: View {
 
     private var policyLinks: some View {
         HStack(spacing: 8) {
-            Link(destination: URL(string: Constants.termsOfServiceUrlString)!) {
-                Text("Terms of Service")
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.5)
+            if let url = URL(string: Constants.termsOfServiceUrlString) {
+                Link(destination: url) {
+                    Text("Terms of Service")
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.5)
+                }
             }
             Circle()
                 .fill(.white.opacity(0.25))
                 .frame(width: 3, height: 3)
-            Link(destination: URL(string: Constants.privacyPolicyUrlString)!) {
-                Text("Privacy Policy")
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.5)
+            if let url = URL(string: Constants.privacyPolicyUrlString) {
+                Link(destination: url) {
+                    Text("Privacy Policy")
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.5)
+                }
             }
         }
         .font(.caption2)

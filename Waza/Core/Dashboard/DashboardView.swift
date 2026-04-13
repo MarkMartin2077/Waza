@@ -181,6 +181,7 @@ struct DashboardView: View {
         Image(systemName: "gearshape")
             .font(.subheadline)
             .foregroundStyle(.secondary)
+            .accessibilityLabel("Developer settings")
             .anyButton {
                 presenter.onDevSettingsTapped()
             }

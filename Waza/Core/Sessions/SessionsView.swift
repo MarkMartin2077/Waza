@@ -58,6 +58,7 @@ struct SessionsView: View {
                 Image(systemName: "plus")
                     .font(.headline)
                     .foregroundStyle(Color.wazaAccent)
+                    .accessibilityLabel("Log session")
                     .anyButton {
                         presenter.onLogSessionTapped()
                     }

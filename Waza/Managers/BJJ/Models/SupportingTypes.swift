@@ -188,6 +188,15 @@ enum GoalMetric: String, Codable, CaseIterable {
         case .focusAreaSessions:  return "All time"
         }
     }
+
+    var maxTarget: Int {
+        switch self {
+        case .sessionsPerWeek:    return 21
+        case .sessionsPerMonth:   return 60
+        case .hoursPerMonth:      return 100
+        case .focusAreaSessions:  return 50
+        }
+    }
 }
 
 // MARK: - Injury Severity

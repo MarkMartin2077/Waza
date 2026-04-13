@@ -103,20 +103,24 @@ class SessionEntryPresenter {
     func onDurationIncreased() {
         guard durationMinutes < 300 else { return }
         durationMinutes += 15
+        interactor.trackEvent(event: Event.durationChanged(minutes: durationMinutes))
         interactor.playHaptic(option: .selection)
     }
 
     func onDurationDecreased() {
         guard durationMinutes > 15 else { return }
         durationMinutes -= 15
+        interactor.trackEvent(event: Event.durationChanged(minutes: durationMinutes))
         interactor.playHaptic(option: .selection)
     }
 
     func onSectionHeaderTapped() {
+        interactor.trackEvent(event: Event.sectionHeaderTapped)
         interactor.playHaptic(option: .selection)
     }
 
     func onMoodSelected(isBefore: Bool, rating: Int) {
+        interactor.trackEvent(event: Event.moodSelected(isBefore: isBefore, rating: rating))
         interactor.playHaptic(option: .selection)
         if isBefore {
             preSessionMood = rating
@@ -194,6 +198,9 @@ extension SessionEntryPresenter {
         case focusAreaToggled(area: String)
         case customFocusAreaAdded(area: String)
         case gymSelected(gymId: String?)
+        case durationChanged(minutes: Int)
+        case sectionHeaderTapped
+        case moodSelected(isBefore: Bool, rating: Int)
 
         var eventName: String {
             switch self {
@@ -206,6 +213,9 @@ extension SessionEntryPresenter {
             case .focusAreaToggled:       return "SessionEntryView_FocusArea_Toggle"
             case .customFocusAreaAdded:   return "SessionEntryView_FocusArea_Custom_Add"
             case .gymSelected:            return "SessionEntryView_Gym_Select"
+            case .durationChanged:        return "SessionEntryView_Duration_Change"
+            case .sectionHeaderTapped:    return "SessionEntryView_SectionHeader_Tap"
+            case .moodSelected:           return "SessionEntryView_Mood_Select"
             }
         }
 
@@ -221,6 +231,10 @@ extension SessionEntryPresenter {
                 return ["focus_area": area]
             case .gymSelected(gymId: let gymId):
                 return ["gym_id": gymId ?? "custom"]
+            case .durationChanged(minutes: let minutes):
+                return ["duration_minutes": minutes]
+            case .moodSelected(isBefore: let isBefore, rating: let rating):
+                return ["is_before": isBefore, "mood_rating": rating]
             default:
                 return nil
             }

@@ -35,6 +35,7 @@ struct TrainingStatsView: View {
                     Image(systemName: "plus")
                         .font(.headline)
                         .foregroundStyle(Color.wazaAccent)
+                        .accessibilityLabel("Manage goals")
                         .anyButton {
                             presenter.onManageGoalsTapped()
                         }

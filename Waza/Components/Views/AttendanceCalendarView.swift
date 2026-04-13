@@ -49,8 +49,8 @@ struct AttendanceCalendarView: View {
         switch count {
         case -1:  return .clear
         case 0:   return Color.secondary.opacity(0.12)
-        case 1:   return Color.accentColor.opacity(0.5)
-        default:  return Color.accentColor
+        case 1:   return Color.wazaAccent.opacity(0.5)
+        default:  return Color.wazaAccent
         }
     }
 
@@ -94,7 +94,7 @@ struct AttendanceCalendarView: View {
                     .foregroundStyle(.secondary)
                 ForEach([0.12, 0.5, 1.0], id: \.self) { opacity in
                     RoundedRectangle(cornerRadius: 2)
-                        .fill(opacity < 0.2 ? Color.secondary.opacity(opacity) : Color.accentColor.opacity(opacity))
+                        .fill(opacity < 0.2 ? Color.secondary.opacity(opacity) : Color.wazaAccent.opacity(opacity))
                         .frame(width: cellSize, height: cellSize)
                 }
                 Text("More")

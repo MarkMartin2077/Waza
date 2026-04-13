@@ -5,20 +5,55 @@ struct ClassScheduleView: View {
     let delegate: ClassSchedulePlanningDelegate
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 20) {
-                if presenter.gyms.isEmpty {
-                    emptyStateView
-                } else {
-                    ForEach(presenter.gyms, id: \.id) { gym in
-                        gymSection(gym: gym)
+        List {
+            if presenter.gyms.isEmpty {
+                EmptyStateView(
+                    icon: "mappin.circle",
+                    title: "No Gyms Added",
+                    subtitle: "Add your gym to set up recurring class reminders and automatic check-ins.",
+                    actionTitle: nil,
+                    onAction: nil
+                )
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
+            } else {
+                ForEach(presenter.gyms, id: \.id) { gym in
+                    Section {
+                        let gymSchedules = presenter.schedulesByGym[gym.gymId] ?? []
+                        if gymSchedules.isEmpty {
+                            Text("No classes scheduled")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        } else {
+                            ForEach(gymSchedules, id: \.id) { schedule in
+                                ClassScheduleRowView(
+                                    schedule: schedule,
+                                    onEdit: { presenter.onEditScheduleTapped(schedule) },
+                                    onDelete: { presenter.onDeleteScheduleTapped(schedule) }
+                                )
+                                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                    Button("Delete") {
+                                        presenter.onDeleteScheduleTapped(schedule)
+                                    }
+                                    .tint(.red)
+                                }
+                            }
+                        }
+
+                        Label("Add Class", systemImage: "plus")
+                            .font(.subheadline)
+                            .foregroundStyle(Color.wazaAccent)
+                            .anyButton {
+                                presenter.onAddScheduleTapped(gymId: gym.gymId)
+                            }
+                    } header: {
+                        gymSectionHeader(gym: gym)
                     }
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.top, 8)
-            .padding(.bottom, 16)
         }
+        .listStyle(.insetGrouped)
         .navigationTitle("Training Schedule")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -30,70 +65,31 @@ struct ClassScheduleView: View {
         }
     }
 
-    // MARK: - Empty State
+    // MARK: - Gym Section Header
 
-    private var emptyStateView: some View {
-        EmptyStateView(
-            icon: "mappin.circle",
-            title: "No Gyms Added",
-            subtitle: "Add your gym to set up recurring class reminders and automatic check-ins.",
-            actionTitle: nil,
-            onAction: nil
-        )
-        .padding(.top, 32)
-    }
-
-    // MARK: - Gym Section
-
-    private func gymSection(gym: GymLocationModel) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(gym.name)
-                        .font(.headline)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    if let address = gym.address {
-                        Text(address)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                }
-                Image(systemName: "pencil")
-                    .font(.subheadline)
-                    .foregroundStyle(Color.wazaAccent)
-                    .anyButton {
-                        presenter.onEditGymTapped(gym)
-                    }
-            }
-            .padding(.bottom, 4)
-
-            let gymSchedules = presenter.schedulesByGym[gym.gymId] ?? []
-            if gymSchedules.isEmpty {
-                Text("No classes scheduled")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+    private func gymSectionHeader(gym: GymLocationModel) -> some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(gym.name)
+                    .font(.headline)
+                    .foregroundStyle(.primary)
                     .frame(maxWidth: .infinity, alignment: .leading)
-            } else {
-                ForEach(gymSchedules, id: \.id) { schedule in
-                    ClassScheduleRowView(
-                        schedule: schedule,
-                        onEdit: { presenter.onEditScheduleTapped(schedule) },
-                        onDelete: { presenter.onDeleteScheduleTapped(schedule) }
-                    )
+                if let address = gym.address {
+                    Text(address)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
-
-            Label("Add Class", systemImage: "plus")
+            Image(systemName: "pencil")
                 .font(.subheadline)
                 .foregroundStyle(Color.wazaAccent)
+                .accessibilityLabel("Edit \(gym.name)")
                 .anyButton {
-                    presenter.onAddScheduleTapped(gymId: gym.gymId)
+                    presenter.onEditGymTapped(gym)
                 }
-                .padding(.top, 4)
         }
-        .padding(16)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .textCase(nil)
     }
 
     // MARK: - Toolbar
@@ -102,6 +98,7 @@ struct ClassScheduleView: View {
         Image(systemName: "plus")
             .font(.headline)
             .foregroundStyle(Color.wazaAccent)
+            .accessibilityLabel("Add gym")
             .anyButton {
                 presenter.onAddGymTapped()
             }

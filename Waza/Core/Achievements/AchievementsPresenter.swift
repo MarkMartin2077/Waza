@@ -16,7 +16,6 @@ class AchievementsPresenter {
     private(set) var streakCount: Int = 0
     private(set) var attendanceCount: Int = 0
     private(set) var completedGoalCount: Int = 0
-    var selectedAchievement: AchievementId?
 
     var sections: [AchievementSection] {
         AchievementCategory.allCases.compactMap { category in
@@ -41,7 +40,12 @@ class AchievementsPresenter {
 
     func onAchievementTapped(_ id: AchievementId) {
         interactor.trackEvent(event: Event.achievementTapped)
-        selectedAchievement = id
+        router.showAchievementDetail(
+            achievementId: id,
+            isEarned: isEarned(id),
+            earnedDate: earnedDate(for: id),
+            progressHint: progressHint(for: id)
+        )
     }
 
     func isEarned(_ id: AchievementId) -> Bool {

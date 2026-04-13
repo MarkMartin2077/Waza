@@ -57,6 +57,20 @@ class ClassSchedulePresenter {
 
     func onDeleteScheduleTapped(_ schedule: ClassScheduleModel) {
         interactor.trackEvent(event: Event.deleteScheduleTapped)
+        router.showAlert(.alert, title: "Delete Class?", subtitle: "This will remove \"\(schedule.name)\" from your schedule.") {
+            AnyView(
+                Group {
+                    Button("Delete", role: .destructive) { [weak self] in
+                        self?.onDeleteScheduleConfirmed(schedule)
+                    }
+                    Button("Cancel", role: .cancel) { }
+                }
+            )
+        }
+    }
+
+    private func onDeleteScheduleConfirmed(_ schedule: ClassScheduleModel) {
+        interactor.trackEvent(event: Event.deleteScheduleConfirmed)
         do {
             try interactor.deleteSchedule(schedule)
             loadData()
@@ -74,17 +88,19 @@ extension ClassSchedulePresenter {
         case addScheduleTapped
         case editScheduleTapped
         case deleteScheduleTapped
+        case deleteScheduleConfirmed
         case deleteFail(error: Error)
 
         var eventName: String {
             switch self {
-            case .onAppear:             return "ClassScheduleView_Appear"
-            case .addGymTapped:         return "ClassScheduleView_AddGym_Tap"
-            case .editGymTapped:        return "ClassScheduleView_EditGym_Tap"
-            case .addScheduleTapped:    return "ClassScheduleView_AddSchedule_Tap"
-            case .editScheduleTapped:   return "ClassScheduleView_EditSchedule_Tap"
-            case .deleteScheduleTapped: return "ClassScheduleView_DeleteSchedule_Tap"
-            case .deleteFail:           return "ClassScheduleView_Delete_Fail"
+            case .onAppear:                 return "ClassScheduleView_Appear"
+            case .addGymTapped:             return "ClassScheduleView_AddGym_Tap"
+            case .editGymTapped:            return "ClassScheduleView_EditGym_Tap"
+            case .addScheduleTapped:        return "ClassScheduleView_AddSchedule_Tap"
+            case .editScheduleTapped:       return "ClassScheduleView_EditSchedule_Tap"
+            case .deleteScheduleTapped:     return "ClassScheduleView_DeleteSchedule_Tap"
+            case .deleteScheduleConfirmed:  return "ClassScheduleView_DeleteSchedule_Confirm"
+            case .deleteFail:               return "ClassScheduleView_Delete_Fail"
             }
         }
 

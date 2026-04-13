@@ -25,13 +25,11 @@ struct GoalsPlanningView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 Image(systemName: "plus")
                     .fontWeight(.semibold)
+                    .accessibilityLabel("Add goal")
                     .anyButton {
                         presenter.onAddGoalTapped()
                     }
             }
-        }
-        .sheet(isPresented: $presenter.showAddGoalSheet) {
-            addGoalSheet
         }
         .onAppear {
             presenter.onViewAppear()
@@ -115,15 +113,26 @@ struct GoalsPlanningView: View {
         )
     }
 
-    // MARK: - Add Goal Sheet
+}
 
-    private var addGoalSheet: some View {
+// MARK: - Add Goal Sheet
+
+struct AddGoalSheetView: View {
+    let focusAreaOptions: [String]
+    let onSave: (GoalMetric, Int, String?) -> Void
+    let onCancel: () -> Void
+
+    @State private var selectedMetric: GoalMetric = .sessionsPerWeek
+    @State private var target: Int = 3
+    @State private var selectedFocusArea: String = ""
+
+    var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 24) {
                     metricPickerSection
                     targetSection
-                    if presenter.selectedMetric == .focusAreaSessions {
+                    if selectedMetric == .focusAreaSessions {
                         focusAreaSection
                     }
                 }
@@ -133,25 +142,20 @@ struct GoalsPlanningView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    // Button required by SwiftUI ToolbarItem API
-                    Button("Cancel") {
-                        presenter.onCancelAddGoal()
-                    }
-                    .foregroundStyle(.secondary)
+                    Button("Cancel") { onCancel() }
+                        .foregroundStyle(.secondary)
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    // Button required by SwiftUI ToolbarItem API
                     Button("Save") {
-                        presenter.onSaveNewGoal()
+                        let focus: String? = selectedMetric == .focusAreaSessions && !selectedFocusArea.isEmpty ? selectedFocusArea : nil
+                        onSave(selectedMetric, target, focus)
                     }
                     .fontWeight(.semibold)
-                    .disabled(presenter.selectedMetric == .focusAreaSessions && presenter.selectedFocusArea.isEmpty)
+                    .disabled(selectedMetric == .focusAreaSessions && selectedFocusArea.isEmpty)
                 }
             }
         }
     }
-
-    // MARK: - Metric Picker
 
     private var metricPickerSection: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -161,7 +165,7 @@ struct GoalsPlanningView: View {
 
             VStack(spacing: 10) {
                 ForEach(GoalMetric.allCases, id: \.self) { metric in
-                    let isSelected = presenter.selectedMetric == metric
+                    let isSelected = selectedMetric == metric
                     HStack(spacing: 12) {
                         Image(systemName: metric.iconName)
                             .font(.title3)
@@ -197,15 +201,12 @@ struct GoalsPlanningView: View {
                             .stroke(isSelected ? Color.wazaAccent : Color(.systemGray4), lineWidth: 1)
                     )
                     .anyButton {
-                        presenter.selectedMetric = metric
-                        presenter.onFormInteraction()
+                        selectedMetric = metric
                     }
                 }
             }
         }
     }
-
-    // MARK: - Target
 
     private var targetSection: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -218,17 +219,14 @@ struct GoalsPlanningView: View {
                     .font(.title2)
                     .foregroundStyle(Color.wazaAccent)
                     .anyButton {
-                        if presenter.newGoalTarget > 1 {
-                            presenter.newGoalTarget -= 1
-                            presenter.onFormInteraction()
-                        }
+                        if target > 1 { target -= 1 }
                     }
 
                 VStack(spacing: 2) {
-                    Text("\(presenter.newGoalTarget)")
+                    Text("\(target)")
                         .font(.system(size: 36, weight: .bold, design: .rounded))
                         .foregroundStyle(Color.wazaAccent)
-                    Text(presenter.selectedMetric.unitLabel)
+                    Text(selectedMetric.unitLabel)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -238,8 +236,7 @@ struct GoalsPlanningView: View {
                     .font(.title2)
                     .foregroundStyle(Color.wazaAccent)
                     .anyButton {
-                        presenter.newGoalTarget += 1
-                        presenter.onFormInteraction()
+                        if target < selectedMetric.maxTarget { target += 1 }
                     }
             }
             .frame(maxWidth: .infinity)
@@ -248,18 +245,16 @@ struct GoalsPlanningView: View {
         }
     }
 
-    // MARK: - Focus Area
-
     private var focusAreaSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Which focus area?")
                 .font(.headline)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-            if !presenter.focusAreaOptions.isEmpty {
+            if !focusAreaOptions.isEmpty {
                 FlowLayout(spacing: 8) {
-                    ForEach(presenter.focusAreaOptions, id: \.self) { area in
-                        let isSelected = presenter.selectedFocusArea == area
+                    ForEach(focusAreaOptions, id: \.self) { area in
+                        let isSelected = selectedFocusArea == area
                         Text(area)
                             .font(.caption)
                             .fontWeight(.medium)
@@ -271,14 +266,13 @@ struct GoalsPlanningView: View {
                             )
                             .foregroundStyle(isSelected ? .white : .primary)
                             .anyButton(.press) {
-                                presenter.selectedFocusArea = area
-                                presenter.onFormInteraction()
+                                selectedFocusArea = area
                             }
                     }
                 }
             }
 
-            TextField("Or type a focus area...", text: $presenter.selectedFocusArea)
+            TextField("Or type a focus area...", text: $selectedFocusArea)
                 .font(.subheadline)
                 .padding(12)
                 .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 12))
@@ -374,6 +368,22 @@ private struct GoalCardView: View {
         .padding(14)
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
     }
+}
+
+// MARK: - CoreRouter Extension
+
+extension CoreRouter {
+
+    func showAddGoalSheet(focusAreaOptions: [String], onSave: @escaping (GoalMetric, Int, String?) -> Void) {
+        router.showScreen(.sheet) { _ in
+            AddGoalSheetView(
+                focusAreaOptions: focusAreaOptions,
+                onSave: onSave,
+                onCancel: { self.router.dismissScreen() }
+            )
+        }
+    }
+
 }
 
 // MARK: - Builder Extension

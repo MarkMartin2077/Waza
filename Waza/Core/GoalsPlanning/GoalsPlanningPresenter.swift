@@ -10,13 +10,7 @@ class GoalsPlanningPresenter {
     private(set) var activeGoals: [TrainingGoalModel] = []
     private(set) var completedGoals: [TrainingGoalModel] = []
 
-    var showAddGoalSheet: Bool = false
     var showCompletedGoals: Bool = false
-
-    // New goal form
-    var selectedMetric: GoalMetric = .sessionsPerWeek
-    var newGoalTarget: Int = 3
-    var selectedFocusArea: String = ""
 
     init(interactor: GoalsPlanningInteractor, router: GoalsPlanningRouter, delegate: GoalsPlanningDelegate) {
         self.interactor = interactor
@@ -36,36 +30,30 @@ class GoalsPlanningPresenter {
 
     func onAddGoalTapped() {
         interactor.trackEvent(event: Event.addGoalTapped)
-        resetNewGoalForm()
-        showAddGoalSheet = true
+        router.showAddGoalSheet(
+            focusAreaOptions: interactor.distinctFocusAreas,
+            onSave: { [weak self] metric, target, focusArea in
+                self?.saveNewGoal(metric: metric, target: target, focusArea: focusArea)
+            }
+        )
     }
 
-    func onSaveNewGoal() {
+    private func saveNewGoal(metric: GoalMetric, target: Int, focusArea: String?) {
         interactor.trackEvent(event: Event.saveGoalTapped)
 
         do {
-            let focus: String? = selectedMetric == .focusAreaSessions && !selectedFocusArea.isEmpty ? selectedFocusArea : nil
             _ = try interactor.createMetricGoal(
-                metric: selectedMetric,
-                targetValue: Double(newGoalTarget),
-                focusArea: focus
+                metric: metric,
+                targetValue: Double(target),
+                focusArea: focusArea
             )
-            showAddGoalSheet = false
+            router.dismissScreen()
             loadData()
             interactor.playHaptic(option: .success)
         } catch {
             interactor.trackEvent(event: Event.saveFail(error: error))
             router.showAlert(error: error)
         }
-    }
-
-    func onCancelAddGoal() {
-        interactor.trackEvent(event: Event.cancelAddGoalTapped)
-        showAddGoalSheet = false
-    }
-
-    func onFormInteraction() {
-        interactor.playHaptic(option: .light)
     }
 
     func onUpdateProgress(_ goal: TrainingGoalModel, newProgress: Double) {
@@ -105,18 +93,6 @@ class GoalsPlanningPresenter {
         }
     }
 
-    private func resetNewGoalForm() {
-        selectedMetric = .sessionsPerWeek
-        newGoalTarget = 3
-        selectedFocusArea = ""
-    }
-
-    // MARK: - Focus Area Options
-
-    var focusAreaOptions: [String] {
-        interactor.distinctFocusAreas
-    }
-
     // MARK: - Progress Helpers
 
     func computedProgress(for goal: TrainingGoalModel) -> Double {
@@ -154,6 +130,7 @@ extension GoalsPlanningPresenter {
         case updateProgressFail(error: Error)
         case completeGoalFail(error: Error)
         case deleteGoalFail(error: Error)
+        case formInteraction
 
         var eventName: String {
             switch self {
@@ -169,6 +146,7 @@ extension GoalsPlanningPresenter {
             case .updateProgressFail:   return "GoalsPlanningView_UpdateProgress_Fail"
             case .completeGoalFail:     return "GoalsPlanningView_CompleteGoal_Fail"
             case .deleteGoalFail:       return "GoalsPlanningView_DeleteGoal_Fail"
+            case .formInteraction:      return "GoalsPlanningView_Form_Interaction"
             }
         }
 

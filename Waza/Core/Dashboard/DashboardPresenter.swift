@@ -10,9 +10,6 @@ class DashboardPresenter {
     private(set) var sessions: [BJJSessionModel] = []
     private(set) var sessionStats: SessionStats = .empty
     private(set) var streakCount: Int = 0
-    private(set) var totalXP: Int = 0
-    private(set) var isPremium: Bool = false
-    private(set) var isAIAvailable: Bool = false
     private(set) var nextUpcomingClass: (ClassScheduleModel, GymLocationModel)?
 
     init(interactor: DashboardInteractor, router: DashboardRouter, delegate: DashboardDelegate) {
@@ -30,9 +27,6 @@ class DashboardPresenter {
         sessions = interactor.recentSessions
         sessionStats = interactor.sessionStats
         streakCount = interactor.currentStreakData.currentStreak ?? 0
-        totalXP = interactor.currentExperiencePointsData.pointsAllTime ?? 0
-        isPremium = interactor.isPremium
-        isAIAvailable = interactor.isAIAvailable
         nextUpcomingClass = interactor.nextUpcomingClass
 
         interactor.updateWidgetData(WazaWidgetData(
@@ -56,14 +50,6 @@ class DashboardPresenter {
 
     var isGymSet: Bool {
         !interactor.gyms.isEmpty
-    }
-
-    var weeklyGoalText: String {
-        let count = sessionStats.thisWeekSessions
-        if let goal = interactor.trainingGoalPerWeek {
-            return "\(count) / \(goal) this week"
-        }
-        return "\(count) this week"
     }
 
     var sessionsThisWeek: Int {
@@ -103,15 +89,6 @@ class DashboardPresenter {
         return "\(hours)h \(minutes)m"
     }
 
-    var totalTrainingTimeFormatted: String {
-        let totalSeconds = Int(sessionStats.totalTrainingTime)
-        let hours = totalSeconds / 3600
-        let minutes = (totalSeconds % 3600) / 60
-        if hours == 0 { return "\(minutes)m" }
-        if minutes == 0 { return "\(hours)h" }
-        return "\(hours)h \(minutes)m"
-    }
-
     // MARK: - User actions
 
     func onLogSessionTapped() {
@@ -136,16 +113,6 @@ class DashboardPresenter {
         })
     }
 
-    func onAIInsightsTapped() {
-        interactor.trackEvent(event: Event.aiInsightsTapped)
-        router.showAIInsightsView()
-    }
-
-    func onUpgradeTapped() {
-        interactor.trackEvent(event: Event.upgradeTapped)
-        router.showPaywallView()
-    }
-
     func onDevSettingsTapped() {
         interactor.trackEvent(event: Event.devSettingsTapped)
         router.showDevSettingsView()
@@ -161,8 +128,6 @@ extension DashboardPresenter {
         case logSessionTapped
         case sessionTapped
         case checkInTapped
-        case aiInsightsTapped
-        case upgradeTapped
         case devSettingsTapped
 
         var eventName: String {
@@ -171,8 +136,6 @@ extension DashboardPresenter {
             case .logSessionTapped:  return "DashboardView_LogSession_Tap"
             case .sessionTapped:     return "DashboardView_Session_Tap"
             case .checkInTapped:     return "DashboardView_CheckIn_Tap"
-            case .aiInsightsTapped:  return "DashboardView_AIInsights_Tap"
-            case .upgradeTapped:     return "DashboardView_Upgrade_Tap"
             case .devSettingsTapped: return "DashboardView_DevSettings_Tap"
             }
         }
