@@ -146,35 +146,115 @@ extension BJJSessionModel {
     }
 
     static var mocks: [BJJSessionModel] {
-        [
+        let cal = Calendar.current
+        let now = Date()
+        return [
+            // This week
             mock,
             BJJSessionModel(
                 sessionId: "mock-session-2",
-                date: Calendar.current.date(byAdding: .day, value: -3, to: Date()) ?? Date(),
+                date: cal.date(byAdding: .day, value: -3, to: now) ?? now,
                 duration: 3600,
                 sessionType: .noGi,
                 academy: "Gracie Barra",
                 focusAreas: ["Takedowns", "Wrestling"],
                 notes: "Worked on shot defense and level changes.",
+                preSessionMood: 3,
+                postSessionMood: 4,
                 roundsCount: 4
             ),
             BJJSessionModel(
                 sessionId: "mock-session-3",
-                date: Calendar.current.date(byAdding: .day, value: -5, to: Date()) ?? Date(),
+                date: cal.date(byAdding: .day, value: -5, to: now) ?? now,
                 duration: 7200,
                 sessionType: .openMat,
+                academy: "10th Planet",
                 focusAreas: ["Free Rolling"],
                 notes: "Open mat — lots of rounds with various partners.",
+                preSessionMood: 4,
+                postSessionMood: 5,
                 roundsCount: 8
             ),
+            // Last week
             BJJSessionModel(
                 sessionId: "mock-session-4",
-                date: Calendar.current.date(byAdding: .day, value: -7, to: Date()) ?? Date(),
+                date: cal.date(byAdding: .day, value: -9, to: now) ?? now,
                 duration: 4800,
                 sessionType: .drilling,
+                academy: "Gracie Barra",
                 focusAreas: ["Triangle", "Armbar"],
                 notes: "Drilling fundamentals. Triangle from closed guard.",
+                preSessionMood: 3,
+                postSessionMood: 3,
                 roundsCount: 0
+            ),
+            BJJSessionModel(
+                sessionId: "mock-session-5",
+                date: cal.date(byAdding: .day, value: -12, to: now) ?? now,
+                duration: 5400,
+                sessionType: .gi,
+                academy: "Alliance",
+                focusAreas: ["Guard Retention", "Sweeps"],
+                notes: "Focused on retaining guard under pressure.",
+                preSessionMood: 2,
+                postSessionMood: 4,
+                roundsCount: 6
+            ),
+            // Last month
+            BJJSessionModel(
+                sessionId: "mock-session-6",
+                date: cal.date(byAdding: .day, value: -35, to: now) ?? now,
+                duration: 3600,
+                sessionType: .competition,
+                academy: nil,
+                focusAreas: ["Competition Prep", "Passing"],
+                notes: "Local tournament. Won two matches by points.",
+                preSessionMood: 5,
+                postSessionMood: 5,
+                roundsCount: 4,
+                whatWorkedWell: "Pressure passing worked great under stress",
+                keyInsights: "Stay calm in the first 30 seconds"
+            ),
+            BJJSessionModel(
+                sessionId: "mock-session-7",
+                date: cal.date(byAdding: .day, value: -40, to: now) ?? now,
+                duration: 3600,
+                sessionType: .privateLesson,
+                academy: "Gracie Barra",
+                instructor: "Professor Silva",
+                focusAreas: ["Half Guard", "Underhooks"],
+                notes: "Private with Professor Silva on half guard game.",
+                preSessionMood: 4,
+                postSessionMood: 5,
+                roundsCount: 0,
+                whatWorkedWell: "Knee shield to underhook transition",
+                needsImprovement: "Pummeling speed"
+            ),
+            // Two months ago
+            BJJSessionModel(
+                sessionId: "mock-session-8",
+                date: cal.date(byAdding: .day, value: -65, to: now) ?? now,
+                duration: 5400,
+                sessionType: .noGi,
+                academy: "10th Planet",
+                focusAreas: ["Leg Locks", "Heel Hook"],
+                notes: "No-gi leg lock seminar. Inside heel hook mechanics.",
+                preSessionMood: 4,
+                postSessionMood: 5,
+                roundsCount: 3
+            ),
+            BJJSessionModel(
+                sessionId: "mock-session-9",
+                date: cal.date(byAdding: .day, value: -70, to: now) ?? now,
+                duration: 5400,
+                sessionType: .gi,
+                academy: "Gracie Barra",
+                focusAreas: ["Back Takes", "Chokes"],
+                notes: "Bow and arrow choke from back control.",
+                preSessionMood: 1,
+                postSessionMood: 3,
+                roundsCount: 5,
+                needsImprovement: "Seatbelt grip was slipping"
             )
         ]
     }

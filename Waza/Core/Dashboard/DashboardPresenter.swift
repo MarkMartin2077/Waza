@@ -11,6 +11,11 @@ class DashboardPresenter {
     private(set) var sessionStats: SessionStats = .empty
     private(set) var streakCount: Int = 0
     private(set) var nextUpcomingClass: (ClassScheduleModel, GymLocationModel)?
+    private(set) var xpLevelInfo: XPLevelInfo = XPLevelSystem.levelInfo(forXP: 0)
+    private(set) var streakTier: StreakTier = .none
+    private(set) var fireRoundExpiresAt: Date?
+    private(set) var isStreakAtRisk: Bool = false
+    private(set) var freezesAvailable: Int = 0
 
     init(interactor: DashboardInteractor, router: DashboardRouter, delegate: DashboardDelegate) {
         self.interactor = interactor
@@ -28,6 +33,22 @@ class DashboardPresenter {
         sessionStats = interactor.sessionStats
         streakCount = interactor.currentStreakData.currentStreak ?? 0
         nextUpcomingClass = interactor.nextUpcomingClass
+        let totalXP = interactor.currentExperiencePointsData.pointsAllTime ?? 0
+        xpLevelInfo = XPLevelSystem.levelInfo(forXP: totalXP)
+        streakTier = StreakTier.tier(forDays: streakCount)
+        fireRoundExpiresAt = XPMultiplierCalculator.fireRoundExpiresAt()
+
+        let streakData = interactor.currentStreakData
+        isStreakAtRisk = streakData.isStreakAtRisk
+        freezesAvailable = streakData.freezesAvailableCount ?? 0
+
+        // Schedule/cancel streak risk notification
+        if streakCount >= 2 {
+            StreakRiskNotificationScheduler.scheduleIfNeeded(
+                currentStreak: streakCount,
+                isAtRisk: isStreakAtRisk
+            )
+        }
 
         interactor.updateWidgetData(WazaWidgetData(
             streakCount: streakCount,
@@ -113,6 +134,18 @@ class DashboardPresenter {
         })
     }
 
+    func onUseStreakFreezePressed() {
+        interactor.trackEvent(event: Event.streakFreezeUsed)
+        Task {
+            do {
+                try await interactor.useStreakFreezes()
+                loadData()
+            } catch {
+                router.showAlert(error: error)
+            }
+        }
+    }
+
     func onDevSettingsTapped() {
         interactor.trackEvent(event: Event.devSettingsTapped)
         router.showDevSettingsView()
@@ -129,6 +162,7 @@ extension DashboardPresenter {
         case sessionTapped
         case checkInTapped
         case devSettingsTapped
+        case streakFreezeUsed
 
         var eventName: String {
             switch self {
@@ -136,7 +170,8 @@ extension DashboardPresenter {
             case .logSessionTapped:  return "DashboardView_LogSession_Tap"
             case .sessionTapped:     return "DashboardView_Session_Tap"
             case .checkInTapped:     return "DashboardView_CheckIn_Tap"
-            case .devSettingsTapped: return "DashboardView_DevSettings_Tap"
+            case .devSettingsTapped:  return "DashboardView_DevSettings_Tap"
+            case .streakFreezeUsed:  return "DashboardView_StreakFreeze_Used"
             }
         }
 

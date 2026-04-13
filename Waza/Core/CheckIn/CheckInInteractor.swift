@@ -12,6 +12,7 @@ protocol CheckInInteractor: GlobalInteractor {
     func weeklyAttendanceCount(weekOf: Date) -> Int
     func startTrainingLiveActivity(sessionTypeDisplayName: String, gymName: String?, beltAccentColorHex: String)
     var trainingGoalPerWeek: Int? { get }
+    func awardCheckInXP()
 }
 
 extension CoreInteractor: CheckInInteractor { }

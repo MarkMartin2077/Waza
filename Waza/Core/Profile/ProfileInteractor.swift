@@ -13,6 +13,7 @@ protocol ProfileInteractor: GlobalInteractor {
     var schedules: [ClassScheduleModel] { get }
     var classAttendance: [ClassAttendanceModel] { get }
     var currentStreakData: CurrentStreakData { get }
+    var currentExperiencePointsData: CurrentExperiencePointsData { get }
     func setInitialBelt(belt: BJJBelt, stripes: Int, date: Date, academy: String?, notes: String?) throws
     func addBeltPromotion(belt: BJJBelt, stripes: Int, date: Date, academy: String?, notes: String?) throws -> BeltRecordModel
 }

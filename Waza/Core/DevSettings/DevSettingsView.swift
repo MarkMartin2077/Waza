@@ -13,6 +13,9 @@ struct DevSettingsView: View {
     var body: some View {
         List {
             abTestSection
+            #if DEBUG
+            xpMultiplierSection
+            #endif
             authSection
             userSection
             deviceSection
@@ -61,6 +64,36 @@ struct DevSettingsView: View {
         .font(.caption)
     }
     
+    #if DEBUG
+    private var xpMultiplierSection: some View {
+        Section {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Override Streak: \(presenter.streakDaysLabel)")
+                Slider(value: $presenter.xpOverrideStreakDays, in: 0...30, step: 1)
+                    .tint(.wazaAccent)
+                    .onChange(of: presenter.xpOverrideStreakDays) { _, _ in
+                        presenter.handleStreakDaysChanged()
+                    }
+            }
+
+            Toggle("Force Fire Round (2x)", isOn: $presenter.xpForceFireRound)
+                .onChange(of: presenter.xpForceFireRound) { _, _ in
+                    presenter.handleFireRoundChanged()
+                }
+
+            Toggle("Force Perfect Week (+25%)", isOn: $presenter.xpForcePerfectWeek)
+                .onChange(of: presenter.xpForcePerfectWeek) { _, _ in
+                    presenter.handlePerfectWeekChanged()
+                }
+        } header: {
+            Text("XP Multiplier Overrides")
+        } footer: {
+            Text("Log a session after changing these to see the multiplier in action.")
+        }
+        .font(.caption)
+    }
+    #endif
+
     private var authSection: some View {
         Section {
             ForEach(presenter.authData, id: \.key) { item in

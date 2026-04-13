@@ -40,6 +40,7 @@ class CheckInPresenter {
             checkedInRecord = record
             isConfirmed = true
             interactor.trackEvent(event: Event.checkInSuccess)
+            interactor.awardCheckInXP()
             interactor.startTrainingLiveActivity(
                 sessionTypeDisplayName: delegate.matchedSchedule?.sessionType.displayName ?? delegate.gym.name,
                 gymName: delegate.gym.name,

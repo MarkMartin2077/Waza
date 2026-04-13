@@ -7,11 +7,13 @@ protocol DashboardInteractor: GlobalInteractor {
     var currentBeltEnum: BJJBelt { get }
     var currentUserName: String { get }
     var currentStreakData: CurrentStreakData { get }
+    var currentExperiencePointsData: CurrentExperiencePointsData { get }
     var nextUpcomingClass: (ClassScheduleModel, GymLocationModel)? { get }
     var gyms: [GymLocationModel] { get }
     var trainingGoalPerWeek: Int? { get }
     func endTrainingLiveActivity() async
     func updateWidgetData(_ data: WazaWidgetData)
+    func useStreakFreezes() async throws
 }
 
 extension CoreInteractor: DashboardInteractor { }

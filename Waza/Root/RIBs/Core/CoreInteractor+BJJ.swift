@@ -173,6 +173,32 @@ extension CoreInteractor {
         achievementManager.consumeUnlockedAchievement()
     }
 
+    var xpAppState: AppState {
+        appState
+    }
+
+    // MARK: BJJ Techniques
+
+    var allTechniques: [TechniqueModel] {
+        techniqueManager.techniques
+    }
+
+    func updateTechnique(_ technique: TechniqueModel) throws {
+        try techniqueManager.updateTechnique(technique)
+    }
+
+    func deleteTechnique(_ technique: TechniqueModel) throws {
+        try techniqueManager.deleteTechnique(technique)
+    }
+
+    func createTechnique(name: String, category: TechniqueCategory) {
+        try? techniqueManager.createTechnique(name: name, category: category)
+    }
+
+    func ensureTechniquesExist(for focusAreas: [String]) {
+        techniqueManager.ensureTechniquesExist(for: focusAreas)
+    }
+
     // MARK: AI Insights
 
     var isAIAvailable: Bool {

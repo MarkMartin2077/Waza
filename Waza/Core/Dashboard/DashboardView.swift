@@ -9,6 +9,28 @@ struct DashboardView: View {
             VStack(spacing: 24) {
                 greetingHeader
                     .scaleAppear(delay: 0)
+                if !presenter.isNewUser {
+                    DashboardXPBadgeView(
+                        levelInfo: presenter.xpLevelInfo,
+                        fireRoundExpiresAt: presenter.fireRoundExpiresAt,
+                        streakTier: presenter.streakTier,
+                        accentColor: Color.wazaAccent
+                    )
+                    .scaleAppear(delay: 0.03)
+                }
+
+                if presenter.isStreakAtRisk, presenter.streakCount >= 2 {
+                    StreakRiskBannerView(
+                        currentStreak: presenter.streakCount,
+                        streakTier: presenter.streakTier,
+                        freezesAvailable: presenter.freezesAvailable,
+                        onUseFreezePressed: presenter.freezesAvailable > 0
+                            ? { presenter.onUseStreakFreezePressed() }
+                            : nil
+                    )
+                    .scaleAppear(delay: 0.04)
+                }
+
                 logSessionButton
                     .scaleAppear(delay: 0.05)
 

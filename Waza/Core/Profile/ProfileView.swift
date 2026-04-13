@@ -16,6 +16,17 @@ struct ProfileView: View {
             VStack(spacing: 20) {
                 headerSection
                     .scaleAppear(delay: 0)
+                XPProgressBarView(
+                    levelInfo: presenter.xpLevelInfo,
+                    accentColor: .wazaAccent
+                )
+                .scaleAppear(delay: 0.03)
+                ActiveBoostView(
+                    streakTier: presenter.streakTier,
+                    fireRoundExpiresAt: presenter.fireRoundExpiresAt,
+                    perfectWeekActive: presenter.perfectWeekActive
+                )
+                .scaleAppear(delay: 0.04)
                 statsSection
                     .scaleAppear(delay: 0.06)
                 achievementsSection
@@ -31,7 +42,19 @@ struct ProfileView: View {
         .toolbarTitleDisplayMode(.inlineLarge)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                settingsButton
+                HStack(spacing: 16) {
+                    if let image = presenter.shareCardImage {
+                        ShareLink(
+                            item: Image(uiImage: image),
+                            preview: SharePreview("My Waza Stats", image: Image(uiImage: image))
+                        ) {
+                            Image(systemName: "square.and.arrow.up")
+                                .font(.headline)
+                                .foregroundStyle(Color.wazaAccent)
+                        }
+                    }
+                    settingsButton
+                }
             }
         }
         .onAppear {

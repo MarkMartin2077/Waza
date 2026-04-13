@@ -81,8 +81,8 @@ extension CoreBuilder {
             content: {
                 switch interactor.startingModuleId {
                 case Constants.tabbarModuleId:
-                    RouterView(id: Constants.tabbarModuleId, addNavigationStack: false, addModuleSupport: true) { _ in
-                        coreModuleEntryView()
+                    RouterView(id: Constants.tabbarModuleId, addNavigationStack: false, addModuleSupport: true) { router in
+                        coreModuleEntryView(router: router)
                     }
                 default:
                     RouterView(id: Constants.onboardingModuleId, addNavigationStack: false, addModuleSupport: true) { _ in
@@ -97,8 +97,8 @@ extension CoreBuilder {
         onboardingFlow()
     }
     
-    func coreModuleEntryView() -> some View {
-        tabbarView()
+    func coreModuleEntryView(router: AnyRouter) -> some View {
+        tabbarView(router: router)
     }
     
 }
@@ -106,8 +106,8 @@ extension CoreBuilder {
 extension CoreRouter {
     
     func switchToCoreModule() {
-        router.showModule(.trailing, id: Constants.tabbarModuleId, onDismiss: nil) { _ in
-            self.builder.coreModuleEntryView()
+        router.showModule(.trailing, id: Constants.tabbarModuleId, onDismiss: nil) { router in
+            self.builder.coreModuleEntryView(router: router)
         }
     }
     

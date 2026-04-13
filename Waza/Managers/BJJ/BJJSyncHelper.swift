@@ -9,6 +9,7 @@ struct BJJSyncHelper {
     static let beltsSyncKey        = "waza.bjj.sync.belts"
     static let goalsSyncKey        = "waza.bjj.sync.goals"
     static let achievementsSyncKey = "waza.bjj.sync.achievements"
+    static let techniquesSyncKey   = "waza.bjj.sync.techniques"
 
     /// Returns true if enough time has passed since the last successful sync for this user.
     /// Scoping by userId prevents User A's throttle from blocking User B on a shared device.

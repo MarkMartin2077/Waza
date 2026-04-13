@@ -13,6 +13,10 @@ class ProfilePresenter {
     private(set) var gyms: [GymLocationModel] = []
     private(set) var scheduleCount: Int = 0
     private(set) var streakCount: Int = 0
+    private(set) var xpLevelInfo: XPLevelInfo = XPLevelSystem.levelInfo(forXP: 0)
+    private(set) var streakTier: StreakTier = .none
+    private(set) var fireRoundExpiresAt: Date?
+    private(set) var perfectWeekActive: Bool = false
 
     init(interactor: ProfileInteractor, router: ProfileRouter) {
         self.interactor = interactor
@@ -36,6 +40,11 @@ class ProfilePresenter {
         gyms = interactor.gyms
         scheduleCount = interactor.schedules.count
         streakCount = interactor.currentStreakData.currentStreak ?? 0
+        let totalXP = interactor.currentExperiencePointsData.pointsAllTime ?? 0
+        xpLevelInfo = XPLevelSystem.levelInfo(forXP: totalXP)
+        streakTier = StreakTier.tier(forDays: streakCount)
+        fireRoundExpiresAt = XPMultiplierCalculator.fireRoundExpiresAt()
+        perfectWeekActive = interactor.sessionStats.thisWeekSessions >= XPMultiplierCalculator.perfectWeekTarget
     }
 
     // MARK: - Achievement actions
@@ -63,6 +72,19 @@ class ProfilePresenter {
     func onSettingsButtonPressed() {
         interactor.trackEvent(event: Event.settingsPressed)
         router.showSettingsView()
+    }
+
+    var shareCardImage: UIImage? {
+        let streakDays = streakCount
+        let tier = streakTier
+        guard streakDays >= 3 else { return nil }
+        return ShareCardRenderer.render(
+            card: ShareCardView(
+                cardType: .streakFlex(streakCount: streakDays, tier: tier),
+                userName: userName,
+                accentColor: .wazaAccent
+            )
+        )
     }
 
     var totalTrainingHoursText: String {

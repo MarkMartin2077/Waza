@@ -92,7 +92,7 @@ class GoalsPlanningPresenter {
             router.showAlert(error: error)
         }
     }
-
+    
     // MARK: - Progress Helpers
 
     func computedProgress(for goal: TrainingGoalModel) -> Double {

@@ -49,6 +49,7 @@ struct Dependencies {
         let aiInsightsManager: AIInsightsManager
         let classScheduleManager: ClassScheduleManager
         let liveActivityManager: LiveActivityManager
+        let techniqueManager: TechniqueManager
 
         switch config {
         case .mock(isSignedIn: let isSignedIn):
@@ -73,11 +74,14 @@ struct Dependencies {
             aiInsightsManager = AIInsightsManager()
             classScheduleManager = ClassScheduleManager(services: MockClassScheduleServices())
 
+            techniqueManager = TechniqueManager(services: MockTechniqueServices(), logger: logManager)
+
             if isSignedIn {
                 sessionManager.seedMockDataIfEmpty()
                 beltManager.seedMockDataIfEmpty()
                 goalManager.seedMockDataIfEmpty()
                 classScheduleManager.seedMockDataIfEmpty()
+                techniqueManager.seedMockDataIfEmpty()
             }
 
         case .dev:
@@ -104,6 +108,7 @@ struct Dependencies {
             trainingStatsManager = TrainingStatsManager(sessionManager: sessionManager)
             aiInsightsManager = AIInsightsManager()
             classScheduleManager = ClassScheduleManager(services: ProductionClassScheduleServices())
+            techniqueManager = TechniqueManager(services: ProductionTechniqueServices(), logger: logManager)
 
         case .prod:
             logManager = LogManager(services: [
@@ -128,6 +133,7 @@ struct Dependencies {
             trainingStatsManager = TrainingStatsManager(sessionManager: sessionManager)
             aiInsightsManager = AIInsightsManager()
             classScheduleManager = ClassScheduleManager(services: ProductionClassScheduleServices())
+            techniqueManager = TechniqueManager(services: ProductionTechniqueServices(), logger: logManager)
         }
 
         liveActivityManager = LiveActivityManager()
@@ -155,6 +161,7 @@ struct Dependencies {
         container.register(AIInsightsManager.self, service: aiInsightsManager)
         container.register(ClassScheduleManager.self, service: classScheduleManager)
         container.register(LiveActivityManager.self, service: liveActivityManager)
+        container.register(TechniqueManager.self, service: techniqueManager)
 
         self.container = container
 
@@ -188,6 +195,7 @@ class DevPreview {
         container.register(AIInsightsManager.self, service: aiInsightsManager)
         container.register(ClassScheduleManager.self, service: classScheduleManager)
         container.register(LiveActivityManager.self, service: liveActivityManager)
+        container.register(TechniqueManager.self, service: techniqueManager)
         return container
     }
 
@@ -211,6 +219,7 @@ class DevPreview {
     let aiInsightsManager: AIInsightsManager
     let classScheduleManager: ClassScheduleManager
     let liveActivityManager: LiveActivityManager
+    let techniqueManager: TechniqueManager
 
     init(isSignedIn: Bool = true) {
         self.authManager = AuthManager(service: MockAuthService(user: isSignedIn ? .mock() : nil))
@@ -233,12 +242,14 @@ class DevPreview {
         self.aiInsightsManager = AIInsightsManager()
         self.classScheduleManager = ClassScheduleManager(services: MockClassScheduleServices())
         self.liveActivityManager = LiveActivityManager()
+        self.techniqueManager = TechniqueManager(services: MockTechniqueServices())
 
         if isSignedIn {
             sessionManager.seedMockDataIfEmpty()
             beltManager.seedMockDataIfEmpty()
             goalManager.seedMockDataIfEmpty()
             classScheduleManager.seedMockDataIfEmpty()
+            techniqueManager.seedMockDataIfEmpty()
         }
     }
 }

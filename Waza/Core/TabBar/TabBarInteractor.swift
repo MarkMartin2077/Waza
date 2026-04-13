@@ -6,6 +6,7 @@ protocol TabBarInteractor: GlobalInteractor {
     var lastUnlockedAchievement: AchievementId? { get }
     func closestSchedule(forGymId gymId: String, at date: Date) -> ClassScheduleModel?
     func consumeUnlockedAchievement()
+    var xpAppState: AppState { get }
 }
 
 extension CoreInteractor: TabBarInteractor { }

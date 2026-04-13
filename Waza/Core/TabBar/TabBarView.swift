@@ -33,8 +33,6 @@ struct TabBarView: View {
     }
 
     var body: some View {
-        // ZStack instead of .overlay — avoids the invisible hit-test layer that
-        // .overlay creates over TabView, which caused toolbar buttons to need two taps.
         ZStack {
             TabView {
                 ForEach(tabs) { tab in
@@ -46,28 +44,37 @@ struct TabBarView: View {
             }
             .tint(Color.wazaAccent)
             .onChange(of: presenter.lastUnlockedAchievement) { _, newValue in
-                guard let id = newValue else { return }
-                presenter.onAchievementUnlocked(id)
+                guard let achievementId = newValue else { return }
+                presenter.onAchievementUnlocked(achievementId)
+            }
+            .onChange(of: presenter.lastXPGain) { _, newValue in
+                guard let data = newValue else { return }
+                presenter.onXPGained(data)
+            }
+            .onChange(of: presenter.lastFireRoundActivation) { _, newValue in
+                guard newValue else { return }
+                presenter.onFireRoundActivated()
+            }
+            .onChange(of: presenter.lastStreakTierUp) { _, newValue in
+                guard let tier = newValue else { return }
+                presenter.onStreakTierUpDetected(tier)
             }
 
-            if let achievement = presenter.pendingUnlockAchievement {
-                AchievementUnlockModal(
-                    achievementId: achievement,
+            // XP toast — lightweight overlay, not a routed modal
+            if let xpData = presenter.pendingXPToast {
+                XPGainToastView(
+                    data: xpData,
                     accentColor: Color.wazaAccent,
-                    onDismiss: { presenter.onAchievementDismissed() }
+                    onDismiss: { presenter.onXPToastDismissed() }
                 )
-                .ignoresSafeArea()
-                .transition(.opacity)
+                .allowsHitTesting(false)
             }
         }
-        .animation(.easeInOut(duration: 0.2), value: presenter.pendingUnlockAchievement != nil)
         .preferredColorScheme(resolvedColorScheme)
         .onReceive(NotificationCenter.default.publisher(for: .gymArrival)) { notification in
             guard let gymId = (notification.userInfo as? [String: String])?["gymId"] else { return }
             presenter.onGymArrival(gymId: gymId)
         }
-        // TabBar is the root container without a VIPER Router, so .sheet is
-        // acceptable here. The presenter still drives the show/dismiss logic.
         .sheet(isPresented: Binding(
             get: { presenter.pendingCheckIn != nil },
             set: { if !$0 { presenter.onCheckInDismissed() } }
@@ -86,9 +93,10 @@ struct TabBarView: View {
 
 extension CoreBuilder {
 
-    func tabbarView() -> some View {
-        TabBarView(
-            presenter: TabBarPresenter(interactor: interactor),
+    func tabbarView(router: AnyRouter) -> some View {
+        let coreRouter = CoreRouter(router: router, builder: self)
+        return TabBarView(
+            presenter: TabBarPresenter(interactor: interactor, router: coreRouter),
             tabs: [
                 TabBarScreen(title: "Home", systemImage: "house.fill", screen: {
                     RouterView { router in
@@ -121,30 +129,10 @@ extension CoreBuilder {
 
 }
 
-#Preview("Fake tabs") {
-    let container = DevPreview.shared.container()
-    let presenter = TabBarPresenter(interactor: CoreInteractor(container: container))
-
-    return TabBarView(
-        presenter: presenter,
-        tabs: [
-            TabBarScreen(title: "Sessions", systemImage: "list.bullet", screen: {
-                Color.wazaAccent.any()
-            }),
-            TabBarScreen(title: "Progress", systemImage: "chart.line.uptrend.xyaxis", screen: {
-                Color.orange.any()
-            }),
-            TabBarScreen(title: "Profile", systemImage: "person.fill", screen: {
-                Color.green.any()
-            })
-        ],
-        builder: nil
-    )
-}
-
 #Preview("Real tabs") {
     let container = DevPreview.shared.container()
     let builder = CoreBuilder(interactor: CoreInteractor(container: container))
-
-    return builder.tabbarView()
+    return RouterView { router in
+        builder.tabbarView(router: router)
+    }
 }

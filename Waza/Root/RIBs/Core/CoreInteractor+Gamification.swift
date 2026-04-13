@@ -123,9 +123,67 @@ extension CoreInteractor {
             keyInsights: params.keyInsights
         )
 
+        StreakRiskNotificationScheduler.cancel()
+        techniqueManager.ensureTechniquesExist(for: params.focusAreas)
+
+        let oldStreakDays = currentStreakData.currentStreak ?? 0
+        let result = calculateSessionXP(params: params, streakDays: oldStreakDays)
+        let oldXP = currentExperiencePointsData.pointsAllTime ?? 0
+
         async let streakResult = addStreakEvent()
-        async let xpResult = addExperiencePoints(points: 10)
+        async let xpResult = addExperiencePoints(points: result.points, metadata: result.metadata)
         _ = try await (streakResult, xpResult)
+
+        handlePostSessionGamification(
+            oldStreakDays: oldStreakDays,
+            oldXP: oldXP,
+            finalPoints: result.points,
+            xpReward: result.reward,
+            multiplier: result.multiplier
+        )
+
+        return session
+    }
+
+    private func calculateSessionXP(params: SessionEntryParams, streakDays: Int) -> SessionXPResult {
+        let recent = recentFocusAreas(withinDays: 30)
+        let reward = XPRewardCalculator.calculate(params: params, recentFocusAreas: recent)
+        let multiplier = XPMultiplierCalculator.calculate(streakDays: streakDays, sessionsLastWeek: sessionsLastWeek())
+        let points = XPMultiplierCalculator.apply(multiplier, toBasePoints: reward.totalPoints)
+
+        if multiplier.didActivateFireRound {
+            XPMultiplierCalculator.activateFireRound()
+            appState.pendingFireRoundActivation = true
+        }
+
+        var metadata = reward.metadata
+        if multiplier.hasBoost {
+            metadata["multiplier"] = .double(multiplier.totalMultiplier)
+            if multiplier.isFireRound { metadata["fire_round"] = .bool(true) }
+        }
+
+        return SessionXPResult(points: points, metadata: metadata, reward: reward, multiplier: multiplier)
+    }
+
+    private func handlePostSessionGamification(
+        oldStreakDays: Int,
+        oldXP: Int,
+        finalPoints: Int,
+        xpReward: XPRewardResult,
+        multiplier: XPMultiplierResult
+    ) {
+        let newStreakDays = currentStreakData.currentStreak ?? 0
+        if let newTier = XPMultiplierCalculator.streakTierUp(oldDays: oldStreakDays, newDays: newStreakDays) {
+            appState.pendingStreakTierUp = newTier
+        }
+
+        fireXPToast(
+            points: finalPoints,
+            oldXP: oldXP,
+            breakdownText: xpReward.breakdownText,
+            multiplierText: multiplier.displayText,
+            isFireRound: multiplier.isFireRound
+        )
 
         let stats = sessionStats
         achievementManager.checkAndAward(
@@ -133,8 +191,82 @@ extension CoreInteractor {
             sessionStats: stats,
             streakCount: currentStreakData.currentStreak ?? 0
         )
-
-        return session
     }
 
+    // MARK: - Check-In XP
+
+    func awardCheckInXP() {
+        let reward = XPRewardCalculator.checkInReward()
+        let oldXP = currentExperiencePointsData.pointsAllTime ?? 0
+        Task {
+            try? await addExperiencePoints(points: reward.totalPoints, metadata: [
+                "source": .string("check_in")
+            ])
+            fireXPToast(points: reward.totalPoints, oldXP: oldXP)
+        }
+    }
+
+    // MARK: - Streak Milestone XP
+
+    func awardStreakMilestoneXP() {
+        let reward = XPRewardCalculator.streakMilestoneReward()
+        let oldXP = currentExperiencePointsData.pointsAllTime ?? 0
+        Task {
+            try? await addExperiencePoints(points: reward.totalPoints, metadata: [
+                "source": .string("streak_milestone")
+            ])
+            fireXPToast(points: reward.totalPoints, oldXP: oldXP)
+        }
+    }
+
+    // MARK: - Helpers
+
+    private func fireXPToast(
+        points: Int,
+        oldXP: Int,
+        breakdownText: String? = nil,
+        multiplierText: String? = nil,
+        isFireRound: Bool = false
+    ) {
+        let newXP = oldXP + points
+        let leveledUp = XPLevelSystem.didLevelUp(from: oldXP, to: newXP)
+        let newLevel: Int? = leveledUp ? XPLevelSystem.level(forXP: newXP) : nil
+        let newTitle: String? = newLevel.map { XPLevelSystem.title(forLevel: $0) }
+        appState.lastXPGain = XPToastData(
+            totalPoints: points,
+            leveledUp: leveledUp,
+            newLevel: newLevel,
+            newTitle: newTitle,
+            breakdownText: breakdownText,
+            multiplierText: multiplierText,
+            isFireRound: isFireRound
+        )
+    }
+
+    /// Number of sessions logged in the previous calendar week.
+    private func sessionsLastWeek() -> Int {
+        let calendar = Calendar.current
+        let now = Date()
+        guard let thisWeekStart = calendar.dateInterval(of: .weekOfYear, for: now)?.start else { return 0 }
+        let lastWeekStart = calendar.date(byAdding: .weekOfYear, value: -1, to: thisWeekStart) ?? thisWeekStart
+        let lastWeekEnd = thisWeekStart
+        return sessionManager.sessions.filter { $0.date >= lastWeekStart && $0.date < lastWeekEnd }.count
+    }
+
+    /// Focus areas from sessions in the last N days.
+    private func recentFocusAreas(withinDays days: Int) -> Set<String> {
+        let cutoff = Calendar.current.date(byAdding: .day, value: -days, to: Date()) ?? Date()
+        let recent = sessionManager.sessions.filter { $0.date >= cutoff }
+        return Set(recent.flatMap(\.focusAreas))
+    }
+
+}
+
+// MARK: - Session XP Result
+
+private struct SessionXPResult {
+    let points: Int
+    let metadata: [String: GamificationDictionaryValue]
+    let reward: XPRewardResult
+    let multiplier: XPMultiplierResult
 }

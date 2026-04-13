@@ -16,6 +16,13 @@ class DevSettingsPresenter {
 
     var boolTest: Bool = false
     var enumTest: EnumTestOption = .default
+
+    // XP Multiplier Overrides
+    #if DEBUG
+    var xpOverrideStreakDays: Double = 0
+    var xpForceFireRound: Bool = false
+    var xpForcePerfectWeek: Bool = false
+    #endif
     
     var authData: [(key: String, value: Any)] {
         interactor.auth?.eventParameters.asAlphabeticalArray ?? []
@@ -45,6 +52,12 @@ class DevSettingsPresenter {
     func loadABTests() {
         boolTest = interactor.activeTests.boolTest
         enumTest = interactor.activeTests.enumTest
+
+        #if DEBUG
+        xpOverrideStreakDays = Double(XPMultiplierCalculator.devOverrideStreakDays)
+        xpForceFireRound = XPMultiplierCalculator.devForceFireRound
+        xpForcePerfectWeek = XPMultiplierCalculator.devForcePerfectWeek
+        #endif
     }
 
     func handleBoolTestChange(oldValue: Bool, newValue: Bool) {
@@ -85,6 +98,29 @@ class DevSettingsPresenter {
             }
         }
     }
+
+    // MARK: - XP Multiplier Overrides
+
+    #if DEBUG
+    func handleStreakDaysChanged() {
+        XPMultiplierCalculator.devOverrideStreakDays = Int(xpOverrideStreakDays)
+    }
+
+    func handleFireRoundChanged() {
+        XPMultiplierCalculator.devForceFireRound = xpForceFireRound
+    }
+
+    func handlePerfectWeekChanged() {
+        XPMultiplierCalculator.devForcePerfectWeek = xpForcePerfectWeek
+    }
+
+    var streakDaysLabel: String {
+        let days = Int(xpOverrideStreakDays)
+        if days == 0 { return "Off" }
+        let tier = StreakTier.tier(forDays: days)
+        return "\(days)d — \(tier.displayName) (+\(tier.bonusPercent)%)"
+    }
+    #endif
 
     func onBackButtonPressed() {
         router.dismissScreen()
