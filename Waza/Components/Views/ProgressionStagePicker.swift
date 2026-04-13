@@ -35,6 +35,7 @@ struct ProgressionStagePicker: View {
         .anyButton {
             onStageSelected(stage)
         }
+        .accessibilityLabel("\(stage.displayName)\(isSelected ? ", selected" : "")")
     }
 }
 

@@ -6,7 +6,10 @@ struct MonthlyReportView: View {
 
     var body: some View {
         Group {
-            if let data = presenter.reportData {
+            if presenter.isLoading {
+                ProgressView()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else if let data = presenter.reportData {
                 reportContent(data: data)
             } else {
                 emptyContent
@@ -25,7 +28,7 @@ struct MonthlyReportView: View {
                             .font(.headline)
                             .foregroundStyle(Color.wazaAccent)
                     }
-                } else {
+                } else if presenter.reportData != nil {
                     Image(systemName: "square.and.arrow.up")
                         .font(.headline)
                         .foregroundStyle(Color.wazaAccent)
@@ -45,59 +48,89 @@ struct MonthlyReportView: View {
     private func reportContent(data: MonthlyReportData) -> some View {
         ScrollView {
             VStack(spacing: 20) {
-                headerCard(data: data)
+                monthPicker
                     .scaleAppear(delay: 0)
-                headlineStatsSection(data: data)
-                    .scaleAppear(delay: 0.05)
+                heroCard(data: data)
+                    .scaleAppear(delay: 0.03)
                 if !data.isFirstMonth {
                     monthComparisonSection(data: data)
-                        .scaleAppear(delay: 0.08)
+                        .scaleAppear(delay: 0.06)
                 }
                 streakSection(data: data)
-                    .scaleAppear(delay: 0.1)
+                    .scaleAppear(delay: 0.08)
                 if !data.typeBreakdown.isEmpty {
                     typeBreakdownSection(data: data)
-                        .scaleAppear(delay: 0.13)
+                        .scaleAppear(delay: 0.1)
                 }
                 if !data.topFocusAreas.isEmpty {
                     topTechniquesSection(data: data)
-                        .scaleAppear(delay: 0.16)
+                        .scaleAppear(delay: 0.12)
                 }
                 if data.avgPreMood != nil || data.avgPostMood != nil {
                     moodTrendsSection(data: data)
-                        .scaleAppear(delay: 0.19)
+                        .scaleAppear(delay: 0.14)
                 }
                 if data.gymDistribution.count >= 2 {
                     gymDistributionSection(data: data)
-                        .scaleAppear(delay: 0.22)
+                        .scaleAppear(delay: 0.16)
                 }
                 summaryFooterSection(data: data)
-                    .scaleAppear(delay: 0.25)
+                    .scaleAppear(delay: 0.18)
             }
             .padding(16)
         }
     }
 
     private var emptyContent: some View {
-        VStack(spacing: 12) {
-            Image(systemName: "chart.bar.doc.horizontal")
-                .font(.system(size: 48))
-                .foregroundStyle(Color.wazaAccent.opacity(0.5))
-            Text("No report available")
-                .font(.headline)
-            Text("Log sessions to see your monthly training report.")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
+        VStack(spacing: 16) {
+            monthPicker
+
+            VStack(spacing: 12) {
+                Image(systemName: "figure.wrestling")
+                    .font(.system(size: 48))
+                    .foregroundStyle(Color.wazaAccent.opacity(0.5))
+                Text("No sessions this month")
+                    .font(.headline)
+                Text("Get on the mats and your report will be waiting!")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+            .padding(32)
         }
-        .padding(32)
+        .padding(.horizontal, 16)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
-    // MARK: - Header Card
+    // MARK: - Month Picker
 
-    private func headerCard(data: MonthlyReportData) -> some View {
-        VStack(spacing: 6) {
+    private var monthPicker: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(presenter.monthOptions, id: \.monthsAgo) { option in
+                    let isSelected = presenter.selectedMonthsAgo == option.monthsAgo
+                    Text(option.label)
+                        .font(.caption)
+                        .fontWeight(isSelected ? .semibold : .regular)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 7)
+                        .background(isSelected ? Color.wazaAccent : Color(.systemGray6))
+                        .foregroundStyle(isSelected ? .white : .primary)
+                        .clipShape(Capsule())
+                        .anyButton {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                                presenter.selectedMonthsAgo = option.monthsAgo
+                            }
+                        }
+                }
+            }
+        }
+    }
+
+    // MARK: - Hero Card
+
+    private func heroCard(data: MonthlyReportData) -> some View {
+        VStack(spacing: 16) {
             Text(data.monthLabel.uppercased())
                 .font(.caption)
                 .fontWeight(.bold)
@@ -105,80 +138,57 @@ struct MonthlyReportView: View {
                 .foregroundStyle(Color.wazaAccent)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
-            Text("Training Report")
-                .font(.title2)
-                .fontWeight(.bold)
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-            let startFormatted = data.dateRange.start.shortFormatted
-            let endFormatted = data.dateRange.end.shortFormatted
-            Text("\(startFormatted) – \(endFormatted)")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            HStack(spacing: 0) {
+                heroStat(value: "\(data.totalSessions)", label: "sessions", icon: "figure.wrestling")
+                Divider().frame(height: 40)
+                heroStat(value: data.totalHoursFormatted, label: "hours", icon: "clock.fill")
+                Divider().frame(height: 40)
+                heroStat(value: "\(data.daysTrained)", label: "days", icon: "calendar")
+                if data.longestStreakInMonth > 0 {
+                    Divider().frame(height: 40)
+                    heroStat(value: "\(data.longestStreakInMonth)", label: "streak", icon: "flame.fill")
+                }
+            }
         }
         .padding(16)
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Monthly summary: \(data.totalSessions) sessions, \(data.totalHoursFormatted) hours, \(data.daysTrained) days trained")
     }
 
-    // MARK: - Headline Stats (2x2 grid)
-
-    private func headlineStatsSection(data: MonthlyReportData) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Sessions")
-                .font(.headline)
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-                statCard(value: "\(data.totalSessions)", label: "Sessions", icon: "figure.wrestling")
-                statCard(value: data.totalHoursFormatted, label: "Hours", icon: "clock.fill")
-                statCard(value: "\(data.avgDurationMinutes)m", label: "Avg Duration", icon: "timer")
-                statCard(value: "\(data.daysTrained)", label: "Days Trained", icon: "calendar")
+    private func heroStat(value: String, label: String, icon: String) -> some View {
+        VStack(spacing: 4) {
+            HStack(spacing: 3) {
+                Image(systemName: icon)
+                    .font(.caption2)
+                    .foregroundStyle(Color.wazaAccent)
+                Text(value)
+                    .font(.title3)
+                    .fontWeight(.bold)
+                    .contentTransition(.numericText())
             }
-        }
-    }
-
-    private func statCard(value: String, label: String, icon: String) -> some View {
-        VStack(spacing: 6) {
-            Image(systemName: icon)
-                .font(.title3)
-                .foregroundStyle(Color.wazaAccent)
-            Text(value)
-                .font(.wazaTitle)
-                .contentTransition(.numericText())
             Text(label)
                 .font(.caption2)
                 .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity)
-        .padding(12)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
     }
 
     // MARK: - Month Comparison
 
     private func monthComparisonSection(data: MonthlyReportData) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("vs Previous Month")
-                .font(.headline)
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-            HStack(spacing: 12) {
-                deltaCard(
-                    delta: data.sessionsDelta,
-                    label: "Sessions",
-                    formattedDelta: "\(abs(data.sessionsDelta))"
-                )
-                deltaCard(
-                    delta: data.hoursDelta > 0 ? 1 : (data.hoursDelta < 0 ? -1 : 0),
-                    label: "Hours",
-                    formattedDelta: String(format: "%.1f", abs(data.hoursDelta))
-                )
-            }
+        HStack(spacing: 12) {
+            deltaCard(
+                delta: data.sessionsDelta,
+                label: "Sessions",
+                formattedDelta: "\(abs(data.sessionsDelta))"
+            )
+            deltaCard(
+                delta: data.hoursDelta > 0 ? 1 : (data.hoursDelta < 0 ? -1 : 0),
+                label: "Hours",
+                formattedDelta: String(format: "%.1f", abs(data.hoursDelta))
+            )
         }
-        .padding(16)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
     }
 
     private func deltaCard(delta: Int, label: String, formattedDelta: String) -> some View {
@@ -186,7 +196,7 @@ struct MonthlyReportView: View {
         let isNeutral = delta == 0
         let color: Color = isNeutral ? .secondary : (isPositive ? .green : .red)
         let arrowIcon = isNeutral ? "minus" : (isPositive ? "arrow.up" : "arrow.down")
-        let prefix = isNeutral ? "" : (isPositive ? "+" : "-")
+        let prefix = isPositive ? "+" : (isNeutral ? "" : "-")
 
         return VStack(spacing: 4) {
             HStack(spacing: 4) {
@@ -199,16 +209,22 @@ struct MonthlyReportView: View {
                     .contentTransition(.numericText())
             }
             .foregroundStyle(color)
+            Text("vs prev month")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
             Text(label)
                 .font(.caption2)
+                .fontWeight(.semibold)
                 .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 12)
         .background(color.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(label): \(prefix)\(formattedDelta) vs previous month")
     }
 
-    // MARK: - Streak Section
+    // MARK: - Streak
 
     private func streakSection(data: MonthlyReportData) -> some View {
         HStack(spacing: 14) {
@@ -296,7 +312,7 @@ struct MonthlyReportView: View {
                         Text(area.name)
                             .font(.subheadline)
                             .frame(maxWidth: .infinity, alignment: .leading)
-                        Text("×\(area.count)")
+                        Text("x\(area.count)")
                             .font(.caption)
                             .fontWeight(.semibold)
                             .foregroundStyle(.secondary)
@@ -318,10 +334,10 @@ struct MonthlyReportView: View {
 
             HStack(spacing: 12) {
                 if let pre = data.avgPreMood {
-                    moodPill(emoji: moodEmoji(for: pre), label: "Pre-session", value: String(format: "%.1f", pre))
+                    moodPill(emoji: Mood.emoji(for: Int(pre.rounded())), label: "Pre-session", value: String(format: "%.1f", pre))
                 }
                 if let post = data.avgPostMood {
-                    moodPill(emoji: moodEmoji(for: post), label: "Post-session", value: String(format: "%.1f", post))
+                    moodPill(emoji: Mood.emoji(for: Int(post.rounded())), label: "Post-session", value: String(format: "%.1f", post))
                 }
             }
 
@@ -333,7 +349,7 @@ struct MonthlyReportView: View {
                     Text("Best day: \(best.date.relativeFormatted)")
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                    Text("(\(moodEmoji(for: Double(best.postMood))) \(best.postMood)/5)")
+                    Text("(\(Mood.emoji(for: best.postMood)) \(best.postMood)/5)")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -358,16 +374,8 @@ struct MonthlyReportView: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 10)
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
-    }
-
-    private func moodEmoji(for value: Double) -> String {
-        switch value {
-        case ..<2:   return "😞"
-        case ..<3:   return "😐"
-        case ..<4:   return "🙂"
-        case ..<4.5: return "😊"
-        default:     return "🤩"
-        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(label): \(value) out of 5, \(emoji)")
     }
 
     // MARK: - Gym Distribution
@@ -407,21 +415,13 @@ struct MonthlyReportView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             VStack(spacing: 8) {
-                summaryRow(
-                    icon: "checkmark.seal.fill",
-                    label: "Goals completed",
-                    value: "\(data.goalsCompletedCount)"
-                )
-                summaryRow(
-                    icon: "trophy.fill",
-                    label: "Achievements earned",
-                    value: "\(data.achievementsEarnedCount)"
-                )
-                summaryRow(
-                    icon: "bolt.fill",
-                    label: "Current level",
-                    value: data.levelInfo.title
-                )
+                if data.goalsCompletedCount > 0 {
+                    summaryRow(icon: "checkmark.seal.fill", label: "Goals completed this month", value: "\(data.goalsCompletedCount)")
+                }
+                if data.achievementsEarnedCount > 0 {
+                    summaryRow(icon: "trophy.fill", label: "New achievements", value: "\(data.achievementsEarnedCount)")
+                }
+                summaryRow(icon: "bolt.fill", label: "Current level", value: data.levelInfo.title)
             }
         }
         .padding(14)
@@ -442,6 +442,8 @@ struct MonthlyReportView: View {
                 .fontWeight(.semibold)
                 .foregroundStyle(.secondary)
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(label): \(value)")
     }
 }
 

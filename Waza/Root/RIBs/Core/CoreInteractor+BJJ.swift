@@ -239,7 +239,7 @@ extension CoreInteractor {
 
     // MARK: Monthly Report
 
-    func getMonthlyReportData(for dateRange: DateRange) -> MonthlyReportData {
+    func getMonthlyReportData(for dateRange: DateRange) async -> MonthlyReportData {
         let sessions = sessionManager.getSessions(in: dateRange)
         let prevRange = DateRange.calendarMonth(monthsAgo: 2)
         let prevSessions = sessionManager.getSessions(in: prevRange)

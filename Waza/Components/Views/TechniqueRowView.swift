@@ -42,6 +42,16 @@ struct TechniqueRowView: View {
         }
         .padding(10)
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(accessibilityText)
+    }
+
+    private var accessibilityText: String {
+        var text = name ?? "Technique"
+        if let stage { text += ", \(stage.displayName)" }
+        text += ", practiced \(practiceCount) times"
+        if let lastPracticed { text += ", last \(lastPracticed)" }
+        return text
     }
 
     // MARK: - Stage Indicator

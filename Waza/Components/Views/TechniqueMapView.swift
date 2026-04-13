@@ -75,6 +75,7 @@ struct TechniqueMapView: View {
         .anyButton(.press) {
             onTechniqueTapped?(name)
         }
+        .accessibilityLabel("\(name), \(stage.displayName)")
     }
 
     // MARK: - Empty State

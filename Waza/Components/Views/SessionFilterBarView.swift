@@ -124,6 +124,7 @@ struct SessionFilterBarView: View {
             .anyButton {
                 onClearFilters()
             }
+            .accessibilityLabel("Clear all filters")
     }
 
     // MARK: - Chip Builder
@@ -143,6 +144,7 @@ struct SessionFilterBarView: View {
         .background(isActive ? Color.wazaAccent.opacity(0.15) : Color(.systemGray6))
         .foregroundStyle(isActive ? Color.wazaAccent : .secondary)
         .clipShape(Capsule())
+        .accessibilityLabel("\(title) filter\(isActive ? ", active" : "")")
     }
 }
 
