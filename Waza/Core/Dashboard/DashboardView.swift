@@ -31,8 +31,17 @@ struct DashboardView: View {
                     .scaleAppear(delay: 0.04)
                 }
 
-                logSessionButton
+                if !presenter.isNewUser, !presenter.challenges.isEmpty {
+                    WeeklyChallengesCardView(
+                        challenges: presenter.challenges,
+                        completedCount: presenter.completedChallengeCount,
+                        accentColor: Color.wazaAccent
+                    )
                     .scaleAppear(delay: 0.05)
+                }
+
+                logSessionButton
+                    .scaleAppear(delay: 0.07)
 
                 if presenter.isNewUser {
                     activationCard

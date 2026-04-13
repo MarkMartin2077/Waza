@@ -50,6 +50,7 @@ struct Dependencies {
         let classScheduleManager: ClassScheduleManager
         let liveActivityManager: LiveActivityManager
         let techniqueManager: TechniqueManager
+        let challengeManager: ChallengeManager
 
         switch config {
         case .mock(isSignedIn: let isSignedIn):
@@ -75,6 +76,7 @@ struct Dependencies {
             classScheduleManager = ClassScheduleManager(services: MockClassScheduleServices())
 
             techniqueManager = TechniqueManager(services: MockTechniqueServices(), logger: logManager)
+            challengeManager = ChallengeManager(localService: SwiftDataChallengePersistence())
 
             if isSignedIn {
                 sessionManager.seedMockDataIfEmpty()
@@ -82,6 +84,7 @@ struct Dependencies {
                 goalManager.seedMockDataIfEmpty()
                 classScheduleManager.seedMockDataIfEmpty()
                 techniqueManager.seedMockDataIfEmpty()
+                challengeManager.seedMockDataIfEmpty()
             }
 
         case .dev:
@@ -109,6 +112,7 @@ struct Dependencies {
             aiInsightsManager = AIInsightsManager()
             classScheduleManager = ClassScheduleManager(services: ProductionClassScheduleServices())
             techniqueManager = TechniqueManager(services: ProductionTechniqueServices(), logger: logManager)
+            challengeManager = ChallengeManager(localService: SwiftDataChallengePersistence())
 
         case .prod:
             logManager = LogManager(services: [
@@ -134,6 +138,7 @@ struct Dependencies {
             aiInsightsManager = AIInsightsManager()
             classScheduleManager = ClassScheduleManager(services: ProductionClassScheduleServices())
             techniqueManager = TechniqueManager(services: ProductionTechniqueServices(), logger: logManager)
+            challengeManager = ChallengeManager(localService: SwiftDataChallengePersistence())
         }
 
         liveActivityManager = LiveActivityManager()
@@ -162,6 +167,7 @@ struct Dependencies {
         container.register(ClassScheduleManager.self, service: classScheduleManager)
         container.register(LiveActivityManager.self, service: liveActivityManager)
         container.register(TechniqueManager.self, service: techniqueManager)
+        container.register(ChallengeManager.self, service: challengeManager)
 
         self.container = container
 
@@ -196,6 +202,7 @@ class DevPreview {
         container.register(ClassScheduleManager.self, service: classScheduleManager)
         container.register(LiveActivityManager.self, service: liveActivityManager)
         container.register(TechniqueManager.self, service: techniqueManager)
+        container.register(ChallengeManager.self, service: challengeManager)
         return container
     }
 
@@ -220,6 +227,7 @@ class DevPreview {
     let classScheduleManager: ClassScheduleManager
     let liveActivityManager: LiveActivityManager
     let techniqueManager: TechniqueManager
+    let challengeManager: ChallengeManager
 
     init(isSignedIn: Bool = true) {
         self.authManager = AuthManager(service: MockAuthService(user: isSignedIn ? .mock() : nil))
@@ -243,6 +251,7 @@ class DevPreview {
         self.classScheduleManager = ClassScheduleManager(services: MockClassScheduleServices())
         self.liveActivityManager = LiveActivityManager()
         self.techniqueManager = TechniqueManager(services: MockTechniqueServices())
+        self.challengeManager = ChallengeManager(localService: SwiftDataChallengePersistence(inMemory: true))
 
         if isSignedIn {
             sessionManager.seedMockDataIfEmpty()
@@ -250,6 +259,7 @@ class DevPreview {
             goalManager.seedMockDataIfEmpty()
             classScheduleManager.seedMockDataIfEmpty()
             techniqueManager.seedMockDataIfEmpty()
+            challengeManager.seedMockDataIfEmpty()
         }
     }
 }

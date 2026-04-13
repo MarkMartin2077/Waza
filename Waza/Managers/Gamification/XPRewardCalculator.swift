@@ -10,6 +10,8 @@ enum XPRewardReason: String, Sendable, CaseIterable {
     case newFocusArea       = "New Focus"
     case checkIn            = "Check-In"
     case streakMilestone    = "Streak"
+    case weeklyChallenge    = "Challenge"
+    case weeklySweepBonus   = "Sweep"
 }
 
 // MARK: - Reward Item
@@ -98,5 +100,13 @@ enum XPRewardCalculator {
 
     static func streakMilestoneReward() -> XPRewardResult {
         XPRewardResult(items: [XPRewardItem(reason: .streakMilestone, points: 50)])
+    }
+
+    static func weeklyChallengeReward() -> XPRewardResult {
+        XPRewardResult(items: [XPRewardItem(reason: .weeklyChallenge, points: 25)])
+    }
+
+    static func weeklyChallengeSweepBonus() -> XPRewardResult {
+        XPRewardResult(items: [XPRewardItem(reason: .weeklySweepBonus, points: 100)])
     }
 }

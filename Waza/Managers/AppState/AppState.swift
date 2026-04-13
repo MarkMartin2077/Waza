@@ -22,6 +22,10 @@ class AppState {
     /// Transient signal for streak tier-up modal (new tier).
     var pendingStreakTierUp: StreakTier?
 
+    /// Transient signal for weekly challenge completion toast. Title of the completed challenge.
+    /// Consumed by TabBar to surface a toast to the user.
+    var pendingChallengeCompletion: String?
+
     init(startingModuleId: String = UserDefaults.lastModuleId) {
         self.startingModuleId = startingModuleId
     }

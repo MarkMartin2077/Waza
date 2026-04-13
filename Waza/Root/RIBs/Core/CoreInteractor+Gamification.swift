@@ -191,6 +191,58 @@ extension CoreInteractor {
             sessionStats: stats,
             streakCount: currentStreakData.currentStreak ?? 0
         )
+
+        // Evaluate weekly challenges and award XP for completions
+        handleWeeklyChallengeEvaluation()
+    }
+
+    private func handleWeeklyChallengeEvaluation() {
+        let weekStart = WeeklyChallengeModel.currentWeekStart()
+        guard let weekEnd = Calendar.current.date(byAdding: .day, value: 7, to: weekStart) else { return }
+        let weekSessions = sessionManager.sessions.filter { $0.date >= weekStart && $0.date < weekEnd }
+
+        // We need a representative session for the evaluate signature; use the most recent this week.
+        guard let latestSession = weekSessions.sorted(by: { $0.date > $1.date }).first else { return }
+
+        let completedBefore = challengeManager.completedCount
+        let newlyCompleted = challengeManager.evaluate(
+            session: latestSession,
+            allSessionsThisWeek: weekSessions,
+            gyms: classScheduleManager.gyms
+        )
+        let completedAfter = challengeManager.completedCount
+
+        // Award XP and surface a toast for each newly completed challenge
+        for challenge in newlyCompleted {
+            let reward = XPRewardCalculator.weeklyChallengeReward()
+            Task {
+                try? await addExperiencePoints(points: reward.totalPoints, metadata: [
+                    "source": .string("weekly_challenge"),
+                    "challenge_type": .string(challenge.challengeType.rawValue)
+                ])
+            }
+            appState.pendingChallengeCompletion = challenge.title
+        }
+
+        // Award streak freeze when exactly crossing the 2/3 threshold
+        if completedBefore < 2, completedAfter >= 2 {
+            let weekId = Int(weekStart.timeIntervalSince1970)
+            let freezeId = "weekly_challenge_\(weekId)"
+            let nextMonday = Calendar.current.date(byAdding: .day, value: 7, to: weekStart)
+            Task {
+                try? await addStreakFreeze(id: freezeId, dateExpires: nextMonday)
+            }
+        }
+
+        // Award sweep bonus when exactly crossing the 3/3 threshold
+        if completedBefore < 3, completedAfter >= 3 {
+            let sweepReward = XPRewardCalculator.weeklyChallengeSweepBonus()
+            Task {
+                try? await addExperiencePoints(points: sweepReward.totalPoints, metadata: [
+                    "source": .string("weekly_challenge_sweep")
+                ])
+            }
+        }
     }
 
     // MARK: - Check-In XP

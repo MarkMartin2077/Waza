@@ -16,6 +16,8 @@ class DashboardPresenter {
     private(set) var fireRoundExpiresAt: Date?
     private(set) var isStreakAtRisk: Bool = false
     private(set) var freezesAvailable: Int = 0
+    private(set) var challenges: [WeeklyChallengeModel] = []
+    private(set) var completedChallengeCount: Int = 0
 
     init(interactor: DashboardInteractor, router: DashboardRouter, delegate: DashboardDelegate) {
         self.interactor = interactor
@@ -49,6 +51,10 @@ class DashboardPresenter {
                 isAtRisk: isStreakAtRisk
             )
         }
+
+        interactor.generateChallengesIfNeeded()
+        challenges = interactor.currentChallenges
+        completedChallengeCount = interactor.completedChallengeCount
 
         interactor.updateWidgetData(WazaWidgetData(
             streakCount: streakCount,

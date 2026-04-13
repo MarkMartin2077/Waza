@@ -25,6 +25,7 @@ struct CoreInteractor: GlobalInteractor {
     let classScheduleManager: ClassScheduleManager
     let liveActivityManager: LiveActivityManager
     let techniqueManager: TechniqueManager
+    let challengeManager: ChallengeManager
 
     init(container: DependencyContainer) {
         self.appState = container.resolve(AppState.self)!
@@ -48,6 +49,7 @@ struct CoreInteractor: GlobalInteractor {
         self.classScheduleManager = container.resolve(ClassScheduleManager.self)!
         self.liveActivityManager = container.resolve(LiveActivityManager.self)!
         self.techniqueManager = container.resolve(TechniqueManager.self)!
+        self.challengeManager = container.resolve(ChallengeManager.self)!
     }
 
 }

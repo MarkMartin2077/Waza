@@ -26,6 +26,7 @@ extension CoreInteractor {
         beltManager.logIn(userId: user.uid)
         goalManager.logIn(userId: user.uid)
         achievementManager.logIn(userId: user.uid)
+        challengeManager.logIn(userId: user.uid)
 
         logManager.addUserProperties(dict: Utilities.eventParameters, isHighPriority: false)
 
@@ -80,6 +81,7 @@ extension CoreInteractor {
         goalManager.clearAll()
         achievementManager.clearAll()
         classScheduleManager.clearAll()
+        challengeManager.clearAll()
     }
 
     private func logOutManagers() {
@@ -87,6 +89,7 @@ extension CoreInteractor {
         beltManager.logOut()
         goalManager.logOut()
         achievementManager.logOut()
+        challengeManager.logOut()
     }
 
 }
