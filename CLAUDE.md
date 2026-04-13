@@ -39,6 +39,14 @@ This documentation is organized into focused files for better maintainability. E
   - Common mistakes to avoid
   - Quick lookup for frequently used features
 
+### Improvement Plan
+
+- **Improvement Plan**: @.claude/docs/improvement-plan.md
+  - Prioritized list of improvements (P1-P5)
+  - Test coverage gaps, feature cross-pollination, discoverability, visual design, resilience
+  - TODOs in codebase reference this doc by section number
+  - Generated April 13, 2026
+
 ### Required Actions
 
 When the user triggers specific requests, follow these action workflows:

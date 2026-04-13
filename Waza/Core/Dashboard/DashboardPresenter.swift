@@ -1,5 +1,8 @@
 import SwiftUI
 
+// TODO: [P3] Add first-session gamification onboarding tips (see .claude/docs/improvement-plan.md §3.1)
+// TODO: [P3] Add technique journal and monthly report quick-access cards (see §3.2)
+
 @Observable
 @MainActor
 class DashboardPresenter {

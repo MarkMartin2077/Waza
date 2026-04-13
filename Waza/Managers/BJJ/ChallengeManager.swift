@@ -1,5 +1,8 @@
 import Foundation
 
+// TODO: [P1] Add unit tests — ChallengeManagerTests.swift (see .claude/docs/improvement-plan.md §1.2)
+// TODO: [P5] Guard generateIfNeeded against empty session history for offline resilience (see §5.1)
+
 @Observable
 @MainActor
 class ChallengeManager {

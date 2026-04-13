@@ -1,6 +1,8 @@
 import SwiftUI
 import SwiftfulUI
 
+// TODO: [P4] Add distinct visual identity — header gradient or hero image (see .claude/docs/improvement-plan.md §4.1)
+
 struct MonthlyReportView: View {
     @State var presenter: MonthlyReportPresenter
 

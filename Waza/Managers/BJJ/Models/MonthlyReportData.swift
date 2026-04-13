@@ -1,5 +1,8 @@
 import Foundation
 
+// TODO: [P1] Add unit tests — MonthlyReportTests.swift (see .claude/docs/improvement-plan.md §1.3)
+// TODO: [P2] Add challengesCompleted, challengesSweepCount, techniquesPromoted fields (see §2.2, §2.3)
+
 // MARK: - MonthlyReportData
 
 struct MonthlyReportData {

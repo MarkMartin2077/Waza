@@ -1,5 +1,8 @@
 import Foundation
 
+// TODO: [P1] Add unit tests — ChallengeGeneratorTests.swift (see .claude/docs/improvement-plan.md §1.1)
+// TODO: [P2] Add technique-aware challenge types: promoteTechnique, practiceWeakTechnique (see §2.1)
+
 // MARK: - Challenge Generator
 //
 // Pure static enum — zero external dependencies. All input passed as parameters.

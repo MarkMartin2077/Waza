@@ -1,5 +1,7 @@
 import SwiftUI
 
+// TODO: [P4] Add visual identity distinct from other screens — consider stage-colored section accents (see .claude/docs/improvement-plan.md §4.1)
+
 struct TechniqueJournalView: View {
     @State var presenter: TechniqueJournalPresenter
     @State private var showMapView: Bool = false

@@ -1,5 +1,7 @@
 import Foundation
 
+// TODO: [P1] Add unit tests — TechniqueManagerTests.swift (see .claude/docs/improvement-plan.md §1.4)
+
 @Observable
 @MainActor
 class TechniqueManager {
