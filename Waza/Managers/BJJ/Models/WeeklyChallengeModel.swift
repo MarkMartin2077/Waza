@@ -37,6 +37,24 @@ extension ChallengeType {
     }
 }
 
+// MARK: - Category Color
+
+import SwiftUI
+
+extension ChallengeCategory {
+    /// Visual tint used for challenge-row accents. Chosen for contrast against the
+    /// project's dark/material backgrounds while staying distinct from wazaAccent (teal).
+    var accentColor: Color {
+        switch self {
+        case .frequency:   return Color(red: 0.35, green: 0.55, blue: 0.95) // blue
+        case .quality:     return Color(red: 0.35, green: 0.75, blue: 0.55) // green
+        case .exploration: return Color(red: 0.95, green: 0.62, blue: 0.25) // orange
+        case .intensity:   return Color(red: 0.90, green: 0.40, blue: 0.40) // red
+        case .technique:   return Color(red: 0.68, green: 0.45, blue: 0.90) // purple
+        }
+    }
+}
+
 // MARK: - Weekly Challenge Model
 
 struct WeeklyChallengeModel: Codable, Sendable, Identifiable {

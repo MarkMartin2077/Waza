@@ -1,7 +1,5 @@
 import SwiftUI
 
-// TODO: [P4] Add visual identity distinct from other screens — consider stage-colored section accents (see .claude/docs/improvement-plan.md §4.1)
-
 struct TechniqueJournalView: View {
     @State var presenter: TechniqueJournalPresenter
     @State private var showMapView: Bool = false
@@ -115,35 +113,69 @@ struct TechniqueJournalView: View {
                     .listRowInsets(EdgeInsets(top: 3, leading: 16, bottom: 3, trailing: 16))
                 }
             } header: {
-                sectionHeader(category: group.category, count: group.techniques.count)
+                sectionHeader(category: group.category, techniques: group.techniques)
             }
         }
     }
 
     // MARK: - Section Header
 
-    private func sectionHeader(category: TechniqueCategory, count: Int) -> some View {
-        HStack {
-            Image(systemName: category.iconName)
-                .font(.caption)
-                .foregroundStyle(Color.wazaAccent)
+    private func sectionHeader(category: TechniqueCategory, techniques: [TechniqueModel]) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                Image(systemName: category.iconName)
+                    .font(.caption)
+                    .foregroundStyle(Color.wazaAccent)
 
-            Text(category.displayName)
-                .font(.subheadline)
-                .fontWeight(.semibold)
-                .foregroundStyle(.primary)
-                .frame(maxWidth: .infinity, alignment: .leading)
+                Text(category.displayName)
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.primary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
 
-            Text("\(count)")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 2)
-                .background(Color(.systemGray5), in: Capsule())
+                Text("\(techniques.count)")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 2)
+                    .background(Color(.systemGray5), in: Capsule())
+            }
+
+            stageBreakdownRow(techniques: techniques)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 6)
         .listRowInsets(EdgeInsets())
+    }
+
+    /// Row of tinted pill chips showing how many techniques in this category sit at each stage.
+    /// Only non-zero stages render, so early-game users see a compact summary.
+    private func stageBreakdownRow(techniques: [TechniqueModel]) -> some View {
+        let counts = Dictionary(grouping: techniques, by: \.stage)
+            .mapValues { $0.count }
+        let ordered: [ProgressionStage] = [.learning, .drilling, .applying, .polishing]
+
+        return HStack(spacing: 6) {
+            ForEach(ordered, id: \.self) { stage in
+                if let count = counts[stage], count > 0 {
+                    stageChip(stage: stage, count: count)
+                }
+            }
+        }
+    }
+
+    private func stageChip(stage: ProgressionStage, count: Int) -> some View {
+        HStack(spacing: 4) {
+            Circle()
+                .fill(stage.color)
+                .frame(width: 6, height: 6)
+            Text("\(count) \(stage.displayName.lowercased())")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+        }
+        .padding(.horizontal, 7)
+        .padding(.vertical, 3)
+        .background(stage.color.opacity(0.12), in: Capsule())
     }
 
     // MARK: - Empty State

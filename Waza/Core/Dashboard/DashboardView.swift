@@ -20,21 +20,15 @@ struct DashboardView: View {
                         levelInfo: presenter.xpLevelInfo,
                         fireRoundExpiresAt: presenter.fireRoundExpiresAt,
                         streakTier: presenter.streakTier,
-                        accentColor: Color.wazaAccent
-                    )
-                    .scaleAppear(delay: 0.03)
-                }
-
-                if presenter.isStreakAtRisk, presenter.streakCount >= 2 {
-                    StreakRiskBannerView(
-                        currentStreak: presenter.streakCount,
-                        streakTier: presenter.streakTier,
+                        streakCount: presenter.streakCount,
+                        isStreakAtRisk: presenter.isStreakAtRisk,
                         freezesAvailable: presenter.freezesAvailable,
                         onUseFreezePressed: presenter.freezesAvailable > 0
                             ? { presenter.onUseStreakFreezePressed() }
-                            : nil
+                            : nil,
+                        accentColor: Color.wazaAccent
                     )
-                    .scaleAppear(delay: 0.04)
+                    .scaleAppear(delay: 0.03)
                 }
 
                 if !presenter.isNewUser, !presenter.challenges.isEmpty {
@@ -98,15 +92,24 @@ struct DashboardView: View {
     // MARK: - Log Session Button
 
     private var logSessionButton: some View {
-        Text("Log Session")
-            .font(.headline)
-            .foregroundStyle(.white)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 14)
-            .background(Color.wazaAccent, in: RoundedRectangle(cornerRadius: 14))
-            .anyButton(.press) {
-                presenter.onLogSessionTapped()
-            }
+        HStack(spacing: 8) {
+            Image(systemName: "plus.circle.fill")
+                .font(.title3)
+            Text("Log Session")
+                .font(.system(.title3, weight: .semibold))
+        }
+        .foregroundStyle(.white)
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 18)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color.wazaAccent)
+                .shadow(color: Color.wazaAccent.opacity(0.35), radius: 12, y: 6)
+        )
+        .anyButton(.press) {
+            presenter.onLogSessionTapped()
+        }
+        .accessibilityLabel("Log a new training session")
     }
 
     // MARK: - Activation Card (new user)

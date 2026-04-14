@@ -185,8 +185,8 @@ This document captures the prioritized list of improvements identified after shi
 | 2.3 | Monthly report technique progression | P2 | ✅ Done |
 | 3.1 | First-session gamification onboarding | P3 | ✅ Done (challenges tip + existing XP toast) |
 | 3.2 | Dashboard feature discovery | P3 | ✅ Done (journal card + monthly report banner) |
-| 4.1 | Screen visual identity | P4 | Design needed |
-| 4.2 | Dashboard information hierarchy | P4 | Design needed |
+| 4.1 | Screen visual identity | P4 | ✅ Done (A+B+C) |
+| 4.2 | Dashboard information hierarchy | P4 | ✅ Done (D+E) |
 | 5.1 | Offline challenge generation guard | P5 | ✅ Done |
 | 5.2 | Stale report data handling | P5 | ✅ Done (documented) |
 

@@ -48,6 +48,12 @@ struct WeeklyChallengesCardView: View {
 
     private func challengeRow(_ challenge: WeeklyChallengeModel) -> some View {
         HStack(spacing: 10) {
+            // Category-tinted left accent bar — gives each challenge type a visual identity.
+            RoundedRectangle(cornerRadius: 2)
+                .fill(challenge.challengeType.category.accentColor)
+                .frame(width: 3)
+                .opacity(challenge.isCompleted ? 0.4 : 1.0)
+
             completionIcon(isCompleted: challenge.isCompleted)
 
             VStack(alignment: .leading, spacing: 2) {

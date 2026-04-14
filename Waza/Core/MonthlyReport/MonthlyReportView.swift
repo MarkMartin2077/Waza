@@ -1,8 +1,6 @@
 import SwiftUI
 import SwiftfulUI
 
-// TODO: [P4] Add distinct visual identity — header gradient or hero image (see .claude/docs/improvement-plan.md §4.1)
-
 struct MonthlyReportView: View {
     @State var presenter: MonthlyReportPresenter
 
@@ -132,13 +130,8 @@ struct MonthlyReportView: View {
     // MARK: - Hero Card
 
     private func heroCard(data: MonthlyReportData) -> some View {
-        VStack(spacing: 16) {
-            Text(data.monthLabel.uppercased())
-                .font(.caption)
-                .fontWeight(.bold)
-                .tracking(2)
-                .foregroundStyle(Color.wazaAccent)
-                .frame(maxWidth: .infinity, alignment: .leading)
+        VStack(spacing: 18) {
+            heroHeader(data: data)
 
             HStack(spacing: 0) {
                 heroStat(value: "\(data.totalSessions)", label: "sessions", icon: "figure.wrestling")
@@ -151,11 +144,57 @@ struct MonthlyReportView: View {
                     heroStat(value: "\(data.longestStreakInMonth)", label: "streak", icon: "flame.fill")
                 }
             }
+            .padding(.horizontal, 16)
+            .padding(.bottom, 16)
         }
-        .padding(16)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .background(
+            RoundedRectangle(cornerRadius: 20)
+                .fill(.ultraThinMaterial)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20)
+                        .strokeBorder(Color.wazaAccent.opacity(0.15), lineWidth: 1)
+                )
+        )
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Monthly summary: \(data.totalSessions) sessions, \(data.totalHoursFormatted) hours, \(data.daysTrained) days trained")
+        .accessibilityLabel("Monthly summary: \(data.monthLabel). \(data.totalSessions) sessions, \(data.totalHoursFormatted) hours, \(data.daysTrained) days trained")
+    }
+
+    /// Big gradient header — the visual identity anchor for this screen.
+    /// Pairs the month name (large display) with the year (small, tracked caption).
+    private func heroHeader(data: MonthlyReportData) -> some View {
+        let parts = data.monthLabel.split(separator: " ", maxSplits: 1).map(String.init)
+        let month = parts.first ?? data.monthLabel
+        let year = parts.count > 1 ? parts[1] : ""
+
+        return ZStack(alignment: .topLeading) {
+            LinearGradient(
+                colors: [
+                    Color(red: 0.99, green: 0.74, blue: 0.31).opacity(0.35),  // amber
+                    Color.wazaAccent.opacity(0.25)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+
+            VStack(alignment: .leading, spacing: 2) {
+                if !year.isEmpty {
+                    Text(year)
+                        .font(.caption)
+                        .fontWeight(.semibold)
+                        .tracking(3)
+                        .foregroundStyle(.secondary)
+                }
+                Text(month.uppercased())
+                    .font(.system(size: 44, weight: .heavy, design: .rounded))
+                    .foregroundStyle(.primary)
+                    .minimumScaleFactor(0.6)
+                    .lineLimit(1)
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 22)
+        }
+        .frame(height: 120)
+        .clipShape(UnevenRoundedRectangle(cornerRadii: .init(topLeading: 20, topTrailing: 20)))
     }
 
     private func heroStat(value: String, label: String, icon: String) -> some View {

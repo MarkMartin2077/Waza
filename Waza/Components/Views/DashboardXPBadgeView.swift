@@ -1,9 +1,17 @@
 import SwiftUI
 
+/// Consolidated dashboard status strip — shows level, title, streak, freezes, and
+/// any active bonus (fire round or streak tier) in one compact row. Also surfaces
+/// a streak-at-risk warning with an inline "Use Freeze" action when applicable,
+/// replacing the need for a separate full-width risk banner.
 struct DashboardXPBadgeView: View {
     let levelInfo: XPLevelInfo
     let fireRoundExpiresAt: Date?
     let streakTier: StreakTier
+    let streakCount: Int
+    let isStreakAtRisk: Bool
+    let freezesAvailable: Int
+    let onUseFreezePressed: (() -> Void)?
     let accentColor: Color
 
     @State private var now = Date()
@@ -14,51 +22,77 @@ struct DashboardXPBadgeView: View {
         return expiry > now
     }
 
+    private var showsRiskWarning: Bool {
+        isStreakAtRisk && streakCount >= 2
+    }
+
     var body: some View {
-        VStack(spacing: 6) {
-            HStack(spacing: 8) {
-                Text("Lv. \(levelInfo.level)")
-                    .font(.caption2)
-                    .fontWeight(.bold)
-                    .foregroundStyle(accentColor)
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 2)
-                    .background(accentColor.opacity(0.15), in: Capsule())
-
-                Text(levelInfo.title)
-                    .font(.caption)
-                    .fontWeight(.semibold)
-
-                Spacer()
-
-                if fireRoundActive {
-                    fireRoundBadge
-                } else if streakTier != .none {
-                    streakBadge
-                }
+        VStack(spacing: 8) {
+            topRow
+            progressBar
+            if showsRiskWarning {
+                riskRow
             }
-
-            GeometryReader { geo in
-                ZStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 3)
-                        .fill(Color(.systemGray5))
-                        .frame(height: 4)
-                    RoundedRectangle(cornerRadius: 3)
-                        .fill(accentColor)
-                        .frame(width: geo.size.width * min(levelInfo.progressToNextLevel, 1.0), height: 4)
-                        .animation(.easeOut(duration: 0.5), value: levelInfo.progressToNextLevel)
-                }
-            }
-            .frame(height: 4)
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 10)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(.ultraThinMaterial)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .strokeBorder(showsRiskWarning ? Color.orange.opacity(0.5) : .clear, lineWidth: 1)
+                )
+        )
         .onReceive(timer) { newTime in
             now = newTime
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilityText)
+    }
+
+    // MARK: - Top Row
+
+    private var topRow: some View {
+        HStack(spacing: 8) {
+            Text("Lv. \(levelInfo.level)")
+                .font(.caption2)
+                .fontWeight(.bold)
+                .foregroundStyle(accentColor)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 2)
+                .background(accentColor.opacity(0.15), in: Capsule())
+
+            Text(levelInfo.title)
+                .font(.caption)
+                .fontWeight(.semibold)
+                .lineLimit(1)
+
+            Spacer()
+
+            if streakCount > 0 {
+                streakChip
+            }
+
+            if fireRoundActive {
+                fireRoundBadge
+            } else if streakTier != .none {
+                tierBadge
+            }
+        }
+    }
+
+    private var streakChip: some View {
+        HStack(spacing: 3) {
+            Image(systemName: "flame.fill")
+                .font(.caption2)
+                .foregroundStyle(showsRiskWarning ? .orange : accentColor)
+            Text("\(streakCount)")
+                .font(.caption2)
+                .fontWeight(.semibold)
+                .foregroundStyle(showsRiskWarning ? .orange : .primary)
+                .contentTransition(.numericText())
+        }
     }
 
     private var fireRoundBadge: some View {
@@ -76,12 +110,12 @@ struct DashboardXPBadgeView: View {
                     .foregroundStyle(.secondary)
             }
         }
-        .padding(.horizontal, 8)
+        .padding(.horizontal, 7)
         .padding(.vertical, 3)
         .background(Color.orange.opacity(0.12), in: Capsule())
     }
 
-    private var streakBadge: some View {
+    private var tierBadge: some View {
         HStack(spacing: 3) {
             Image(systemName: "bolt.fill")
                 .font(.caption2)
@@ -91,10 +125,64 @@ struct DashboardXPBadgeView: View {
                 .fontWeight(.semibold)
                 .foregroundStyle(accentColor)
         }
-        .padding(.horizontal, 8)
+        .padding(.horizontal, 7)
         .padding(.vertical, 3)
         .background(accentColor.opacity(0.12), in: Capsule())
     }
+
+    // MARK: - Progress Bar
+
+    private var progressBar: some View {
+        GeometryReader { geo in
+            ZStack(alignment: .leading) {
+                RoundedRectangle(cornerRadius: 3)
+                    .fill(Color(.systemGray5))
+                    .frame(height: 4)
+                RoundedRectangle(cornerRadius: 3)
+                    .fill(accentColor)
+                    .frame(width: geo.size.width * min(levelInfo.progressToNextLevel, 1.0), height: 4)
+                    .animation(.easeOut(duration: 0.5), value: levelInfo.progressToNextLevel)
+            }
+        }
+        .frame(height: 4)
+    }
+
+    // MARK: - Risk Row
+
+    private var riskRow: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .font(.caption)
+                .foregroundStyle(.orange)
+
+            Text(riskText)
+                .font(.caption2)
+                .foregroundStyle(.primary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            if freezesAvailable > 0, let onUseFreezePressed {
+                Text("Use Freeze")
+                    .font(.caption2)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(Color.orange, in: Capsule())
+                    .anyButton(.press) {
+                        onUseFreezePressed()
+                    }
+            }
+        }
+    }
+
+    private var riskText: String {
+        if freezesAvailable > 0 {
+            return "Streak expires today · \(freezesAvailable) freeze\(freezesAvailable == 1 ? "" : "s") ready"
+        }
+        return "Streak expires today — train to keep it alive"
+    }
+
+    // MARK: - Helpers
 
     private func shortTime(until date: Date) -> String {
         let remaining = max(0, date.timeIntervalSince(now))
@@ -106,20 +194,35 @@ struct DashboardXPBadgeView: View {
 
     private var accessibilityText: String {
         var text = "Level \(levelInfo.level), \(levelInfo.title)"
+        if streakCount > 0 {
+            text += ", \(streakCount) day streak"
+        }
         if fireRoundActive {
             text += ", fire round active, double XP"
         } else if streakTier != .none {
-            text += ", \(streakTier.displayName) streak, plus \(streakTier.bonusPercent) percent"
+            text += ", \(streakTier.displayName) tier plus \(streakTier.bonusPercent) percent"
+        }
+        if showsRiskWarning {
+            text += ", streak at risk today"
+            if freezesAvailable > 0 {
+                text += ", \(freezesAvailable) freezes available"
+            }
         }
         return text
     }
 }
 
-#Preview("Scrapper 3 with streak") {
+// MARK: - Previews
+
+#Preview("Scrapper 3 — streak, no risk") {
     DashboardXPBadgeView(
         levelInfo: XPLevelSystem.levelInfo(forXP: 900),
         fireRoundExpiresAt: nil,
         streakTier: .silver,
+        streakCount: 7,
+        isStreakAtRisk: false,
+        freezesAvailable: 1,
+        onUseFreezePressed: nil,
         accentColor: .cyan
     )
     .padding()
@@ -130,26 +233,52 @@ struct DashboardXPBadgeView: View {
         levelInfo: XPLevelSystem.levelInfo(forXP: 900),
         fireRoundExpiresAt: Date().addingTimeInterval(3600 * 12),
         streakTier: .silver,
+        streakCount: 12,
+        isStreakAtRisk: false,
+        freezesAvailable: 0,
+        onUseFreezePressed: nil,
         accentColor: .cyan
     )
     .padding()
 }
 
-#Preview("Rookie 1 — no boosts") {
+#Preview("Rookie — no streak, no boosts") {
     DashboardXPBadgeView(
         levelInfo: XPLevelSystem.levelInfo(forXP: 0),
         fireRoundExpiresAt: nil,
         streakTier: .none,
+        streakCount: 0,
+        isStreakAtRisk: false,
+        freezesAvailable: 0,
+        onUseFreezePressed: nil,
         accentColor: .cyan
     )
     .padding()
 }
 
-#Preview("Legend") {
+#Preview("At risk with freezes") {
     DashboardXPBadgeView(
-        levelInfo: XPLevelSystem.levelInfo(forXP: 15000),
+        levelInfo: XPLevelSystem.levelInfo(forXP: 1500),
         fireRoundExpiresAt: nil,
-        streakTier: .diamond,
+        streakTier: .gold,
+        streakCount: 14,
+        isStreakAtRisk: true,
+        freezesAvailable: 2,
+        onUseFreezePressed: { },
+        accentColor: .cyan
+    )
+    .padding()
+}
+
+#Preview("At risk no freezes") {
+    DashboardXPBadgeView(
+        levelInfo: XPLevelSystem.levelInfo(forXP: 1500),
+        fireRoundExpiresAt: nil,
+        streakTier: .silver,
+        streakCount: 7,
+        isStreakAtRisk: true,
+        freezesAvailable: 0,
+        onUseFreezePressed: nil,
         accentColor: .cyan
     )
     .padding()
