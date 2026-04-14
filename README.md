@@ -2,7 +2,7 @@
 
 A BJJ training tracker for iOS 26. Log sessions, check in at your gym, track techniques, earn XP, and watch your game grow.
 
-> **For engineers and recruiters:** jump to [Engineering Overview](#engineering-overview) or [Architectural Decisions](./DECISIONS.md).
+> **For engineers and recruiters:** jump to [Engineering Overview](#engineering-overview), [Architectural Decisions](./DECISIONS.md), or the featured [CoreInteractor refactor case study](./docs/refactor-coreinteractor-case-study.md) ([open as PR #1](https://github.com/MarkMartin2077/Waza/pull/1)).
 
 [Available on the App Store →](https://apps.apple.com/app/id6759821384)
 
@@ -28,6 +28,10 @@ A solo iOS portfolio project designed to demonstrate production-grade engineerin
 - **SwiftLint enforced** (line length, file length, todo violations surface in CI)
 - **Swift 6 strict concurrency** clean — no `@unchecked Sendable` escape hatches in new code
 - **Zero `TODO` / `FIXME` / `HACK` comments** in production source as of the most recent preship pass
+
+### Featured case study
+
+📖 **[The CoreInteractor refactor](./docs/refactor-coreinteractor-case-study.md)** — detailed walkthrough of the decision to consolidate 7 domain extension files into one file plus 3 orchestration services. Covers context, options considered, tradeoffs accepted, and a real bug the refactor surfaced (`trainDuration` challenges could never complete). Also available as [PR #1](https://github.com/MarkMartin2077/Waza/pull/1) for reviewing the structured diff.
 
 ### Places to look for judgment, not just features
 
