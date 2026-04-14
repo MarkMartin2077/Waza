@@ -1,7 +1,5 @@
 import Foundation
 
-// TODO: [P1] Add unit tests — TechniqueManagerTests.swift (see .claude/docs/improvement-plan.md §1.4)
-
 @Observable
 @MainActor
 class TechniqueManager {
@@ -58,6 +56,19 @@ class TechniqueManager {
         try localService.update(model)
         refresh()
         syncToRemote(model)
+    }
+
+    /// Transitions a technique to a new stage and stamps `lastStageChangeDate`.
+    /// Use this rather than mutating `stage` directly so promotion-tracking challenges
+    /// can detect the change.
+    @discardableResult
+    func setStage(_ stage: ProgressionStage, on technique: TechniqueModel) throws -> TechniqueModel {
+        var updated = technique
+        guard updated.stage != stage else { return updated }
+        updated.stage = stage
+        updated.lastStageChangeDate = Date()
+        try updateTechnique(updated)
+        return updated
     }
 
     func deleteTechnique(_ model: TechniqueModel) throws {

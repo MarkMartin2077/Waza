@@ -423,6 +423,15 @@ struct MonthlyReportView: View {
                 if data.achievementsEarnedCount > 0 {
                     summaryRow(icon: "trophy.fill", label: "New achievements", value: "\(data.achievementsEarnedCount)")
                 }
+                if data.challengesCompletedCount > 0 {
+                    summaryRow(icon: "flag.checkered", label: "Challenges completed", value: "\(data.challengesCompletedCount)")
+                }
+                if data.challengesSweepCount > 0 {
+                    summaryRow(icon: "star.circle.fill", label: "Perfect challenge weeks", value: "\(data.challengesSweepCount)")
+                }
+                if data.techniquesPromotedCount > 0 {
+                    summaryRow(icon: "chart.line.uptrend.xyaxis", label: "Techniques promoted", value: "\(data.techniquesPromotedCount)")
+                }
                 summaryRow(icon: "bolt.fill", label: "Current level", value: data.levelInfo.title)
             }
         }

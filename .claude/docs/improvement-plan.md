@@ -176,16 +176,30 @@ This document captures the prioritized list of improvements identified after shi
 
 | # | Item | Priority | Status |
 |---|------|----------|--------|
-| 1.1 | ChallengeGenerator tests | P1 | TODO |
-| 1.2 | ChallengeManager evaluation tests | P1 | TODO |
-| 1.3 | MonthlyReportData tests | P1 | TODO |
-| 1.4 | TechniqueManager tests | P1 | TODO |
-| 2.1 | Technique-aware challenges | P2 | TODO |
-| 2.2 | Monthly report challenge stats | P2 | TODO |
-| 2.3 | Monthly report technique progression | P2 | TODO |
-| 3.1 | First-session gamification onboarding | P3 | TODO |
-| 3.2 | Dashboard feature discovery | P3 | TODO |
+| 1.1 | ChallengeGenerator tests | P1 | ✅ Done |
+| 1.2 | ChallengeManager evaluation tests | P1 | ✅ Done |
+| 1.3 | MonthlyReportData tests | P1 | ✅ Done (MonthlyReportCalculator extracted) |
+| 1.4 | TechniqueManager tests | P1 | ✅ Done |
+| 2.1 | Technique-aware challenges | P2 | ✅ Done |
+| 2.2 | Monthly report challenge stats | P2 | ✅ Done |
+| 2.3 | Monthly report technique progression | P2 | ✅ Done |
+| 3.1 | First-session gamification onboarding | P3 | ✅ Done (challenges tip + existing XP toast) |
+| 3.2 | Dashboard feature discovery | P3 | ✅ Done (journal card + monthly report banner) |
 | 4.1 | Screen visual identity | P4 | Design needed |
 | 4.2 | Dashboard information hierarchy | P4 | Design needed |
-| 5.1 | Offline challenge generation guard | P5 | TODO |
-| 5.2 | Stale report data handling | P5 | TODO |
+| 5.1 | Offline challenge generation guard | P5 | ✅ Done |
+| 5.2 | Stale report data handling | P5 | ✅ Done (documented) |
+
+## Bugs Found & Fixed During P1
+
+Writing tests surfaced two production bugs:
+
+1. **`ChallengeManager.evaluate()` in-memory cache staleness** — the local service was updated
+   but `refresh()` was only called when a challenge completed, leaving the observable
+   `challenges` array stale. Presenters watching progress would see outdated `currentValue`
+   until something completed. Fix: always `refresh()` after evaluation.
+
+2. **`trainDuration` challenge could never complete** — `ChallengeGenerator` produced
+   `targetValue: 90` (90 minutes) but `ChallengeManager` evaluated it as binary 1-or-0.
+   `1 >= 90` was always false. Fix: `targetValue: 1`, threshold minutes moved to `metadata`;
+   evaluation reads threshold from metadata (defaulting to 90).
