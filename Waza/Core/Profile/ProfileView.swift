@@ -98,41 +98,22 @@ struct ProfileView: View {
 
     /// Tappable avatar — shows existing profile image if available, falls back to
     /// initials. Opens the system photo picker on tap.
+    ///
+    /// The label content is extracted into a dedicated `View` struct (`AvatarLabelView`)
+    /// rather than an instance method so that constructing it inside `PhotosPicker`'s
+    /// `label:` closure doesn't cross a main-actor boundary — construction is a plain
+    /// value init, and the view's own body runs on main at render time through `View`
+    /// conformance.
     private var avatarPicker: some View {
-        PhotosPicker(selection: $selectedPhotoItem, matching: .images) {
-            ZStack {
-                Circle()
-                    .fill(Color.wazaAccent.opacity(0.15))
-                    .frame(width: 80, height: 80)
+        // Read presenter state into local Sendable primitives *before* entering the
+        // PhotosPicker closure — the label closure is @Sendable and can't touch
+        // main-actor-isolated state directly.
+        let imageURL = presenter.profileImageURL
+        let userName = presenter.userName
+        let isUploading = presenter.isUploadingProfileImage
 
-                if let urlString = presenter.profileImageURL, !urlString.isEmpty {
-                    ImageLoaderView(urlString: urlString)
-                        .frame(width: 80, height: 80)
-                        .clipShape(Circle())
-                } else {
-                    Text(String(presenter.userName.prefix(1)).uppercased())
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                        .foregroundStyle(Color.wazaAccent)
-                }
-
-                // Small camera badge so users know the avatar is tappable
-                Image(systemName: "camera.fill")
-                    .font(.caption2)
-                    .foregroundStyle(.white)
-                    .frame(width: 22, height: 22)
-                    .background(Color.wazaAccent, in: Circle())
-                    .overlay(Circle().strokeBorder(Color(.systemBackground), lineWidth: 2))
-                    .offset(x: 28, y: 28)
-
-                if presenter.isUploadingProfileImage {
-                    Circle()
-                        .fill(.black.opacity(0.35))
-                        .frame(width: 80, height: 80)
-                    ProgressView()
-                        .tint(.white)
-                }
-            }
+        return PhotosPicker(selection: $selectedPhotoItem, matching: .images) {
+            AvatarLabelView(imageURL: imageURL, userName: userName, isUploading: isUploading)
         }
         .accessibilityLabel("Change profile photo")
     }
@@ -319,6 +300,54 @@ struct ProfileView: View {
         builder.profileView(router: router)
     }
 }
+
+// MARK: - Avatar Label
+
+/// Value-type view so construction inside `PhotosPicker`'s `label:` closure
+/// doesn't cross main-actor isolation. The body runs on the main actor at render
+/// time through standard SwiftUI View conformance.
+private struct AvatarLabelView: View {
+    let imageURL: String?
+    let userName: String
+    let isUploading: Bool
+
+    var body: some View {
+        ZStack {
+            Circle()
+                .fill(Color.wazaAccent.opacity(0.15))
+                .frame(width: 80, height: 80)
+
+            if let imageURL, !imageURL.isEmpty {
+                ImageLoaderView(urlString: imageURL)
+                    .frame(width: 80, height: 80)
+                    .clipShape(Circle())
+            } else {
+                Text(String(userName.prefix(1)).uppercased())
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                    .foregroundStyle(Color.wazaAccent)
+            }
+
+            Image(systemName: "camera.fill")
+                .font(.caption2)
+                .foregroundStyle(.white)
+                .frame(width: 22, height: 22)
+                .background(Color.wazaAccent, in: Circle())
+                .overlay(Circle().strokeBorder(Color(.systemBackground), lineWidth: 2))
+                .offset(x: 28, y: 28)
+
+            if isUploading {
+                Circle()
+                    .fill(.black.opacity(0.35))
+                    .frame(width: 80, height: 80)
+                ProgressView()
+                    .tint(.white)
+            }
+        }
+    }
+}
+
+// MARK: - Builder Extension
 
 extension CoreBuilder {
 

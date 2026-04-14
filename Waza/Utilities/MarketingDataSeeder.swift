@@ -271,7 +271,7 @@ enum MarketingDataSeeder {
                 stage: item.stage,
                 lastStageChangeDate: changeDate
             )
-            try? manager.createTechnique(
+            _ = try? manager.createTechnique(
                 name: model.name,
                 category: model.category,
                 stage: model.stage
@@ -282,7 +282,7 @@ enum MarketingDataSeeder {
                 if let created = manager.techniques.first(where: { $0.name == item.name }) {
                     var withDate = created
                     withDate.lastStageChangeDate = changeDate
-                    try? manager.updateTechnique(withDate)
+                    _ = try? manager.updateTechnique(withDate)
                 }
             }
         }

@@ -19,111 +19,125 @@ final class ScreenshotTests: XCTestCase {
     // MARK: - Single Flow
 
     func testCaptureAllKeyScreens() throws {
+        let app = launchApp()
+        captureDashboard(app)
+        captureSessionsFlow(app)
+        captureProgressTab(app)
+        captureProfileFlow(app)
+        captureTechniqueJournal(app)
+    }
+
+    // MARK: - Steps
+
+    private func launchApp() -> XCUIApplication {
         let app = XCUIApplication()
-        // MARKETING_MODE seeds an impressive "active user" state for App Store shots —
+        // Launch flag seeds an impressive "active user" state for App Store shots —
         // level 12, 22-day streak, 30+ sessions, unlocked achievements, completed goals.
         // See MarketingDataSeeder.swift.
         app.launchArguments = ["UI_TESTING", "SIGNED_IN", "MARKETING_MODE"]
         app.launch()
 
-        // Seeder runs async for XP/streak events — give it extra time to settle
+        // Seeder runs async for XP/streak events — give it extra time to settle.
         sleep(3)
-
-        // Give the app a moment to settle on first frame
         _ = app.staticTexts.firstMatch.waitForExistence(timeout: 5)
         sleep(1)
 
-        // Dismiss iOS location permission dialog if it appears
         dismissSystemAlerts()
         sleep(1)
 
-        // 01 — Dashboard (Home tab default)
+        return app
+    }
+
+    private func captureDashboard(_ app: XCUIApplication) {
         capture(app, name: "01_dashboard")
 
-        // Scroll the dashboard to show lower sections (This Week, Recent Sessions)
+        // Scroll the dashboard to show lower sections (This Week, Recent Sessions).
         app.swipeUp()
         sleep(1)
         capture(app, name: "02_dashboard_scrolled")
         app.swipeDown()
         sleep(1)
+    }
 
-        // 03 — Sessions tab
-        if tap(app, label: "Sessions") {
-            _ = app.navigationBars["Sessions"].waitForExistence(timeout: 5)
+    private func captureSessionsFlow(_ app: XCUIApplication) {
+        guard tap(app, label: "Sessions") else { return }
+        _ = app.navigationBars["Sessions"].waitForExistence(timeout: 5)
+        sleep(1)
+        capture(app, name: "03_sessions")
+
+        // Session detail — tap first cell.
+        let firstCell = app.cells.firstMatch
+        if firstCell.waitForExistence(timeout: 3) {
+            firstCell.tap()
             sleep(1)
-            capture(app, name: "03_sessions")
-
-            // 04 — Session Detail (tap first cell)
-            let firstCell = app.cells.firstMatch
-            if firstCell.waitForExistence(timeout: 3) {
-                firstCell.tap()
-                sleep(1)
-                capture(app, name: "04_session_detail")
-                // back
-                app.navigationBars.buttons.firstMatch.tap()
-                sleep(1)
-            }
-
-            // 05 — Log Session sheet
-            if app.buttons["Log session"].waitForExistence(timeout: 3) {
-                app.buttons["Log session"].tap()
-                _ = app.navigationBars["Log Session"].waitForExistence(timeout: 5)
-                sleep(1)
-                capture(app, name: "05_log_session")
-                app.buttons["Cancel"].tap()
-                sleep(1)
-            }
+            capture(app, name: "04_session_detail")
+            app.navigationBars.buttons.firstMatch.tap()
+            sleep(1)
         }
 
-        // 06 — Progress tab
-        if tap(app, label: "Progress") {
-            _ = app.navigationBars["Progress"].waitForExistence(timeout: 5)
-            sleep(2) // charts may take a beat to render
-            capture(app, name: "06_progress")
+        // Log Session sheet.
+        if app.buttons["Log session"].waitForExistence(timeout: 3) {
+            app.buttons["Log session"].tap()
+            _ = app.navigationBars["Log Session"].waitForExistence(timeout: 5)
+            sleep(1)
+            capture(app, name: "05_log_session")
+            app.buttons["Cancel"].tap()
+            sleep(1)
+        }
+    }
+
+    private func captureProgressTab(_ app: XCUIApplication) {
+        guard tap(app, label: "Progress") else { return }
+        _ = app.navigationBars["Progress"].waitForExistence(timeout: 5)
+        sleep(2) // charts may take a beat to render
+        capture(app, name: "06_progress")
+    }
+
+    private func captureProfileFlow(_ app: XCUIApplication) {
+        guard tap(app, label: "Profile") else { return }
+        _ = app.navigationBars["Profile"].waitForExistence(timeout: 5)
+        sleep(1)
+        capture(app, name: "07_profile")
+
+        // Achievements
+        let achievementsRow = app.buttons
+            .containing(NSPredicate(format: "label CONTAINS 'Achievements'")).firstMatch
+        if achievementsRow.waitForExistence(timeout: 3) {
+            achievementsRow.tap()
+            sleep(2)
+            capture(app, name: "08_achievements")
+            app.navigationBars.buttons.firstMatch.tap()
+            sleep(1)
         }
 
-        // 07 — Profile tab
-        if tap(app, label: "Profile") {
-            _ = app.navigationBars["Profile"].waitForExistence(timeout: 5)
+        // Monthly Report
+        let monthlyReportRow = app.buttons
+            .containing(NSPredicate(format: "label CONTAINS 'Monthly Report'")).firstMatch
+        if monthlyReportRow.waitForExistence(timeout: 3) {
+            monthlyReportRow.tap()
+            sleep(3) // report builder takes a moment
+            capture(app, name: "09_monthly_report")
+            app.navigationBars.buttons.firstMatch.tap()
             sleep(1)
-            capture(app, name: "07_profile")
-
-            // 08 — Achievements
-            let achievementsRow = app.buttons.containing(NSPredicate(format: "label CONTAINS 'Achievements'")).firstMatch
-            if achievementsRow.waitForExistence(timeout: 3) {
-                achievementsRow.tap()
-                sleep(2)
-                capture(app, name: "08_achievements")
-                app.navigationBars.buttons.firstMatch.tap()
-                sleep(1)
-            }
-
-            // 09 — Monthly Report
-            let monthlyReportRow = app.buttons.containing(NSPredicate(format: "label CONTAINS 'Monthly Report'")).firstMatch
-            if monthlyReportRow.waitForExistence(timeout: 3) {
-                monthlyReportRow.tap()
-                sleep(3) // report builder takes a moment
-                capture(app, name: "09_monthly_report")
-                app.navigationBars.buttons.firstMatch.tap()
-                sleep(1)
-            }
         }
+    }
 
-        // 10 — Technique Journal (via Dashboard card)
-        if tap(app, label: "Home") {
+    private func captureTechniqueJournal(_ app: XCUIApplication) {
+        guard tap(app, label: "Home") else { return }
+        sleep(1)
+
+        // Scroll to surface the technique journal card if needed.
+        let journalCard = app.buttons
+            .containing(NSPredicate(format: "label CONTAINS 'Technique Journal'")).firstMatch
+        if !journalCard.waitForExistence(timeout: 2) {
+            app.swipeUp()
             sleep(1)
-            // Scroll to surface the technique journal card if needed
-            let journalCard = app.buttons.containing(NSPredicate(format: "label CONTAINS 'Technique Journal'")).firstMatch
-            if !journalCard.waitForExistence(timeout: 2) {
-                app.swipeUp()
-                sleep(1)
-            }
-            if journalCard.waitForExistence(timeout: 3) {
-                journalCard.tap()
-                _ = app.navigationBars["Technique Journal"].waitForExistence(timeout: 5)
-                sleep(1)
-                capture(app, name: "10_technique_journal")
-            }
+        }
+        if journalCard.waitForExistence(timeout: 3) {
+            journalCard.tap()
+            _ = app.navigationBars["Technique Journal"].waitForExistence(timeout: 5)
+            sleep(1)
+            capture(app, name: "10_technique_journal")
         }
     }
 

@@ -29,6 +29,7 @@ struct MonthlyReportBuilder {
     let techniqueManager: TechniqueManager
     let xpManager: ExperiencePointsManager
 
+    // swiftlint:disable:next function_body_length
     func build(for dateRange: DateRange) async -> MonthlyReportData {
         let sessions = sessionManager.getSessions(in: dateRange)
 

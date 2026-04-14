@@ -379,10 +379,28 @@ struct ShareCardView: View {
 @MainActor
 enum ShareCardRenderer {
 
+    // Determine display scale from view context without using UIScreen.main
+    private static func displayScale(for view: some View) -> CGFloat? {
+        // Host the view to obtain a window/scene-derived screen scale when available
+        let hosting = UIHostingController(rootView: view)
+        // Force layout to attach view hierarchy without presenting
+        hosting.view.setNeedsLayout()
+        hosting.view.layoutIfNeeded()
+        // Attempt to resolve scale from the window scene's screen
+        if let scale = hosting.view.window?.windowScene?.screen.scale {
+            return scale
+        }
+        // Fallback to current trait collection's displayScale if available
+        return hosting.traitCollection.displayScale
+    }
+
     @MainActor
     static func render(card: ShareCardView) -> UIImage? {
         let renderer = ImageRenderer(content: card)
-        renderer.scale = UIScreen.main.scale
+        // Prefer a context-derived display scale to avoid using UIScreen.main (deprecated)
+        if let scale = ShareCardRenderer.displayScale(for: card) {
+            renderer.scale = scale
+        }
         return renderer.uiImage
     }
 }

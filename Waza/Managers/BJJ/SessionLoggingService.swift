@@ -138,6 +138,7 @@ struct SessionLoggingService {
         handleWeeklyChallengeEvaluation()
     }
 
+    // swiftlint:disable:next function_body_length
     private func handleWeeklyChallengeEvaluation() {
         let weekStart = WeeklyChallengeModel.currentWeekStart()
         guard let weekEnd = Calendar.current.date(byAdding: .day, value: 7, to: weekStart) else { return }

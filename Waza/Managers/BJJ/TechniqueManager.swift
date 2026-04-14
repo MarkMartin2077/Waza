@@ -86,7 +86,7 @@ class TechniqueManager {
         for name in focusAreas {
             guard !existingNames.contains(name.lowercased()) else { continue }
             let category = TechniqueCategory.infer(from: name)
-            try? createTechnique(name: name, category: category, stage: .learning)
+            _ = try? createTechnique(name: name, category: category, stage: .learning)
         }
     }
 

@@ -44,6 +44,7 @@ struct CoreInteractor: GlobalInteractor {
     let sessionLoggingService: SessionLoggingService
     let monthlyReportBuilder: MonthlyReportBuilder
 
+    // swiftlint:disable:next function_body_length
     init(container: DependencyContainer) {
         let appState = container.resolve(AppState.self)!
         let authManager = container.resolve(AuthManager.self)!
@@ -537,7 +538,7 @@ struct CoreInteractor: GlobalInteractor {
     }
 
     func createTechnique(name: String, category: TechniqueCategory) {
-        try? techniqueManager.createTechnique(name: name, category: category)
+        _ = try? techniqueManager.createTechnique(name: name, category: category)
     }
 
     func ensureTechniquesExist(for focusAreas: [String]) {
@@ -864,3 +865,4 @@ struct CoreInteractor: GlobalInteractor {
         return Set(recent.flatMap(\.focusAreas))
     }
 }
+// swiftlint:enable file_length type_body_length

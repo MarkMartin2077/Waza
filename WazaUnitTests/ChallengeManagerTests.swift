@@ -463,7 +463,7 @@ struct ChallengeManagerDurationTests {
 // MARK: - practiceWeakTechnique Evaluation
 
 @Suite("ChallengeManager - practiceWeakTechnique") @MainActor
-struct ChallengeManagerPracticeWeakTechniqueTests {
+struct ChallengeManagerPracticeWeakTests {
 
     @Test("Training a Learning-stage technique completes the challenge")
     func trainingLearningStageCompletes() {
