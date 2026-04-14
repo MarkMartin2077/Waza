@@ -17,6 +17,8 @@ class ProfilePresenter {
     private(set) var streakTier: StreakTier = .none
     private(set) var fireRoundExpiresAt: Date?
     private(set) var perfectWeekActive: Bool = false
+    private(set) var profileImageURL: String?
+    var isUploadingProfileImage: Bool = false
 
     init(interactor: ProfileInteractor, router: ProfileRouter) {
         self.interactor = interactor
@@ -45,6 +47,23 @@ class ProfilePresenter {
         streakTier = StreakTier.tier(forDays: streakCount)
         fireRoundExpiresAt = XPMultiplierCalculator.fireRoundExpiresAt()
         perfectWeekActive = interactor.sessionStats.thisWeekSessions >= XPMultiplierCalculator.perfectWeekTarget
+        profileImageURL = interactor.currentUser?.profileImageNameCalculated
+    }
+
+    // MARK: - Profile Image
+
+    func onProfileImageSelected(_ image: UIImage) {
+        interactor.trackEvent(event: Event.profileImageSelected)
+        isUploadingProfileImage = true
+        Task {
+            defer { isUploadingProfileImage = false }
+            do {
+                try await interactor.saveUserProfileImage(image: image)
+                loadData()
+            } catch {
+                router.showAlert(error: error)
+            }
+        }
     }
 
     // MARK: - Achievement actions
@@ -113,15 +132,17 @@ extension ProfilePresenter {
         case manageScheduleTapped
         case achievementsTapped
         case monthlyReportTapped
+        case profileImageSelected
 
         var eventName: String {
             switch self {
-            case .onAppear:             return "ProfileView_Appear"
-            case .onDisappear:          return "ProfileView_Disappear"
-            case .settingsPressed:      return "ProfileView_Settings_Pressed"
-            case .manageScheduleTapped: return "ProfileView_ManageSchedule_Tap"
-            case .achievementsTapped:   return "ProfileView_Achievements_Tap"
-            case .monthlyReportTapped:  return "ProfileView_MonthlyReport_Tap"
+            case .onAppear:              return "ProfileView_Appear"
+            case .onDisappear:           return "ProfileView_Disappear"
+            case .settingsPressed:       return "ProfileView_Settings_Pressed"
+            case .manageScheduleTapped:  return "ProfileView_ManageSchedule_Tap"
+            case .achievementsTapped:    return "ProfileView_Achievements_Tap"
+            case .monthlyReportTapped:   return "ProfileView_MonthlyReport_Tap"
+            case .profileImageSelected:  return "ProfileView_ProfileImage_Selected"
             }
         }
 

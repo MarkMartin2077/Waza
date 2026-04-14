@@ -16,6 +16,7 @@ protocol ProfileInteractor: GlobalInteractor {
     var currentExperiencePointsData: CurrentExperiencePointsData { get }
     func setInitialBelt(belt: BJJBelt, stripes: Int, date: Date, academy: String?, notes: String?) throws
     func addBeltPromotion(belt: BJJBelt, stripes: Int, date: Date, academy: String?, notes: String?) throws -> BeltRecordModel
+    func saveUserProfileImage(image: UIImage) async throws
 }
 
 extension CoreInteractor: ProfileInteractor { }

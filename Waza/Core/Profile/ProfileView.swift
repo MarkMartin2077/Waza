@@ -1,4 +1,5 @@
 import SwiftUI
+import PhotosUI
 
 struct ProfileDelegate {
     var eventParameters: [String: Any]? {
@@ -10,6 +11,7 @@ struct ProfileView: View {
 
     @State var presenter: ProfilePresenter
     let delegate: ProfileDelegate
+    @State private var selectedPhotoItem: PhotosPickerItem?
 
     var body: some View {
         ScrollView {
@@ -73,15 +75,10 @@ struct ProfileView: View {
 
     private var headerSection: some View {
         VStack(spacing: 12) {
-            ZStack {
-                Circle()
-                    .fill(Color.wazaAccent.opacity(0.15))
-                    .frame(width: 80, height: 80)
-                Text(String(presenter.userName.prefix(1)).uppercased())
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-                    .foregroundStyle(Color.wazaAccent)
-            }
+            avatarPicker
+                .onChange(of: selectedPhotoItem) { _, newItem in
+                    Task { await handlePhotoSelection(newItem) }
+                }
 
             Text(presenter.userName)
                 .font(.title2)
@@ -97,6 +94,55 @@ struct ProfileView: View {
             }
         }
         .padding(.vertical, 8)
+    }
+
+    /// Tappable avatar — shows existing profile image if available, falls back to
+    /// initials. Opens the system photo picker on tap.
+    private var avatarPicker: some View {
+        PhotosPicker(selection: $selectedPhotoItem, matching: .images) {
+            ZStack {
+                Circle()
+                    .fill(Color.wazaAccent.opacity(0.15))
+                    .frame(width: 80, height: 80)
+
+                if let urlString = presenter.profileImageURL, !urlString.isEmpty {
+                    ImageLoaderView(urlString: urlString)
+                        .frame(width: 80, height: 80)
+                        .clipShape(Circle())
+                } else {
+                    Text(String(presenter.userName.prefix(1)).uppercased())
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                        .foregroundStyle(Color.wazaAccent)
+                }
+
+                // Small camera badge so users know the avatar is tappable
+                Image(systemName: "camera.fill")
+                    .font(.caption2)
+                    .foregroundStyle(.white)
+                    .frame(width: 22, height: 22)
+                    .background(Color.wazaAccent, in: Circle())
+                    .overlay(Circle().strokeBorder(Color(.systemBackground), lineWidth: 2))
+                    .offset(x: 28, y: 28)
+
+                if presenter.isUploadingProfileImage {
+                    Circle()
+                        .fill(.black.opacity(0.35))
+                        .frame(width: 80, height: 80)
+                    ProgressView()
+                        .tint(.white)
+                }
+            }
+        }
+        .accessibilityLabel("Change profile photo")
+    }
+
+    private func handlePhotoSelection(_ item: PhotosPickerItem?) async {
+        guard let item,
+              let data = try? await item.loadTransferable(type: Data.self),
+              let image = UIImage(data: data) else { return }
+        presenter.onProfileImageSelected(image)
+        selectedPhotoItem = nil
     }
 
     // MARK: - Stats

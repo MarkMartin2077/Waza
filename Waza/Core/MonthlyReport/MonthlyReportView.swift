@@ -160,11 +160,10 @@ struct MonthlyReportView: View {
     }
 
     /// Big gradient header — the visual identity anchor for this screen.
-    /// Pairs the month name (large display) with the year (small, tracked caption).
+    /// Year is intentionally omitted; the month picker above already shows the full "Month YYYY".
     private func heroHeader(data: MonthlyReportData) -> some View {
         let parts = data.monthLabel.split(separator: " ", maxSplits: 1).map(String.init)
         let month = parts.first ?? data.monthLabel
-        let year = parts.count > 1 ? parts[1] : ""
 
         return ZStack(alignment: .topLeading) {
             LinearGradient(
@@ -176,25 +175,16 @@ struct MonthlyReportView: View {
                 endPoint: .bottomTrailing
             )
 
-            VStack(alignment: .leading, spacing: 2) {
-                if !year.isEmpty {
-                    Text(year)
-                        .font(.caption)
-                        .fontWeight(.semibold)
-                        .tracking(3)
-                        .foregroundStyle(.secondary)
-                }
-                Text(month.uppercased())
-                    .font(.system(size: 44, weight: .heavy, design: .rounded))
-                    .foregroundStyle(.primary)
-                    .minimumScaleFactor(0.6)
-                    .lineLimit(1)
-            }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 22)
+            Text(month.uppercased())
+                .font(.system(size: 48, weight: .heavy, design: .rounded))
+                .foregroundStyle(.primary)
+                .minimumScaleFactor(0.6)
+                .lineLimit(1)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 22)
         }
-        .frame(height: 120)
-        .clipShape(UnevenRoundedRectangle(cornerRadii: .init(topLeading: 20, topTrailing: 20)))
+        .frame(height: 110)
+        .clipShape(UnevenRoundedRectangle(cornerRadii: .init(topLeading: .wazaCornerHero, topTrailing: .wazaCornerHero)))
     }
 
     private func heroStat(value: String, label: String, icon: String) -> some View {

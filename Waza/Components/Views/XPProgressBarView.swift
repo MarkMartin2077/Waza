@@ -41,18 +41,20 @@ struct XPProgressBarView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
             } else {
                 VStack(spacing: 4) {
+                    // Matches Dashboard XP badge progress bar height (4pt) for visual
+                    // consistency across screens where level info appears.
                     GeometryReader { geo in
                         ZStack(alignment: .leading) {
-                            RoundedRectangle(cornerRadius: 4)
+                            RoundedRectangle(cornerRadius: 3)
                                 .fill(Color(.systemGray5))
-                                .frame(height: 6)
-                            RoundedRectangle(cornerRadius: 4)
+                                .frame(height: 4)
+                            RoundedRectangle(cornerRadius: 3)
                                 .fill(accentColor)
-                                .frame(width: geo.size.width * min(levelInfo.progressToNextLevel, 1.0), height: 6)
+                                .frame(width: geo.size.width * min(levelInfo.progressToNextLevel, 1.0), height: 4)
                                 .animation(.easeOut(duration: 0.5), value: levelInfo.progressToNextLevel)
                         }
                     }
-                    .frame(height: 6)
+                    .frame(height: 4)
 
                     if let next = levelInfo.xpForNextLevel {
                         Text("\(levelInfo.currentXP - levelInfo.xpForCurrentLevel) / \(next - levelInfo.xpForCurrentLevel) XP to next level")
@@ -64,7 +66,7 @@ struct XPProgressBarView: View {
             }
         }
         .padding(14)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: .wazaCornerStandard))
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilityDescription)
     }

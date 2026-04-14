@@ -37,7 +37,7 @@ struct SessionsView: View {
             }
         }
         .listStyle(.plain)
-        .searchable(text: $presenter.searchText, prompt: "Search techniques, notes...")
+        .searchable(text: $presenter.searchText, prompt: "Search sessions by technique or note")
         .navigationTitle("Sessions")
         .toolbarTitleDisplayMode(.inlineLarge)
         .toolbar {

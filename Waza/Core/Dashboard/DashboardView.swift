@@ -23,6 +23,7 @@ struct DashboardView: View {
                         streakCount: presenter.streakCount,
                         isStreakAtRisk: presenter.isStreakAtRisk,
                         freezesAvailable: presenter.freezesAvailable,
+                        perfectWeekActive: presenter.perfectWeekActive,
                         onUseFreezePressed: presenter.freezesAvailable > 0
                             ? { presenter.onUseStreakFreezePressed() }
                             : nil,
@@ -239,31 +240,32 @@ struct DashboardView: View {
     // MARK: - Onboarding Tips & Discovery
 
     private var challengesTip: some View {
-        HStack(alignment: .top, spacing: 10) {
+        // Intentionally lightweight — a thin outlined strip so it reads as a nudge,
+        // not as a primary card competing with the Weekly Challenges surface below.
+        HStack(spacing: 8) {
             Image(systemName: "lightbulb.fill")
-                .font(.subheadline)
+                .font(.caption)
                 .foregroundStyle(Color.wazaAccent)
-            VStack(alignment: .leading, spacing: 2) {
-                Text("New weekly challenges every Monday")
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                Text("Complete them to earn XP and streak freezes.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            Image(systemName: "xmark")
+            Text("Complete weekly challenges to earn XP and streak freezes")
                 .font(.caption)
                 .foregroundStyle(.secondary)
-                .padding(6)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            Image(systemName: "xmark")
+                .font(.caption2)
+                .foregroundStyle(.tertiary)
+                .padding(4)
                 .contentShape(Rectangle())
                 .accessibilityLabel("Dismiss tip")
                 .anyButton {
                     presenter.onDismissChallengesTip()
                 }
         }
-        .padding(12)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .overlay(
+            RoundedRectangle(cornerRadius: .wazaCornerSmall)
+                .strokeBorder(Color.wazaAccent.opacity(0.25), lineWidth: 1)
+        )
     }
 
     private var monthlyReportBanner: some View {
@@ -300,11 +302,13 @@ struct DashboardView: View {
 
     private var techniqueJournalCard: some View {
         HStack(alignment: .center, spacing: 12) {
+            // Rounded-rectangle icon container matches the pattern used on Profile's
+            // navigation rows (Achievements, Monthly Report) for consistency.
             Image(systemName: "book.fill")
                 .font(.title3)
                 .foregroundStyle(Color.wazaAccent)
-                .frame(width: 36, height: 36)
-                .background(Color.wazaAccent.opacity(0.15), in: Circle())
+                .frame(width: 44, height: 44)
+                .background(Color.wazaAccent.opacity(0.12), in: RoundedRectangle(cornerRadius: .wazaCornerSmall))
             VStack(alignment: .leading, spacing: 2) {
                 Text("Technique Journal")
                     .font(.subheadline)

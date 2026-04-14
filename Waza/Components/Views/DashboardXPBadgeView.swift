@@ -11,6 +11,7 @@ struct DashboardXPBadgeView: View {
     let streakCount: Int
     let isStreakAtRisk: Bool
     let freezesAvailable: Int
+    let perfectWeekActive: Bool
     let onUseFreezePressed: (() -> Void)?
     let accentColor: Color
 
@@ -26,21 +27,27 @@ struct DashboardXPBadgeView: View {
         isStreakAtRisk && streakCount >= 2
     }
 
+    private var isBrandNew: Bool {
+        levelInfo.level == 1 && levelInfo.currentXP == 0 && streakCount == 0
+    }
+
     var body: some View {
         VStack(spacing: 8) {
             topRow
             progressBar
             if showsRiskWarning {
                 riskRow
+            } else if isBrandNew {
+                brandNewHintRow
             }
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 10)
         .background(
-            RoundedRectangle(cornerRadius: 12)
+            RoundedRectangle(cornerRadius: .wazaCornerSmall)
                 .fill(.ultraThinMaterial)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 12)
+                    RoundedRectangle(cornerRadius: .wazaCornerSmall)
                         .strokeBorder(showsRiskWarning ? Color.orange.opacity(0.5) : .clear, lineWidth: 1)
                 )
         )
@@ -76,10 +83,27 @@ struct DashboardXPBadgeView: View {
 
             if fireRoundActive {
                 fireRoundBadge
+            } else if perfectWeekActive {
+                perfectWeekBadge
             } else if streakTier != .none {
                 tierBadge
             }
         }
+    }
+
+    private var perfectWeekBadge: some View {
+        HStack(spacing: 3) {
+            Image(systemName: "star.fill")
+                .font(.caption2)
+                .foregroundStyle(.yellow)
+            Text("PW +25%")
+                .font(.caption2)
+                .fontWeight(.semibold)
+                .foregroundStyle(.yellow)
+        }
+        .padding(.horizontal, 7)
+        .padding(.vertical, 3)
+        .background(Color.yellow.opacity(0.12), in: Capsule())
     }
 
     private var streakChip: some View {
@@ -182,6 +206,19 @@ struct DashboardXPBadgeView: View {
         return "Streak expires today — train to keep it alive"
     }
 
+    /// Inline hint for brand-new accounts so the empty strip feels inviting rather than blank.
+    private var brandNewHintRow: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "sparkles")
+                .font(.caption2)
+                .foregroundStyle(accentColor)
+            Text("Log your first session to start your streak")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
     // MARK: - Helpers
 
     private func shortTime(until date: Date) -> String {
@@ -222,6 +259,7 @@ struct DashboardXPBadgeView: View {
         streakCount: 7,
         isStreakAtRisk: false,
         freezesAvailable: 1,
+        perfectWeekActive: false,
         onUseFreezePressed: nil,
         accentColor: .cyan
     )
@@ -236,6 +274,7 @@ struct DashboardXPBadgeView: View {
         streakCount: 12,
         isStreakAtRisk: false,
         freezesAvailable: 0,
+        perfectWeekActive: false,
         onUseFreezePressed: nil,
         accentColor: .cyan
     )
@@ -250,6 +289,7 @@ struct DashboardXPBadgeView: View {
         streakCount: 0,
         isStreakAtRisk: false,
         freezesAvailable: 0,
+        perfectWeekActive: false,
         onUseFreezePressed: nil,
         accentColor: .cyan
     )
@@ -264,6 +304,7 @@ struct DashboardXPBadgeView: View {
         streakCount: 14,
         isStreakAtRisk: true,
         freezesAvailable: 2,
+        perfectWeekActive: false,
         onUseFreezePressed: { },
         accentColor: .cyan
     )
@@ -278,6 +319,7 @@ struct DashboardXPBadgeView: View {
         streakCount: 7,
         isStreakAtRisk: true,
         freezesAvailable: 0,
+        perfectWeekActive: false,
         onUseFreezePressed: nil,
         accentColor: .cyan
     )

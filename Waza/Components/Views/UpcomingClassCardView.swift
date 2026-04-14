@@ -30,14 +30,23 @@ struct UpcomingClassCardView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
 
-                Image(systemName: schedule.sessionType.iconName)
-                    .font(.subheadline)
-                    .foregroundStyle(Color.wazaAccent)
-                    .frame(width: 32, height: 32)
-                    .background(Color.wazaAccent.opacity(0.08), in: RoundedRectangle(cornerRadius: 8))
+                // Clear CTA so the tap behavior (opens check-in, not session detail) is
+                // obvious — especially important on the Sessions tab where this card
+                // sits above a list of session rows that open a different destination.
+                HStack(spacing: 4) {
+                    Text("Check In")
+                        .font(.caption2)
+                        .fontWeight(.semibold)
+                    Image(systemName: "chevron.right")
+                        .font(.caption2)
+                }
+                .foregroundStyle(Color.wazaAccent)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(Color.wazaAccent.opacity(0.15), in: Capsule())
             }
             .padding(14)
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: .wazaCornerStandard))
             .anyButton(.press) {
                 onTap?()
             }

@@ -28,6 +28,7 @@ struct AchievementsView: View {
             }
         }
         .listStyle(.insetGrouped)
+        .contentMargins(.bottom, 24, for: .scrollContent)
         .navigationTitle("Achievements")
         .navigationBarTitleDisplayMode(.large)
         .onAppear {

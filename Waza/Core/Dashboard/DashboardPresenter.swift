@@ -19,6 +19,7 @@ class DashboardPresenter {
     private(set) var challenges: [WeeklyChallengeModel] = []
     private(set) var completedChallengeCount: Int = 0
     private(set) var techniqueCount: Int = 0
+    private(set) var perfectWeekActive: Bool = false
     var showChallengesTip: Bool = false
     var showMonthlyReportBanner: Bool = false
 
@@ -59,6 +60,7 @@ class DashboardPresenter {
         challenges = interactor.currentChallenges
         completedChallengeCount = interactor.completedChallengeCount
         techniqueCount = interactor.allTechniques.count
+        perfectWeekActive = sessionStats.thisWeekSessions >= XPMultiplierCalculator.perfectWeekTarget
 
         // Onboarding tips
         showChallengesTip = !challenges.isEmpty && !OnboardingFlags.hasSeenChallengesTip
