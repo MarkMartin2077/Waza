@@ -1,8 +1,82 @@
 # Waza
 
-Your BJJ journey, tracked. Log sessions, check in at your gym, master techniques, earn XP, and watch your game grow.
+A BJJ training tracker for iOS 26. Log sessions, check in at your gym, track techniques, earn XP, and watch your game grow.
 
-## What You Can Do
+> **For engineers and recruiters:** jump to [Engineering Overview](#engineering-overview) or [Architectural Decisions](./DECISIONS.md).
+
+[Available on the App Store →](https://apps.apple.com/app/id6759821384)
+
+---
+
+## Engineering Overview
+
+A solo iOS portfolio project designed to demonstrate production-grade engineering on a real (shipped) app.
+
+### Stack
+
+- **Language:** Swift 6 (strict concurrency enabled)
+- **UI:** SwiftUI, iOS 26 — Live Activities, widgets, Apple Intelligence integration
+- **State:** `@Observable` classes, `@MainActor` discipline, structured concurrency
+- **Persistence:** SwiftData + FileManager (local cache, offline-first) with Firestore sync
+- **Backends:** Firebase (auth, storage, messaging, crashlytics), RevenueCat (IAP), Mixpanel (analytics)
+- **Architecture:** VIPER per screen + RIBs-style core coordination
+
+### Code quality signals
+
+- **~85 unit tests** across business logic (challenge generation, evaluation, monthly report aggregation, technique CRUD)
+- **XCUI screenshot-automation test** drives the signed-in app through 10 key screens and writes PNGs to disk — reproducible visual review
+- **SwiftLint enforced** (line length, file length, todo violations surface in CI)
+- **Swift 6 strict concurrency** clean — no `@unchecked Sendable` escape hatches in new code
+- **Zero `TODO` / `FIXME` / `HACK` comments** in production source as of the most recent preship pass
+
+### Places to look for judgment, not just features
+
+- **[`MonthlyReportCalculator.swift`](./Waza/Managers/BJJ/MonthlyReportCalculator.swift)** — pure static enum. Extracted from a 300-line `CoreInteractor+BJJ.swift` extension specifically to make the aggregation logic unit-testable without spinning up 6 managers.
+
+- **[`ChallengeGenerator.swift`](./Waza/Managers/BJJ/ChallengeGenerator.swift)** — weighted-selection algorithm with category-variety enforcement. Deterministic via injectable RNG seed; the unit tests exercise the seed to verify variety and distribution.
+
+- **[`CoreInteractor.swift`](./Waza/Root/RIBs/Core/CoreInteractor.swift)** — the result of a deliberate refactor that consolidated 7 domain-grouped extension files (`+BJJ.swift`, `+Gamification.swift`, etc.) into a single interactor plus 3 orchestration services (`AccountLifecycleService`, `SessionLoggingService`, `MonthlyReportBuilder`). Rationale documented in [`DECISIONS.md`](./DECISIONS.md#2-consolidate-coreinteractor).
+
+- **[`SessionLoggingService.swift`](./Waza/Managers/BJJ/SessionLoggingService.swift)** — cross-manager orchestration for the "log a session" flow: session creation, XP calculation with multipliers, streak updates, achievement checks, weekly challenge evaluation, toast firing. All writes log to Crashlytics on failure — no silent `try?` swallows.
+
+- **[`Waza/Utilities/WazaCornerRadius.swift`](./Waza/Utilities/WazaCornerRadius.swift) + [`WazaFont.swift`](./Waza/Utilities/WazaFont.swift)** — design tokens with documented semantics (small / standard / hero radii; typography ladder). Added during a UI/UX consistency pass.
+
+- **[`WazaUITests/ScreenshotTests.swift`](./WazaUITests/ScreenshotTests.swift)** — opt-in test that launches with a `MARKETING_MODE` flag and captures App-Store-ready screenshots.
+
+- **[`MarketingDataSeeder.swift`](./Waza/Utilities/MarketingDataSeeder.swift)** — separates aspirational-user seeding for screenshots from the default beginner mock. Honest about its limitations in file-level docs.
+
+### Build
+
+Three schemes:
+
+| Scheme | Purpose |
+|---|---|
+| **Waza - Mock** | Fast iteration, no Firebase, seeded mock data. Use for 90% of dev. |
+| **Waza - Development** | Firebase Dev credentials, real analytics, real auth |
+| **Waza - Production** | Production Firebase + RevenueCat |
+
+Run tests from the Mock scheme:
+
+```bash
+xcodebuild test -project Waza.xcodeproj \
+  -scheme "Waza - Mock" \
+  -destination "platform=iOS Simulator,name=iPhone 17 Pro"
+```
+
+Regenerate App Store screenshots:
+
+```bash
+xcodebuild test -project Waza.xcodeproj \
+  -scheme "Waza - Mock" \
+  -destination "platform=iOS Simulator,name=iPhone 17 Pro" \
+  -only-testing:WazaUITests/ScreenshotTests
+```
+
+Screenshots land in `~/Desktop/WazaScreenshots/`.
+
+---
+
+## What You Can Do (User-Facing Features)
 
 ### Log Your Training
 - Track every session: Gi, No-Gi, Open Mat, Competition, Drilling, Private Lesson
