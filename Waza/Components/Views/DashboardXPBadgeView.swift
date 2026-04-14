@@ -96,7 +96,7 @@ struct DashboardXPBadgeView: View {
             Image(systemName: "star.fill")
                 .font(.caption2)
                 .foregroundStyle(.yellow)
-            Text("PW +25%")
+            Text("Perfect Week")
                 .font(.caption2)
                 .fontWeight(.semibold)
                 .foregroundStyle(.yellow)

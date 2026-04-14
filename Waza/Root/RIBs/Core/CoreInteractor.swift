@@ -114,7 +114,8 @@ struct CoreInteractor: GlobalInteractor {
             xpManager: xpManager,
             achievementManager: achievementManager,
             challengeManager: challengeManager,
-            classScheduleManager: classScheduleManager
+            classScheduleManager: classScheduleManager,
+            logManager: logManager
         )
         self.monthlyReportBuilder = MonthlyReportBuilder(
             sessionManager: sessionManager,

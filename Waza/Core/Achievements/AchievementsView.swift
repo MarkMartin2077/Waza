@@ -13,6 +13,7 @@ struct AchievementsView: View {
                             achievementId: achievementId,
                             isEarned: presenter.isEarned(achievementId),
                             earnedDate: presenter.earnedDate(for: achievementId),
+                            progressHint: presenter.progressHint(for: achievementId),
                             onTap: { presenter.onAchievementTapped(achievementId) }
                         )
                         .staggeredAppear(index: index)

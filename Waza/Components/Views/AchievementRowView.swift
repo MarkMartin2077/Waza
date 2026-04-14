@@ -4,6 +4,7 @@ struct AchievementRowView: View {
     let achievementId: AchievementId
     let isEarned: Bool
     let earnedDate: Date?
+    let progressHint: String?
     let onTap: (() -> Void)?
 
     var body: some View {
@@ -53,18 +54,33 @@ struct AchievementRowView: View {
         }
     }
 
+    @ViewBuilder
     private var rarityChip: some View {
         let rarityColor = achievementId.rarity.color
-        return Label(achievementId.rarity.displayName, systemImage: achievementId.rarity.symbolName)
-            .font(.caption2)
-            .fontWeight(.semibold)
-            .foregroundStyle(isEarned ? rarityColor : Color.secondary)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 3)
-            .background(
-                (isEarned ? rarityColor : Color.secondary).opacity(0.12),
-                in: Capsule()
-            )
+
+        // For locked achievements with a progress hint, show the hint instead of the
+        // rarity label — it tells the user *how to unlock*, which is more actionable
+        // and keeps the list from feeling dead.
+        if !isEarned, let progressHint {
+            Label(progressHint, systemImage: "target")
+                .font(.caption2)
+                .fontWeight(.semibold)
+                .foregroundStyle(Color.wazaAccent)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 3)
+                .background(Color.wazaAccent.opacity(0.12), in: Capsule())
+        } else {
+            Label(achievementId.rarity.displayName, systemImage: achievementId.rarity.symbolName)
+                .font(.caption2)
+                .fontWeight(.semibold)
+                .foregroundStyle(isEarned ? rarityColor : Color.secondary)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 3)
+                .background(
+                    (isEarned ? rarityColor : Color.secondary).opacity(0.12),
+                    in: Capsule()
+                )
+        }
     }
 
     @ViewBuilder
@@ -91,6 +107,7 @@ struct AchievementRowView: View {
         achievementId: .hundredSessions,
         isEarned: true,
         earnedDate: Date(),
+        progressHint: nil,
         onTap: nil
     )
     .padding()
@@ -101,6 +118,7 @@ struct AchievementRowView: View {
         achievementId: .sevenDayStreak,
         isEarned: true,
         earnedDate: Calendar.current.date(byAdding: .day, value: -30, to: Date()),
+        progressHint: nil,
         onTap: nil
     )
     .padding()
@@ -111,6 +129,7 @@ struct AchievementRowView: View {
         achievementId: .thirtyDayStreak,
         isEarned: false,
         earnedDate: nil,
+        progressHint: "22 days away",
         onTap: nil
     )
     .padding()
@@ -123,6 +142,7 @@ struct AchievementRowView: View {
                 achievementId: achievementId,
                 isEarned: (AchievementId.allCases.firstIndex(of: achievementId) ?? 99) < 5,
                 earnedDate: (AchievementId.allCases.firstIndex(of: achievementId) ?? 99) < 5 ? Date() : nil,
+                progressHint: nil,
                 onTap: nil
             )
         }

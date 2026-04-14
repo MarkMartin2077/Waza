@@ -73,8 +73,13 @@ struct WeeklyChallengesCardView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
 
-            progressBar(for: challenge)
-                .frame(width: 56)
+            // Progress bar hidden when complete — the green checkmark + strikethrough
+            // already communicate "done"; a full-width green bar on top of that was
+            // reading as active progress and looked like a visual bug.
+            if !challenge.isCompleted {
+                progressBar(for: challenge)
+                    .frame(width: 56)
+            }
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilityLabel(for: challenge))

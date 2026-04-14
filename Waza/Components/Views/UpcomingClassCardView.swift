@@ -33,16 +33,18 @@ struct UpcomingClassCardView: View {
                 // Clear CTA so the tap behavior (opens check-in, not session detail) is
                 // obvious — especially important on the Sessions tab where this card
                 // sits above a list of session rows that open a different destination.
+                // The whole card is tappable; the pill is a visual label, not a separate
+                // button. Sized large enough (~32pt) to read as interactive affordance.
                 HStack(spacing: 4) {
                     Text("Check In")
-                        .font(.caption2)
+                        .font(.caption)
                         .fontWeight(.semibold)
                     Image(systemName: "chevron.right")
                         .font(.caption2)
                 }
                 .foregroundStyle(Color.wazaAccent)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 6)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
                 .background(Color.wazaAccent.opacity(0.15), in: Capsule())
             }
             .padding(14)

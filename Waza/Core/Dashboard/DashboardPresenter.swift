@@ -132,10 +132,12 @@ class DashboardPresenter {
     func onLogSessionTapped() {
         interactor.trackEvent(event: Event.logSessionTapped)
         router.showSessionEntryView(onDismiss: { [weak self] in
-            Task { @MainActor [weak self] in
-                await self?.interactor.endTrainingLiveActivity()
+            guard let self else { return }
+            let interactor = self.interactor
+            Task { @MainActor in
+                await interactor.endTrainingLiveActivity()
             }
-            self?.loadData()
+            self.loadData()
         })
     }
 

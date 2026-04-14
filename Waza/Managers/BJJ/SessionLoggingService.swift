@@ -13,6 +13,7 @@ struct SessionLoggingService {
     let achievementManager: AchievementManager
     let challengeManager: ChallengeManager
     let classScheduleManager: ClassScheduleManager
+    let logManager: LogManager
 
     // MARK: - Public Entry Points
 
@@ -59,9 +60,13 @@ struct SessionLoggingService {
         let reward = XPRewardCalculator.checkInReward()
         let oldXP = xpManager.currentExperiencePointsData.pointsAllTime ?? 0
         Task {
-            try? await xpManager.addExperiencePoints(points: reward.totalPoints, metadata: [
-                "source": .string("check_in")
-            ])
+            do {
+                try await xpManager.addExperiencePoints(points: reward.totalPoints, metadata: [
+                    "source": .string("check_in")
+                ])
+            } catch {
+                logRewardFailure(source: "check_in", error: error)
+            }
             fireXPToast(points: reward.totalPoints, oldXP: oldXP)
         }
     }
@@ -70,9 +75,13 @@ struct SessionLoggingService {
         let reward = XPRewardCalculator.streakMilestoneReward()
         let oldXP = xpManager.currentExperiencePointsData.pointsAllTime ?? 0
         Task {
-            try? await xpManager.addExperiencePoints(points: reward.totalPoints, metadata: [
-                "source": .string("streak_milestone")
-            ])
+            do {
+                try await xpManager.addExperiencePoints(points: reward.totalPoints, metadata: [
+                    "source": .string("streak_milestone")
+                ])
+            } catch {
+                logRewardFailure(source: "streak_milestone", error: error)
+            }
             fireXPToast(points: reward.totalPoints, oldXP: oldXP)
         }
     }
@@ -148,11 +157,16 @@ struct SessionLoggingService {
 
         for challenge in newlyCompleted {
             let reward = XPRewardCalculator.weeklyChallengeReward()
+            let challengeType = challenge.challengeType.rawValue
             Task {
-                try? await xpManager.addExperiencePoints(points: reward.totalPoints, metadata: [
-                    "source": .string("weekly_challenge"),
-                    "challenge_type": .string(challenge.challengeType.rawValue)
-                ])
+                do {
+                    try await xpManager.addExperiencePoints(points: reward.totalPoints, metadata: [
+                        "source": .string("weekly_challenge"),
+                        "challenge_type": .string(challengeType)
+                    ])
+                } catch {
+                    logRewardFailure(source: "weekly_challenge", error: error, extra: ["challenge_type": challengeType])
+                }
             }
             appState.pendingChallengeCompletion = challenge.title
         }
@@ -162,18 +176,40 @@ struct SessionLoggingService {
             let freezeId = "weekly_challenge_\(weekId)"
             let nextMonday = Calendar.current.date(byAdding: .day, value: 7, to: weekStart)
             Task {
-                try? await streakManager.addStreakFreeze(id: freezeId, dateExpires: nextMonday)
+                do {
+                    try await streakManager.addStreakFreeze(id: freezeId, dateExpires: nextMonday)
+                } catch {
+                    logRewardFailure(source: "weekly_challenge_freeze_reward", error: error)
+                }
             }
         }
 
         if completedBefore < 3, completedAfter >= 3 {
             let sweepReward = XPRewardCalculator.weeklyChallengeSweepBonus()
             Task {
-                try? await xpManager.addExperiencePoints(points: sweepReward.totalPoints, metadata: [
-                    "source": .string("weekly_challenge_sweep")
-                ])
+                do {
+                    try await xpManager.addExperiencePoints(points: sweepReward.totalPoints, metadata: [
+                        "source": .string("weekly_challenge_sweep")
+                    ])
+                } catch {
+                    logRewardFailure(source: "weekly_challenge_sweep", error: error)
+                }
             }
         }
+    }
+
+    /// Fire-and-forget reward writes can't surface an alert to the user, but they must
+    /// not silently disappear. Log as `.severe` so Crashlytics captures the class.
+    private func logRewardFailure(source: String, error: Error, extra: [String: String] = [:]) {
+        var params: [String: Any] = ["source": source, "error": String(describing: error)]
+        for (key, value) in extra {
+            params[key] = value
+        }
+        logManager.trackEvent(
+            eventName: "SessionLoggingService_RewardWriteFailed",
+            parameters: params,
+            type: .severe
+        )
     }
 
     private func fireXPToast(

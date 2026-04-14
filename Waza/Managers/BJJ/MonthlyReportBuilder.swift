@@ -31,7 +31,13 @@ struct MonthlyReportBuilder {
 
     func build(for dateRange: DateRange) async -> MonthlyReportData {
         let sessions = sessionManager.getSessions(in: dateRange)
-        let prevRange = DateRange.calendarMonth(monthsAgo: 2)
+
+        // Previous-month range is derived from the selected month, not hardcoded.
+        // Browsing January 2026 must compare against December 2025, not February 2026.
+        let calendar = Calendar.current
+        let prevStart = calendar.date(byAdding: .month, value: -1, to: dateRange.start) ?? dateRange.start
+        let prevEnd = calendar.date(byAdding: .second, value: -1, to: dateRange.start) ?? dateRange.start
+        let prevRange = DateRange(start: prevStart, end: prevEnd)
         let prevSessions = sessionManager.getSessions(in: prevRange)
 
         let totalTime = sessions.reduce(0.0) { $0 + $1.duration }
