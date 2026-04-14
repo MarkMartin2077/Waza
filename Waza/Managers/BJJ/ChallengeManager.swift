@@ -1,8 +1,5 @@
 import Foundation
 
-// TODO: [P1] Add unit tests — ChallengeManagerTests.swift (see .claude/docs/improvement-plan.md §1.2)
-// TODO: [P5] Guard generateIfNeeded against empty session history for offline resilience (see §5.1)
-
 @Observable
 @MainActor
 class ChallengeManager {
@@ -42,8 +39,17 @@ class ChallengeManager {
     // MARK: - Generation
 
     /// Generates challenges for the current week if none exist yet. Idempotent.
-    func generateIfNeeded(context: ChallengeGenerator.GenerationContext) {
+    ///
+    /// When `requireSessionData` is true, generation is skipped if `context.sessions` is empty.
+    /// This guards against the case where a returning user's sessions haven't loaded yet (offline
+    /// start, fresh install, slow sync). Callers are expected to retry on the next refresh.
+    /// For new users, pass `requireSessionData: false` so beginner defaults generate immediately.
+    func generateIfNeeded(
+        context: ChallengeGenerator.GenerationContext,
+        requireSessionData: Bool = false
+    ) {
         guard currentChallenges.isEmpty else { return }
+        if requireSessionData && context.sessions.isEmpty { return }
         let generated = ChallengeGenerator.generate(context: context)
         for challenge in generated {
             try? localService.create(challenge)
@@ -59,7 +65,9 @@ class ChallengeManager {
     func evaluate(
         session: BJJSessionModel,
         allSessionsThisWeek: [BJJSessionModel],
-        gyms: [GymLocationModel]
+        gyms: [GymLocationModel],
+        techniques: [TechniqueModel] = [],
+        weekStart: Date = WeeklyChallengeModel.currentWeekStart()
     ) -> [WeeklyChallengeModel] {
         var newlyCompleted: [WeeklyChallengeModel] = []
 
@@ -69,7 +77,9 @@ class ChallengeManager {
             let newValue = computeCurrentValue(
                 for: challenge,
                 allSessionsThisWeek: allSessionsThisWeek,
-                gyms: gyms
+                gyms: gyms,
+                techniques: techniques,
+                weekStart: weekStart
             )
             challenge.currentValue = newValue
 
@@ -82,9 +92,7 @@ class ChallengeManager {
             try? localService.update(challenge)
         }
 
-        if !newlyCompleted.isEmpty {
-            refresh()
-        }
+        refresh()
 
         return newlyCompleted
     }
@@ -109,7 +117,9 @@ class ChallengeManager {
     private func computeCurrentValue(
         for challenge: WeeklyChallengeModel,
         allSessionsThisWeek: [BJJSessionModel],
-        gyms: [GymLocationModel]
+        gyms: [GymLocationModel],
+        techniques: [TechniqueModel],
+        weekStart: Date
     ) -> Int {
         switch challenge.challengeType {
         case .trainXTimes:       return allSessionsThisWeek.count
@@ -120,11 +130,42 @@ class ChallengeManager {
         case .miniStreak:        return maxConsecutiveDays(from: allSessionsThisWeek)
         case .logFullReflection: return evaluateFullReflection(sessions: allSessionsThisWeek)
         case .trainDuration:
-            // targetValue is in minutes
-            let thresholdSeconds = Double(challenge.targetValue) * 60.0
+            // Threshold minutes live in metadata; targetValue is 1 (binary completion).
+            let thresholdMinutes = Double(challenge.metadata.flatMap(Int.init) ?? 90)
+            let thresholdSeconds = thresholdMinutes * 60.0
             let hasLong = allSessionsThisWeek.contains { $0.duration >= thresholdSeconds }
             return hasLong ? 1 : 0
+        case .practiceWeakTechnique:
+            return evaluatePracticeWeakTechnique(sessions: allSessionsThisWeek, techniques: techniques)
+        case .promoteTechnique:
+            return evaluatePromoteTechnique(techniques: techniques, weekStart: weekStart)
         }
+    }
+
+    private func evaluatePracticeWeakTechnique(
+        sessions: [BJJSessionModel],
+        techniques: [TechniqueModel]
+    ) -> Int {
+        let learningNames = Set(
+            techniques.filter { $0.stage == .learning }.map { $0.name.lowercased() }
+        )
+        guard !learningNames.isEmpty else { return 0 }
+        return sessions.contains { session in
+            session.focusAreas.contains { learningNames.contains($0.lowercased()) }
+        } ? 1 : 0
+    }
+
+    private func evaluatePromoteTechnique(
+        techniques: [TechniqueModel],
+        weekStart: Date
+    ) -> Int {
+        guard let weekEnd = Calendar.current.date(byAdding: .day, value: 7, to: weekStart) else {
+            return 0
+        }
+        return techniques.contains { technique in
+            guard let changed = technique.lastStageChangeDate else { return false }
+            return changed >= weekStart && changed < weekEnd
+        } ? 1 : 0
     }
 
     private func evaluateSessionType(challenge: WeeklyChallengeModel, sessions: [BJJSessionModel]) -> Int {

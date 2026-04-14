@@ -13,6 +13,7 @@ protocol DashboardInteractor: GlobalInteractor {
     var trainingGoalPerWeek: Int? { get }
     var currentChallenges: [WeeklyChallengeModel] { get }
     var completedChallengeCount: Int { get }
+    var allTechniques: [TechniqueModel] { get }
     func generateChallengesIfNeeded()
     func endTrainingLiveActivity() async
     func updateWidgetData(_ data: WazaWidgetData)

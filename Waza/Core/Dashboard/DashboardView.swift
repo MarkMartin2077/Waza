@@ -9,6 +9,12 @@ struct DashboardView: View {
             VStack(spacing: 24) {
                 greetingHeader
                     .scaleAppear(delay: 0)
+
+                if presenter.showMonthlyReportBanner {
+                    monthlyReportBanner
+                        .scaleAppear(delay: 0.02)
+                }
+
                 if !presenter.isNewUser {
                     DashboardXPBadgeView(
                         levelInfo: presenter.xpLevelInfo,
@@ -32,12 +38,21 @@ struct DashboardView: View {
                 }
 
                 if !presenter.isNewUser, !presenter.challenges.isEmpty {
+                    if presenter.showChallengesTip {
+                        challengesTip
+                            .scaleAppear(delay: 0.045)
+                    }
                     WeeklyChallengesCardView(
                         challenges: presenter.challenges,
                         completedCount: presenter.completedChallengeCount,
                         accentColor: Color.wazaAccent
                     )
                     .scaleAppear(delay: 0.05)
+                }
+
+                if !presenter.isNewUser, presenter.sessionStats.totalSessions >= 3 {
+                    techniqueJournalCard
+                        .scaleAppear(delay: 0.06)
                 }
 
                 logSessionButton
@@ -217,6 +232,104 @@ struct DashboardView: View {
                 presenter.onDevSettingsTapped()
             }
         }
+
+    // MARK: - Onboarding Tips & Discovery
+
+    private var challengesTip: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: "lightbulb.fill")
+                .font(.subheadline)
+                .foregroundStyle(Color.wazaAccent)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("New weekly challenges every Monday")
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                Text("Complete them to earn XP and streak freezes.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            Image(systemName: "xmark")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .padding(6)
+                .contentShape(Rectangle())
+                .accessibilityLabel("Dismiss tip")
+                .anyButton {
+                    presenter.onDismissChallengesTip()
+                }
+        }
+        .padding(12)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+    }
+
+    private var monthlyReportBanner: some View {
+        HStack(alignment: .center, spacing: 10) {
+            Image(systemName: "chart.bar.doc.horizontal")
+                .font(.subheadline)
+                .foregroundStyle(Color.wazaAccent)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Your monthly report is ready")
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                Text("Stats, trends, and highlights from last month.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            Image(systemName: "xmark")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .padding(6)
+                .contentShape(Rectangle())
+                .accessibilityLabel("Dismiss banner")
+                .anyButton {
+                    presenter.onDismissMonthlyReportBanner()
+                }
+        }
+        .padding(12)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+        .contentShape(Rectangle())
+        .anyButton(.press) {
+            presenter.onMonthlyReportBannerTapped()
+        }
+    }
+
+    private var techniqueJournalCard: some View {
+        HStack(alignment: .center, spacing: 12) {
+            Image(systemName: "book.fill")
+                .font(.title3)
+                .foregroundStyle(Color.wazaAccent)
+                .frame(width: 36, height: 36)
+                .background(Color.wazaAccent.opacity(0.15), in: Circle())
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Technique Journal")
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                Text(techniqueJournalSubtitle)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            Image(systemName: "chevron.right")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+        .padding(14)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .contentShape(Rectangle())
+        .anyButton(.press) {
+            presenter.onTechniqueJournalCardTapped()
+        }
+    }
+
+    private var techniqueJournalSubtitle: String {
+        let count = presenter.techniqueCount
+        if count == 0 {
+            return "Track what you're learning and drilling"
+        }
+        return "\(count) technique\(count == 1 ? "" : "s") in your library"
+    }
 }
 
 // MARK: - Builder Extension

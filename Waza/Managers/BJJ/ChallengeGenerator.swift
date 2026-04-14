@@ -1,8 +1,5 @@
 import Foundation
 
-// TODO: [P1] Add unit tests — ChallengeGeneratorTests.swift (see .claude/docs/improvement-plan.md §1.1)
-// TODO: [P2] Add technique-aware challenge types: promoteTechnique, practiceWeakTechnique (see §2.1)
-
 // MARK: - Challenge Generator
 //
 // Pure static enum — zero external dependencies. All input passed as parameters.
@@ -17,6 +14,7 @@ enum ChallengeGenerator {
         let gyms: [GymLocationModel]
         let allFocusAreas: Set<String>
         let recentFocusAreas: Set<String>   // focus areas from last 30 days
+        let techniques: [TechniqueModel]
         let weekStartDate: Date
         let trainingGoalPerWeek: Int?
         let randomSeed: UInt64              // pass a fixed seed in tests; default is random
@@ -26,6 +24,7 @@ enum ChallengeGenerator {
             gyms: [GymLocationModel],
             allFocusAreas: Set<String>,
             recentFocusAreas: Set<String>,
+            techniques: [TechniqueModel] = [],
             weekStartDate: Date,
             trainingGoalPerWeek: Int? = nil,
             randomSeed: UInt64 = UInt64.random(in: 0...UInt64.max)
@@ -34,6 +33,7 @@ enum ChallengeGenerator {
             self.gyms = gyms
             self.allFocusAreas = allFocusAreas
             self.recentFocusAreas = recentFocusAreas
+            self.techniques = techniques
             self.weekStartDate = weekStartDate
             self.trainingGoalPerWeek = trainingGoalPerWeek
             self.randomSeed = randomSeed
@@ -79,7 +79,41 @@ enum ChallengeGenerator {
         candidates.append(contentsOf: explorationCandidates(context: context, recentSessions: recent))
         candidates.append(contentsOf: qualityCandidates(recentSessions: recent))
         candidates.append(contentsOf: intensityCandidates(allSessions: context.sessions))
+        candidates.append(contentsOf: techniqueCandidates(context: context))
         return candidates
+    }
+
+    private static func techniqueCandidates(context: GenerationContext) -> [ChallengeCandidate] {
+        var result: [ChallengeCandidate] = []
+
+        let learningStage = context.techniques.filter { $0.stage == .learning }
+        if !learningStage.isEmpty {
+            // Weight grows with how many learning-stage techniques the user has.
+            let weight = min(0.9, 0.4 + Double(learningStage.count) * 0.1)
+            result.append(ChallengeCandidate(
+                type: .practiceWeakTechnique,
+                title: "Train a technique you're still learning",
+                targetValue: 1,
+                metadata: nil,
+                weight: weight,
+                category: .technique
+            ))
+        }
+
+        // Promotable = any non-polishing technique the user has.
+        let promotable = context.techniques.filter { $0.stage != .polishing }
+        if !promotable.isEmpty {
+            result.append(ChallengeCandidate(
+                type: .promoteTechnique,
+                title: "Promote a technique to the next stage",
+                targetValue: 1,
+                metadata: nil,
+                weight: 0.6,
+                category: .technique
+            ))
+        }
+
+        return result
     }
 
     private static func frequencyCandidates(context: GenerationContext, recentSessions: [BJJSessionModel]) -> [ChallengeCandidate] {
@@ -157,9 +191,10 @@ enum ChallengeGenerator {
 
     private static func intensityCandidates(allSessions: [BJJSessionModel]) -> [ChallengeCandidate] {
         guard allSessions.contains(where: { $0.duration >= 3600 }) else { return [] }
+        // targetValue is 1 (binary complete); metadata holds the duration threshold in minutes.
         return [ChallengeCandidate(
             type: .trainDuration, title: "Log a 90+ minute session",
-            targetValue: 90, metadata: nil, weight: 0.6, category: .intensity
+            targetValue: 1, metadata: "90", weight: 0.6, category: .intensity
         )]
     }
 

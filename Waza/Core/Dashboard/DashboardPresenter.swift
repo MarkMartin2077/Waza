@@ -1,8 +1,5 @@
 import SwiftUI
 
-// TODO: [P3] Add first-session gamification onboarding tips (see .claude/docs/improvement-plan.md §3.1)
-// TODO: [P3] Add technique journal and monthly report quick-access cards (see §3.2)
-
 @Observable
 @MainActor
 class DashboardPresenter {
@@ -21,6 +18,9 @@ class DashboardPresenter {
     private(set) var freezesAvailable: Int = 0
     private(set) var challenges: [WeeklyChallengeModel] = []
     private(set) var completedChallengeCount: Int = 0
+    private(set) var techniqueCount: Int = 0
+    var showChallengesTip: Bool = false
+    var showMonthlyReportBanner: Bool = false
 
     init(interactor: DashboardInteractor, router: DashboardRouter, delegate: DashboardDelegate) {
         self.interactor = interactor
@@ -58,6 +58,12 @@ class DashboardPresenter {
         interactor.generateChallengesIfNeeded()
         challenges = interactor.currentChallenges
         completedChallengeCount = interactor.completedChallengeCount
+        techniqueCount = interactor.allTechniques.count
+
+        // Onboarding tips
+        showChallengesTip = !challenges.isEmpty && !OnboardingFlags.hasSeenChallengesTip
+        showMonthlyReportBanner = sessionStats.totalSessions > 0
+            && OnboardingFlags.shouldShowMonthlyReportBanner()
 
         interactor.updateWidgetData(WazaWidgetData(
             streakCount: streakCount,
@@ -160,6 +166,31 @@ class DashboardPresenter {
         router.showDevSettingsView()
     }
 
+    // MARK: - Discovery / Tips
+
+    func onDismissChallengesTip() {
+        interactor.trackEvent(event: Event.challengesTipDismissed)
+        OnboardingFlags.hasSeenChallengesTip = true
+        showChallengesTip = false
+    }
+
+    func onTechniqueJournalCardTapped() {
+        interactor.trackEvent(event: Event.techniqueJournalCardTapped)
+        router.showTechniqueJournalView()
+    }
+
+    func onMonthlyReportBannerTapped() {
+        interactor.trackEvent(event: Event.monthlyReportBannerTapped)
+        OnboardingFlags.dismissMonthlyReportBanner()
+        showMonthlyReportBanner = false
+        router.showMonthlyReportView()
+    }
+
+    func onDismissMonthlyReportBanner() {
+        interactor.trackEvent(event: Event.monthlyReportBannerDismissed)
+        OnboardingFlags.dismissMonthlyReportBanner()
+        showMonthlyReportBanner = false
+    }
 }
 
 // MARK: - Events
@@ -172,15 +203,23 @@ extension DashboardPresenter {
         case checkInTapped
         case devSettingsTapped
         case streakFreezeUsed
+        case challengesTipDismissed
+        case techniqueJournalCardTapped
+        case monthlyReportBannerTapped
+        case monthlyReportBannerDismissed
 
         var eventName: String {
             switch self {
-            case .onAppear:          return "DashboardView_Appear"
-            case .logSessionTapped:  return "DashboardView_LogSession_Tap"
-            case .sessionTapped:     return "DashboardView_Session_Tap"
-            case .checkInTapped:     return "DashboardView_CheckIn_Tap"
-            case .devSettingsTapped:  return "DashboardView_DevSettings_Tap"
-            case .streakFreezeUsed:  return "DashboardView_StreakFreeze_Used"
+            case .onAppear:                      return "DashboardView_Appear"
+            case .logSessionTapped:              return "DashboardView_LogSession_Tap"
+            case .sessionTapped:                 return "DashboardView_Session_Tap"
+            case .checkInTapped:                 return "DashboardView_CheckIn_Tap"
+            case .devSettingsTapped:             return "DashboardView_DevSettings_Tap"
+            case .streakFreezeUsed:              return "DashboardView_StreakFreeze_Used"
+            case .challengesTipDismissed:        return "DashboardView_ChallengesTip_Dismissed"
+            case .techniqueJournalCardTapped:    return "DashboardView_TechniqueJournalCard_Tap"
+            case .monthlyReportBannerTapped:     return "DashboardView_MonthlyReportBanner_Tap"
+            case .monthlyReportBannerDismissed:  return "DashboardView_MonthlyReportBanner_Dismissed"
             }
         }
 

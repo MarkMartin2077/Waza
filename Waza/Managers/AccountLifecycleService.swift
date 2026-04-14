@@ -1,8 +1,22 @@
 import SwiftUI
 
-extension CoreInteractor {
-
-    // MARK: SHARED
+/// Encapsulates cross-manager account lifecycle orchestration: login, logout, and account deletion.
+/// All managers are injected — the service holds no mutable state of its own.
+@MainActor
+struct AccountLifecycleService {
+    let authManager: AuthManager
+    let userManager: UserManager
+    let purchaseManager: PurchaseManager
+    let logManager: LogManager
+    let streakManager: StreakManager
+    let xpManager: ExperiencePointsManager
+    let progressManager: ProgressManager
+    let sessionManager: SessionManager
+    let beltManager: BeltManager
+    let goalManager: GoalManager
+    let achievementManager: AchievementManager
+    let classScheduleManager: ClassScheduleManager
+    let challengeManager: ChallengeManager
 
     func logIn(user: UserAuthInfo, isNewUser: Bool) async throws {
         async let userLogin: Void = userManager.logIn(auth: user, isNewUser: isNewUser)
@@ -21,7 +35,6 @@ extension CoreInteractor {
         let (_, _, _, _, _) = await (try userLogin, try purchaseLogin, try streakLogin, try xpLogin, try progressLogin)
 
         // BJJ sync is non-blocking — each manager queues a background Task internally.
-        // The app shows locally-cached data immediately; remote data merges in silently.
         sessionManager.logIn(userId: user.uid)
         beltManager.logIn(userId: user.uid)
         goalManager.logIn(userId: user.uid)
@@ -36,9 +49,8 @@ extension CoreInteractor {
 
     func signOut() async throws {
         // Capture before signing out — anonymous accounts can never be re-entered,
-        // so we wipe local data. Named users (Apple/Google) may sign back in,
-        // so we preserve their local data.
-        let wasAnonymous = auth?.isAnonymous == true
+        // so we wipe local data. Named users (Apple/Google) may sign back in.
+        let wasAnonymous = authManager.auth?.isAnonymous == true
         try authManager.signOut()
         try await purchaseManager.logOut()
         userManager.signOut()
@@ -53,7 +65,7 @@ extension CoreInteractor {
     }
 
     func deleteAccount() async throws {
-        guard let auth else {
+        guard let auth = authManager.auth else {
             throw AppError("Auth not found.")
         }
 
@@ -91,5 +103,4 @@ extension CoreInteractor {
         achievementManager.logOut()
         challengeManager.logOut()
     }
-
 }

@@ -1,8 +1,5 @@
 import Foundation
 
-// TODO: [P1] Add unit tests — MonthlyReportTests.swift (see .claude/docs/improvement-plan.md §1.3)
-// TODO: [P2] Add challengesCompleted, challengesSweepCount, techniquesPromoted fields (see §2.2, §2.3)
-
 // MARK: - MonthlyReportData
 
 struct MonthlyReportData {
@@ -37,6 +34,13 @@ struct MonthlyReportData {
 
     // Achievements
     let achievementsEarnedCount: Int
+
+    // Challenges (completed in this month's weeks)
+    let challengesCompletedCount: Int
+    let challengesSweepCount: Int            // weeks where all 3 challenges completed
+
+    // Techniques promoted within this month
+    let techniquesPromotedCount: Int
 
     // XP & Level
     let levelInfo: XPLevelInfo
@@ -78,6 +82,9 @@ extension MonthlyReportData {
                 gymDistribution: [],
                 goalsCompletedCount: 0,
                 achievementsEarnedCount: 0,
+                challengesCompletedCount: 0,
+                challengesSweepCount: 0,
+                techniquesPromotedCount: 0,
                 levelInfo: XPLevelSystem.levelInfo(forXP: 0),
                 previousMonthSessions: 0,
                 previousMonthHours: 0
@@ -121,6 +128,9 @@ extension MonthlyReportData {
             ],
             goalsCompletedCount: 2,
             achievementsEarnedCount: 1,
+            challengesCompletedCount: 8,
+            challengesSweepCount: 2,
+            techniquesPromotedCount: 3,
             levelInfo: XPLevelSystem.levelInfo(forXP: 1200),
             previousMonthSessions: 9,
             previousMonthHours: 13.5
@@ -148,6 +158,9 @@ extension MonthlyReportData {
                 gymDistribution: [],
                 goalsCompletedCount: 0,
                 achievementsEarnedCount: 0,
+                challengesCompletedCount: 0,
+                challengesSweepCount: 0,
+                techniquesPromotedCount: 0,
                 levelInfo: XPLevelSystem.levelInfo(forXP: 0),
                 previousMonthSessions: 0,
                 previousMonthHours: 0
@@ -176,6 +189,9 @@ extension MonthlyReportData {
             gymDistribution: [],
             goalsCompletedCount: 0,
             achievementsEarnedCount: 0,
+            challengesCompletedCount: 0,
+            challengesSweepCount: 0,
+            techniquesPromotedCount: 0,
             levelInfo: XPLevelSystem.levelInfo(forXP: 0),
             previousMonthSessions: 0,
             previousMonthHours: 0

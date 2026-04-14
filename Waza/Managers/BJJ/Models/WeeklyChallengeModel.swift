@@ -11,6 +11,8 @@ enum ChallengeType: String, Codable, Sendable, CaseIterable {
     case miniStreak
     case logFullReflection
     case trainDuration
+    case promoteTechnique
+    case practiceWeakTechnique
 }
 
 // MARK: - Challenge Category
@@ -20,6 +22,7 @@ enum ChallengeCategory: String, Sendable {
     case quality      // logFullReflection, logMoodBothWays
     case exploration  // newFocusArea, trainAtDifferentGym, logSessionType
     case intensity    // trainDuration
+    case technique    // promoteTechnique, practiceWeakTechnique
 }
 
 extension ChallengeType {
@@ -29,6 +32,7 @@ extension ChallengeType {
         case .logFullReflection, .logMoodBothWays:         return .quality
         case .newFocusArea, .trainAtDifferentGym, .logSessionType: return .exploration
         case .trainDuration:                               return .intensity
+        case .promoteTechnique, .practiceWeakTechnique:    return .technique
         }
     }
 }
