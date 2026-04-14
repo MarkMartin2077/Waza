@@ -37,6 +37,9 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         let dependencies = Dependencies(config: config)
         self.dependencies = dependencies
         self.builder = CoreBuilder(interactor: CoreInteractor(container: dependencies.container))
+
+        MarketingDataSeeder.seedIfNeeded(container: dependencies.container)
+
         return true
     }
     

@@ -112,6 +112,13 @@ class ChallengeManager {
         refresh()
     }
 
+    /// Inserts a specific pre-built challenge. Used by the marketing-mode seeder to
+    /// produce a deterministic completed/incomplete mix for App Store screenshots.
+    func seedChallenge(_ challenge: WeeklyChallengeModel) {
+        try? localService.create(challenge)
+        refresh()
+    }
+
     // MARK: - Private Evaluation Logic
 
     private func computeCurrentValue(

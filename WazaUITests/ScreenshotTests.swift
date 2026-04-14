@@ -20,8 +20,14 @@ final class ScreenshotTests: XCTestCase {
 
     func testCaptureAllKeyScreens() throws {
         let app = XCUIApplication()
-        app.launchArguments = ["UI_TESTING", "SIGNED_IN"]
+        // MARKETING_MODE seeds an impressive "active user" state for App Store shots —
+        // level 12, 22-day streak, 30+ sessions, unlocked achievements, completed goals.
+        // See MarketingDataSeeder.swift.
+        app.launchArguments = ["UI_TESTING", "SIGNED_IN", "MARKETING_MODE"]
         app.launch()
+
+        // Seeder runs async for XP/streak events — give it extra time to settle
+        sleep(3)
 
         // Give the app a moment to settle on first frame
         _ = app.staticTexts.firstMatch.waitForExistence(timeout: 5)
