@@ -42,6 +42,14 @@
 	</array>
 	<key>FirebaseAppDelegateProxyEnabled</key>
 	<false/>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+	<key>NSCalendarsUsageDescription</key>
+	<string>Waza can add your class schedules and training reminders to your calendar.</string>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>Waza can add your class schedules and training reminders to your calendar.</string>
+	<key>NSCalendarsWriteOnlyAccessUsageDescription</key>
+	<string>Waza can add your class schedules and training reminders to your calendar.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Waza uses your location to automatically check you in when you arrive at your gym.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
