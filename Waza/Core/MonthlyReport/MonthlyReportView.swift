@@ -29,12 +29,13 @@ struct MonthlyReportView: View {
                             .foregroundStyle(Color.wazaAccent)
                     }
                 } else if presenter.reportData != nil {
-                    Image(systemName: "square.and.arrow.up")
-                        .font(.headline)
-                        .foregroundStyle(Color.wazaAccent)
-                        .anyButton {
-                            presenter.onShareTapped()
-                        }
+                    Button {
+                        presenter.onShareTapped()
+                    } label: {
+                        Image(systemName: "square.and.arrow.up")
+                            .font(.headline)
+                            .foregroundStyle(Color.wazaAccent)
+                    }
                 }
             }
         }

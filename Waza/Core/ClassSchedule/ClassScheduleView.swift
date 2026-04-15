@@ -95,13 +95,14 @@ struct ClassScheduleView: View {
     // MARK: - Toolbar
 
     private var addGymButton: some View {
-        Image(systemName: "plus")
-            .font(.headline)
-            .foregroundStyle(Color.wazaAccent)
-            .accessibilityLabel("Add gym")
-            .anyButton {
-                presenter.onAddGymTapped()
-            }
+        Button {
+            presenter.onAddGymTapped()
+        } label: {
+            Image(systemName: "plus")
+                .font(.headline)
+                .foregroundStyle(Color.wazaAccent)
+        }
+        .accessibilityLabel("Add gym")
     }
 }
 

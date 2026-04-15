@@ -19,23 +19,25 @@ struct TechniqueJournalView: View {
         .toolbar {
             // Separate ToolbarItems so iOS 26 renders each as its own liquid-glass capsule.
             ToolbarItem(placement: .topBarTrailing) {
-                Image(systemName: "plus")
-                    .font(.headline)
-                    .foregroundStyle(Color.wazaAccent)
-                    .accessibilityLabel("Add technique")
-                    .anyButton {
-                        presenter.onAddTechniqueTapped()
-                        showAddSheet = true
-                    }
+                Button {
+                    presenter.onAddTechniqueTapped()
+                    showAddSheet = true
+                } label: {
+                    Image(systemName: "plus")
+                        .font(.headline)
+                        .foregroundStyle(Color.wazaAccent)
+                }
+                .accessibilityLabel("Add technique")
             }
             ToolbarItem(placement: .topBarTrailing) {
-                Image(systemName: showMapView ? "list.bullet" : "square.grid.2x2")
-                    .font(.headline)
-                    .foregroundStyle(Color.wazaAccent)
-                    .accessibilityLabel(showMapView ? "List view" : "Map view")
-                    .anyButton {
-                        showMapView.toggle()
-                    }
+                Button {
+                    showMapView.toggle()
+                } label: {
+                    Image(systemName: showMapView ? "list.bullet" : "square.grid.2x2")
+                        .font(.headline)
+                        .foregroundStyle(Color.wazaAccent)
+                }
+                .accessibilityLabel(showMapView ? "List view" : "Map view")
             }
         }
         .sheet(isPresented: $showAddSheet) {
@@ -223,19 +225,18 @@ private struct AddTechniqueSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Text("Cancel")
-                        .anyButton { dismiss() }
+                    Button("Cancel") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Text("Save")
-                        .fontWeight(.semibold)
-                        .foregroundStyle(name.trimmingCharacters(in: .whitespaces).isEmpty ? .secondary : accentColor)
-                        .anyButton {
-                            let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
-                            guard !trimmed.isEmpty else { return }
-                            onSave(trimmed.capitalized, category)
-                            dismiss()
-                        }
+                    Button("Save") {
+                        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+                        guard !trimmed.isEmpty else { return }
+                        onSave(trimmed.capitalized, category)
+                        dismiss()
+                    }
+                    .fontWeight(.semibold)
+                    .foregroundStyle(name.trimmingCharacters(in: .whitespaces).isEmpty ? .secondary : accentColor)
+                    .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
                 }
             }
         }

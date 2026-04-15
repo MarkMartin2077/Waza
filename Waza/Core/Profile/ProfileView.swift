@@ -263,12 +263,13 @@ struct ProfileView: View {
     }
 
     private var settingsButton: some View {
-        Image(systemName: "gear")
-            .font(.headline)
-            .foregroundStyle(Color.wazaAccent)
-            .anyButton {
-                presenter.onSettingsButtonPressed()
-            }
+        Button {
+            presenter.onSettingsButtonPressed()
+        } label: {
+            Image(systemName: "gear")
+                .font(.headline)
+                .foregroundStyle(Color.wazaAccent)
+        }
     }
 }
 

@@ -38,12 +38,13 @@ struct DevSettingsView: View {
     }
     
     private var backButtonView: some View {
-        Image(systemName: "xmark")
-            .font(.title2)
-            .fontWeight(.black)
-            .anyButton {
-                presenter.onBackButtonPressed()
-            }
+        Button {
+            presenter.onBackButtonPressed()
+        } label: {
+            Image(systemName: "xmark")
+                .font(.title2)
+                .fontWeight(.black)
+        }
     }
             
     private var abTestSection: some View {

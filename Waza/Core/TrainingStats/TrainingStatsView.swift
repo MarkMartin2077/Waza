@@ -27,22 +27,24 @@ struct TrainingStatsView: View {
             // as separate liquid-glass capsules instead of one merged bubble.
             if presenter.isAIAvailable {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Image(systemName: "apple.intelligence")
-                        .font(.headline)
-                        .accessibilityLabel("AI training insights")
-                        .anyButton {
-                            presenter.onAIInsightsTapped()
-                        }
+                    Button {
+                        presenter.onAIInsightsTapped()
+                    } label: {
+                        Image(systemName: "apple.intelligence")
+                            .font(.headline)
+                    }
+                    .accessibilityLabel("AI training insights")
                 }
             }
             ToolbarItem(placement: .topBarTrailing) {
-                Image(systemName: "plus")
-                    .font(.headline)
-                    .foregroundStyle(Color.wazaAccent)
-                    .accessibilityLabel("Manage goals")
-                    .anyButton {
-                        presenter.onManageGoalsTapped()
-                    }
+                Button {
+                    presenter.onManageGoalsTapped()
+                } label: {
+                    Image(systemName: "plus")
+                        .font(.headline)
+                        .foregroundStyle(Color.wazaAccent)
+                }
+                .accessibilityLabel("Manage goals")
             }
         }
         .onAppear {

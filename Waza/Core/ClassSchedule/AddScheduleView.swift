@@ -57,18 +57,12 @@ struct AddScheduleView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Text("Cancel")
+                    Button("Cancel") { presenter.onCancelTapped() }
                         .foregroundStyle(.secondary)
-                        .anyButton {
-                            presenter.onCancelTapped()
-                        }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Text("Save")
+                    Button("Save") { presenter.onSaveTapped() }
                         .fontWeight(.semibold)
-                        .anyButton {
-                            presenter.onSaveTapped()
-                        }
                         .disabled(presenter.isSaveDisabled)
                 }
             }

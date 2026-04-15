@@ -228,14 +228,15 @@ struct DashboardView: View {
     }
 
     private var devSettingsButton: some View {
-        Image(systemName: "gearshape")
-            .font(.subheadline)
-            .foregroundStyle(.secondary)
-            .accessibilityLabel("Developer settings")
-            .anyButton {
-                presenter.onDevSettingsTapped()
-            }
+        Button {
+            presenter.onDevSettingsTapped()
+        } label: {
+            Image(systemName: "gearshape")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
         }
+        .accessibilityLabel("Developer settings")
+    }
 
     // MARK: - Onboarding Tips & Discovery
 

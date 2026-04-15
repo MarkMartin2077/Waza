@@ -42,13 +42,14 @@ struct SessionsView: View {
         .toolbarTitleDisplayMode(.inlineLarge)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Image(systemName: "plus")
-                    .font(.headline)
-                    .foregroundStyle(Color.wazaAccent)
-                    .accessibilityLabel("Log session")
-                    .anyButton {
-                        presenter.onLogSessionTapped()
-                    }
+                Button {
+                    presenter.onLogSessionTapped()
+                } label: {
+                    Image(systemName: "plus")
+                        .font(.headline)
+                        .foregroundStyle(Color.wazaAccent)
+                }
+                .accessibilityLabel("Log session")
             }
         }
         .onAppear {
