@@ -23,23 +23,26 @@ struct TrainingStatsView: View {
         .navigationTitle("Progress")
         .toolbarTitleDisplayMode(.inlineLarge)
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                HStack(spacing: 16) {
-                    if presenter.isAIAvailable {
-                        Image(systemName: "apple.intelligence")
-                            .font(.headline)
-                            .anyButton {
-                                presenter.onAIInsightsTapped()
-                            }
-                    }
-                    Image(systemName: "plus")
+            // Each trailing action gets its own ToolbarItem so iOS 26 renders them
+            // as separate liquid-glass capsules instead of one merged bubble.
+            if presenter.isAIAvailable {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Image(systemName: "apple.intelligence")
                         .font(.headline)
-                        .foregroundStyle(Color.wazaAccent)
-                        .accessibilityLabel("Manage goals")
+                        .accessibilityLabel("AI training insights")
                         .anyButton {
-                            presenter.onManageGoalsTapped()
+                            presenter.onAIInsightsTapped()
                         }
                 }
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                Image(systemName: "plus")
+                    .font(.headline)
+                    .foregroundStyle(Color.wazaAccent)
+                    .accessibilityLabel("Manage goals")
+                    .anyButton {
+                        presenter.onManageGoalsTapped()
+                    }
             }
         }
         .onAppear {

@@ -47,20 +47,21 @@ struct ProfileView: View {
         .navigationTitle("Profile")
         .toolbarTitleDisplayMode(.inlineLarge)
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                HStack(spacing: 16) {
-                    if let image = presenter.shareCardImage {
-                        ShareLink(
-                            item: Image(uiImage: image),
-                            preview: SharePreview("My Waza Stats", image: Image(uiImage: image))
-                        ) {
-                            Image(systemName: "square.and.arrow.up")
-                                .font(.headline)
-                                .foregroundStyle(Color.wazaAccent)
-                        }
+            // Separate ToolbarItems so iOS 26 renders each as its own liquid-glass capsule.
+            if let image = presenter.shareCardImage {
+                ToolbarItem(placement: .topBarTrailing) {
+                    ShareLink(
+                        item: Image(uiImage: image),
+                        preview: SharePreview("My Waza Stats", image: Image(uiImage: image))
+                    ) {
+                        Image(systemName: "square.and.arrow.up")
+                            .font(.headline)
+                            .foregroundStyle(Color.wazaAccent)
                     }
-                    settingsButton
                 }
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                settingsButton
             }
         }
         .onAppear {

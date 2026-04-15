@@ -17,25 +17,25 @@ struct TechniqueJournalView: View {
         .toolbarTitleDisplayMode(.inlineLarge)
         .searchable(text: $presenter.searchText, prompt: "Search techniques...")
         .toolbar {
+            // Separate ToolbarItems so iOS 26 renders each as its own liquid-glass capsule.
             ToolbarItem(placement: .topBarTrailing) {
-                HStack(spacing: 16) {
-                    Image(systemName: "plus")
-                        .font(.headline)
-                        .foregroundStyle(Color.wazaAccent)
-                        .accessibilityLabel("Add technique")
-                        .anyButton {
-                            presenter.onAddTechniqueTapped()
-                            showAddSheet = true
-                        }
-
-                    Image(systemName: showMapView ? "list.bullet" : "square.grid.2x2")
-                        .font(.headline)
-                        .foregroundStyle(Color.wazaAccent)
-                        .accessibilityLabel(showMapView ? "List view" : "Map view")
-                        .anyButton {
-                            showMapView.toggle()
-                        }
-                }
+                Image(systemName: "plus")
+                    .font(.headline)
+                    .foregroundStyle(Color.wazaAccent)
+                    .accessibilityLabel("Add technique")
+                    .anyButton {
+                        presenter.onAddTechniqueTapped()
+                        showAddSheet = true
+                    }
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                Image(systemName: showMapView ? "list.bullet" : "square.grid.2x2")
+                    .font(.headline)
+                    .foregroundStyle(Color.wazaAccent)
+                    .accessibilityLabel(showMapView ? "List view" : "Map view")
+                    .anyButton {
+                        showMapView.toggle()
+                    }
             }
         }
         .sheet(isPresented: $showAddSheet) {
