@@ -23,15 +23,22 @@ struct ProgressionStagePicker: View {
             Text(stage.displayName)
                 .font(.caption)
                 .fontWeight(isSelected ? .semibold : .regular)
+                // Force single line — without this, "Polishing" wraps on narrow devices
+                // and makes its capsule taller than the others.
+                .lineLimit(1)
+                // Allow very mild shrinking (~85%) before truncation so the full word
+                // fits without an ellipsis on iPhone 15 Pro and smaller.
+                .minimumScaleFactor(0.85)
         }
         .foregroundStyle(isSelected ? .white : stage.color)
-        .padding(.horizontal, 10)
+        .padding(.horizontal, 8)
         .padding(.vertical, 7)
         .frame(maxWidth: .infinity)
         .background(
             isSelected ? stage.color : stage.color.opacity(0.1),
             in: Capsule()
         )
+        .animation(.easeInOut(duration: 0.2), value: isSelected)
         .anyButton {
             onStageSelected(stage)
         }
