@@ -138,12 +138,20 @@ struct SessionFilterBarView: View {
             Text(title)
                 .font(.caption)
                 .fontWeight(isActive ? .semibold : .regular)
+                .lineLimit(1)
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 6)
         .background(isActive ? Color.wazaAccent.opacity(0.15) : Color(.systemGray6))
         .foregroundStyle(isActive ? Color.wazaAccent : .secondary)
         .clipShape(Capsule())
+        // Force the chip to always size to its intrinsic content width. Without this,
+        // when `title` changes (e.g. "Type" → "Competition"), SwiftUI's default layout
+        // animation can freeze the capsule at the old width while the text has already
+        // updated, causing mid-animation truncation and a snap at the end.
+        .fixedSize(horizontal: true, vertical: false)
+        .animation(.easeInOut(duration: 0.2), value: title)
+        .animation(.easeInOut(duration: 0.2), value: isActive)
         .accessibilityLabel("\(title) filter\(isActive ? ", active" : "")")
     }
 }
