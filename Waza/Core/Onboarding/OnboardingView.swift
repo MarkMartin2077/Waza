@@ -8,36 +8,37 @@ struct OnboardingView: View {
     @Namespace private var indicatorNamespace
 
     var body: some View {
-        ZStack {
-            background
+        VStack(spacing: 0) {
+            skipButton
+                .padding()
 
-            VStack(spacing: 0) {
-                skipButton
-                    .padding()
-
-                TabView(selection: $presenter.currentPage) {
-                    welcomePage.tag(0)
-                    namePage.tag(1)
-                    trainingGoalPage.tag(2)
-                    notificationsPage.tag(3)
-                    locationPage.tag(4)
-                    readyPage.tag(5)
-                }
-                .tabViewStyle(.page(indexDisplayMode: .never))
-                .animation(.easeInOut(duration: 0.35), value: presenter.currentPage)
-                .onChange(of: presenter.currentPage) { _, newPage in
-                    presenter.onPageChanged(newPage)
-                }
-
-                pageIndicator
-                    .padding(.top, 20)
-
-                bottomArea
-                    .padding(.top, 16)
-                    .padding(.horizontal, 24)
-                    .padding(.bottom, 52)
+            TabView(selection: $presenter.currentPage) {
+                welcomePage.tag(0)
+                namePage.tag(1)
+                trainingGoalPage.tag(2)
+                notificationsPage.tag(3)
+                locationPage.tag(4)
+                readyPage.tag(5)
             }
+            .tabViewStyle(.page(indexDisplayMode: .never))
+            .animation(.easeInOut(duration: 0.35), value: presenter.currentPage)
+            .onChange(of: presenter.currentPage) { _, newPage in
+                presenter.onPageChanged(newPage)
+            }
+
+            pageIndicator
+                .padding(.top, 20)
+
+            bottomArea
+                .padding(.top, 16)
+                .padding(.horizontal, 24)
+                .padding(.bottom, 52)
         }
+        // `.background` modifier — the background fits *behind* the content without
+        // contributing to the content's layout width. Previously the 480pt background
+        // circle was forcing the whole hierarchy to 480pt wide and clipping right-edge
+        // content on iPhone 15 Pro (393pt) and smaller devices.
+        .background(background)
         .preferredColorScheme(.dark)
         .onAppear {
             presenter.onViewAppear(delegate: delegate)
