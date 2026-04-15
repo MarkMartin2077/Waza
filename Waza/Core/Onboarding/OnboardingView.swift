@@ -126,20 +126,21 @@ struct OnboardingView: View {
 
     @ViewBuilder
     private var bottomArea: some View {
+        // Page tags: 0 welcome, 1 name, 2 goal, 3 notifications, 4 location, 5 ready.
         switch presenter.currentPage {
-        case 4:
+        case 3:
             permissionButtons(
                 primaryLabel: "Enable Notifications",
                 onPrimary: { presenter.onEnableNotificationsTapped() },
                 onSkip: { presenter.onSkipNotificationsTapped() }
             )
-        case 5:
+        case 4:
             permissionButtons(
                 primaryLabel: "Enable Location",
                 onPrimary: { presenter.onEnableLocationTapped() },
                 onSkip: { presenter.onSkipLocationTapped() }
             )
-        case 6:
+        case 5:
             finishButton
         default:
             continueButton
@@ -302,7 +303,7 @@ struct OnboardingView: View {
                 goalRow(id: "4", label: "4×", detail: "Dedicated")
                 goalRow(id: "5", label: "5×+", detail: "Competitor")
             }
-            .padding(.horizontal, 24)
+            .padding(.horizontal, 32)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
