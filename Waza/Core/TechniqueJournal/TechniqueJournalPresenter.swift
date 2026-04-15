@@ -4,7 +4,7 @@ import SwiftUI
 @MainActor
 class TechniqueJournalPresenter {
     private let router: any TechniqueJournalRouter
-    let interactor: any TechniqueJournalInteractor
+    private let interactor: any TechniqueJournalInteractor
 
     var searchText: String = ""
 
@@ -74,6 +74,14 @@ class TechniqueJournalPresenter {
 
     func onAddTechniqueTapped() {
         interactor.trackEvent(event: Event.addTechniqueTapped)
+        router.showAddTechniqueView(onSave: { [weak self] name, category in
+            self?.onAddTechniqueSaved(name: name, category: category)
+        })
+    }
+
+    private func onAddTechniqueSaved(name: String, category: TechniqueCategory) {
+        interactor.trackEvent(event: Event.addTechniqueSaved(name: name, category: category.rawValue))
+        interactor.createTechnique(name: name, category: category)
     }
 
     func filteredTechniqueByName(_ name: String) -> TechniqueModel? {
@@ -115,12 +123,14 @@ extension TechniqueJournalPresenter {
         case onAppear
         case techniqueTapped(name: String, techniqueId: String)
         case addTechniqueTapped
+        case addTechniqueSaved(name: String, category: String)
 
         var eventName: String {
             switch self {
             case .onAppear:            return "TechniqueJournalView_Appear"
             case .techniqueTapped:     return "TechniqueJournalView_TechniqueTap"
             case .addTechniqueTapped:  return "TechniqueJournalView_AddTechnique_Tap"
+            case .addTechniqueSaved:   return "TechniqueJournalView_AddTechnique_Saved"
             }
         }
 
@@ -128,6 +138,8 @@ extension TechniqueJournalPresenter {
             switch self {
             case .techniqueTapped(name: let name, techniqueId: let techniqueId):
                 return ["technique_name": name, "technique_id": techniqueId]
+            case .addTechniqueSaved(name: let name, category: let category):
+                return ["technique_name": name, "category": category]
             default:
                 return nil
             }

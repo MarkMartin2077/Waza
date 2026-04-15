@@ -10,7 +10,7 @@ class TabBarPresenter {
     private var xpQueue: [XPToastData] = []
     private var isCelebrationShowing: Bool = false
 
-    var pendingCheckIn: (gym: GymLocationModel, schedule: ClassScheduleModel?)?
+    private var isShowingCheckIn: Bool = false
     var pendingXPToast: XPToastData?
 
     init(interactor: TabBarInteractor, router: TabBarRouter) {
@@ -71,15 +71,23 @@ class TabBarPresenter {
 
     func onGymArrival(gymId: String) {
         interactor.trackEvent(event: Event.gymArrivalDetected(gymId: gymId))
-        guard pendingCheckIn == nil else { return }
+        guard !isShowingCheckIn else { return }
         guard let gym = interactor.gyms.first(where: { $0.gymId == gymId }) else { return }
         let schedule = interactor.closestSchedule(forGymId: gymId, at: Date())
-        pendingCheckIn = (gym, schedule)
+        isShowingCheckIn = true
+        router.showCheckInView(
+            gym: gym,
+            schedule: schedule,
+            checkInMethod: .geofence,
+            onDismiss: { [weak self] in
+                self?.onCheckInDismissed()
+            }
+        )
     }
 
-    func onCheckInDismissed() {
+    private func onCheckInDismissed() {
         interactor.trackEvent(event: Event.checkInPromptDismissed)
-        pendingCheckIn = nil
+        isShowingCheckIn = false
     }
 
     // MARK: - Toast

@@ -3,7 +3,6 @@ import SwiftUI
 struct TechniqueJournalView: View {
     @State var presenter: TechniqueJournalPresenter
     @State private var showMapView: Bool = false
-    @State private var showAddSheet: Bool = false
 
     var body: some View {
         Group {
@@ -21,7 +20,6 @@ struct TechniqueJournalView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     presenter.onAddTechniqueTapped()
-                    showAddSheet = true
                 } label: {
                     Image(systemName: "plus")
                         .font(.headline)
@@ -39,14 +37,6 @@ struct TechniqueJournalView: View {
                 }
                 .accessibilityLabel(showMapView ? "List view" : "Map view")
             }
-        }
-        .sheet(isPresented: $showAddSheet) {
-            AddTechniqueSheet(
-                accentColor: Color.wazaAccent,
-                onSave: { name, category in
-                    presenter.interactor.createTechnique(name: name, category: category)
-                }
-            )
         }
         .onAppear {
             presenter.onViewAppear()
@@ -195,7 +185,7 @@ struct TechniqueJournalView: View {
 
 // MARK: - Add Technique Sheet
 
-private struct AddTechniqueSheet: View {
+struct AddTechniqueSheet: View {
     let accentColor: Color
     let onSave: (String, TechniqueCategory) -> Void
 
@@ -256,6 +246,10 @@ extension CoreBuilder {
         )
     }
 
+    func addTechniqueView(onSave: @escaping @MainActor @Sendable (String, TechniqueCategory) -> Void) -> some View {
+        AddTechniqueSheet(accentColor: Color.wazaAccent, onSave: onSave)
+    }
+
 }
 
 // MARK: - Router Extension
@@ -271,6 +265,12 @@ extension CoreRouter {
     func showTechniqueDetailView(technique: TechniqueModel) {
         router.showScreen(.push) { router in
             builder.techniqueDetailView(router: router, technique: technique)
+        }
+    }
+
+    func showAddTechniqueView(onSave: @escaping @MainActor @Sendable (String, TechniqueCategory) -> Void) {
+        router.showScreen(.sheet) { _ in
+            builder.addTechniqueView(onSave: onSave)
         }
     }
 

@@ -7,6 +7,7 @@ protocol TabBarRouter: GlobalRouter {
     func showFireRoundModal(onDismiss: @escaping @MainActor @Sendable () -> Void)
     func showStreakTierUpModal(tier: StreakTier, accentColor: Color, onDismiss: @escaping @MainActor @Sendable () -> Void)
     func dismissCelebrationModal()
+    func showCheckInView(gym: GymLocationModel, schedule: ClassScheduleModel?, checkInMethod: CheckInMethod, onDismiss: (() -> Void)?)
 }
 
 extension CoreRouter: TabBarRouter {

@@ -20,7 +20,6 @@ struct TabBarView: View {
 
     @State var presenter: TabBarPresenter
     var tabs: [TabBarScreen]
-    var builder: CoreBuilder?
 
     @AppStorage(Constants.colorSchemeStorageKey) private var colorSchemeIndex: Int = 0
 
@@ -75,19 +74,6 @@ struct TabBarView: View {
             guard let gymId = (notification.userInfo as? [String: String])?["gymId"] else { return }
             presenter.onGymArrival(gymId: gymId)
         }
-        .sheet(isPresented: Binding(
-            get: { presenter.pendingCheckIn != nil },
-            set: { if !$0 { presenter.onCheckInDismissed() } }
-        )) {
-            if let pendingCheckIn = presenter.pendingCheckIn, let builder {
-                RouterView { router in
-                    builder.checkInView(
-                        router: router,
-                        delegate: CheckInDelegate(gym: pendingCheckIn.gym, matchedSchedule: pendingCheckIn.schedule, checkInMethod: .geofence)
-                    )
-                }
-            }
-        }
     }
 }
 
@@ -122,8 +108,7 @@ extension CoreBuilder {
                     }
                     .any()
                 })
-            ],
-            builder: self
+            ]
         )
     }
 
