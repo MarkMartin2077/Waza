@@ -6,9 +6,6 @@ class TrainingStatsPresenter {
     let router: any TrainingStatsRouter
     let interactor: any TrainingStatsInteractor
 
-    /// Blocks rapid double-taps on toolbar buttons from pushing duplicate screens.
-    private let navGuard = NavigationGuard()
-
     var selectedPeriodLabel: String = "Month"
 
     let periodLabels = ["Week", "Month", "Year", "All Time"]
@@ -40,17 +37,13 @@ class TrainingStatsPresenter {
     }
 
     func onManageGoalsTapped() {
-        navGuard.perform {
-            interactor.trackEvent(event: Event.manageGoalsTapped)
-            router.showGoalsPlanningView()
-        }
+        interactor.trackEvent(event: Event.manageGoalsTapped)
+        router.showGoalsPlanningView()
     }
 
     func onAIInsightsTapped() {
-        navGuard.perform {
-            interactor.trackEvent(event: Event.aiInsightsTapped)
-            router.showAIInsightsView()
-        }
+        interactor.trackEvent(event: Event.aiInsightsTapped)
+        router.showAIInsightsView()
     }
 
     var isAIAvailable: Bool {
