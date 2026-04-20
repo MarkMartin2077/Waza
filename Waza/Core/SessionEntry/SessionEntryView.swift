@@ -89,13 +89,8 @@ struct SessionEntryView: View {
             Text("Focus Areas")
                 .wazaLabelStyle()
 
-            let customAreas = presenter.selectedFocusAreas
-                .filter { area in !SessionEntryPresenter.presetFocusAreas.contains(where: { $0.caseInsensitiveCompare(area) == .orderedSame }) }
-                .sorted()
-            let allAreas = SessionEntryPresenter.presetFocusAreas + customAreas
-
             FlowLayout(spacing: 8) {
-                ForEach(allAreas, id: \.self) { area in
+                ForEach(SessionEntryPresenter.presetFocusAreas, id: \.self) { area in
                     let isSelected = presenter.selectedFocusAreas.contains(area)
                     Text(area)
                         .font(.caption)
@@ -113,23 +108,6 @@ struct SessionEntryView: View {
                             presenter.onFocusAreaToggled(area)
                         }
                 }
-            }
-
-            HStack(spacing: 8) {
-                TextField("Add custom area...", text: $presenter.customFocusAreaText)
-                    .font(.subheadline)
-                    .padding(10)
-                    .background(Color(.systemGray6), in: RoundedRectangle(cornerRadius: 10))
-                    .submitLabel(.done)
-                    .onSubmit { presenter.onAddCustomFocusArea() }
-
-                Image(systemName: "plus.circle.fill")
-                    .font(.title3)
-                    .foregroundStyle(Color.wazaAccent)
-                    .accessibilityLabel("Add custom focus area")
-                    .anyButton {
-                        presenter.onAddCustomFocusArea()
-                    }
             }
         }
         .padding(16)

@@ -24,7 +24,6 @@ class SessionEntryPresenter {
 
     // Focus Areas
     var selectedFocusAreas: Set<String> = []
-    var customFocusAreaText: String = ""
 
     // Techniques
     private(set) var selectedTechniques: Set<String> = []
@@ -101,20 +100,6 @@ class SessionEntryPresenter {
         } else {
             selectedFocusAreas.insert(area)
         }
-    }
-
-    func onAddCustomFocusArea() {
-        let trimmed = customFocusAreaText.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return }
-        let normalized = trimmed.capitalized
-        guard !selectedFocusAreas.contains(where: { $0.caseInsensitiveCompare(normalized) == .orderedSame }) else {
-            customFocusAreaText = ""
-            return
-        }
-        interactor.trackEvent(event: Event.customFocusAreaAdded(area: normalized))
-        interactor.playHaptic(option: .selection)
-        selectedFocusAreas.insert(normalized)
-        customFocusAreaText = ""
     }
 
     // MARK: - Gym Selection
@@ -238,7 +223,6 @@ extension SessionEntryPresenter {
         case cancelTapped
         case sessionTypeSelected(type: SessionType)
         case focusAreaToggled(area: String)
-        case customFocusAreaAdded(area: String)
         case gymSelected(gymId: String?)
         case durationChanged(minutes: Int)
         case sectionHeaderTapped
@@ -255,7 +239,6 @@ extension SessionEntryPresenter {
             case .cancelTapped:           return "SessionEntryView_Cancel_Tap"
             case .sessionTypeSelected:    return "SessionEntryView_SessionType_Select"
             case .focusAreaToggled:       return "SessionEntryView_FocusArea_Toggle"
-            case .customFocusAreaAdded:   return "SessionEntryView_FocusArea_Custom_Add"
             case .gymSelected:            return "SessionEntryView_Gym_Select"
             case .durationChanged:        return "SessionEntryView_Duration_Change"
             case .sectionHeaderTapped:    return "SessionEntryView_SectionHeader_Tap"
@@ -273,7 +256,7 @@ extension SessionEntryPresenter {
                 return error.eventParameters
             case .sessionTypeSelected(type: let type):
                 return ["session_type": type.rawValue]
-            case .focusAreaToggled(area: let area), .customFocusAreaAdded(area: let area):
+            case .focusAreaToggled(area: let area):
                 return ["focus_area": area]
             case .gymSelected(gymId: let gymId):
                 return ["gym_id": gymId ?? "custom"]
