@@ -103,7 +103,7 @@ struct AttendanceCalendarView: View {
             }
         }
         .padding(16)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .wazaCard()
     }
 }
 

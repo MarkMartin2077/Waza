@@ -73,7 +73,7 @@ struct AIInsightsView: View {
                     .foregroundStyle(presenter.isStreamingText ? .secondary : .primary)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(14)
-                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+                    .wazaCard(cornerRadius: .wazaCornerSmall)
                     .animation(.default, value: presenter.streamingText)
             }
 
@@ -121,7 +121,7 @@ struct AIInsightsView: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(14)
-                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+                .wazaCard(cornerRadius: .wazaCornerSmall)
             } else if !presenter.insights.isEmpty {
                 ForEach(presenter.insights, id: \.title) { insight in
                     InsightCardView(insight: insight)
@@ -208,7 +208,7 @@ private struct InsightCardView: View {
             .background(Color.wazaAccent.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
         }
         .padding(14)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .wazaCard()
     }
 
     private func categoryIcon(_ category: String) -> String {

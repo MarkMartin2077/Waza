@@ -82,8 +82,7 @@ struct ProfileView: View {
                 }
 
             Text(presenter.userName)
-                .font(.title2)
-                .fontWeight(.semibold)
+                .font(.wazaDisplayMedium)
 
             if presenter.isPremium {
                 Label("Premium", systemImage: "star.fill")
@@ -141,16 +140,17 @@ struct ProfileView: View {
     private func profileStat(value: String, label: String) -> some View {
         VStack(spacing: 4) {
             Text(value)
-                .font(.title3)
-                .fontWeight(.bold)
+                .font(.wazaNumSmall)
+                .foregroundStyle(Color.wazaInk900)
                 .contentTransition(.numericText())
             Text(label)
-                .font(.caption2)
+                .font(.wazaLabel)
                 .foregroundStyle(.secondary)
+                .textCase(.uppercase)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 14)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .wazaCard()
         .animation(.spring(response: 0.4, dampingFraction: 0.8), value: value)
     }
 
@@ -181,7 +181,7 @@ struct ProfileView: View {
                 .foregroundStyle(.tertiary)
         }
         .padding(16)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .wazaCard()
         .anyButton(.press) {
             presenter.onAchievementsTapped()
         }
@@ -214,7 +214,7 @@ struct ProfileView: View {
                 .foregroundStyle(.tertiary)
         }
         .padding(16)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .wazaCard()
         .anyButton(.press) {
             presenter.onMonthlyReportTapped()
         }
@@ -226,7 +226,7 @@ struct ProfileView: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Text("Training Schedule")
-                    .font(.headline)
+                    .font(.wazaDisplaySmall)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 Text("Manage")
                     .font(.caption)
@@ -259,7 +259,7 @@ struct ProfileView: View {
             }
         }
         .padding(16)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .wazaCard()
     }
 
     private var settingsButton: some View {

@@ -48,7 +48,7 @@ struct UpcomingClassCardView: View {
                 .background(Color.wazaAccent.opacity(0.15), in: Capsule())
             }
             .padding(14)
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: .wazaCornerStandard))
+            .wazaCard()
             .anyButton(.press) {
                 onTap?()
             }

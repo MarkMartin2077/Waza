@@ -17,7 +17,7 @@ struct WeeklyChallengesCardView: View {
             }
         }
         .padding(14)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .wazaCard()
     }
 
     // MARK: - Header

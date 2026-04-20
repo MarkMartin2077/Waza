@@ -98,7 +98,7 @@ struct GoalsPlanningView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(12)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+        .wazaCard(cornerRadius: .wazaCornerSmall)
     }
 
     // MARK: - Empty State
@@ -224,7 +224,7 @@ struct AddGoalSheetView: View {
 
                 VStack(spacing: 2) {
                     Text("\(target)")
-                        .font(.system(size: 36, weight: .bold, design: .rounded))
+                        .font(.system(size: 36, weight: .light, design: .monospaced))
                         .foregroundStyle(Color.wazaAccent)
                     Text(selectedMetric.unitLabel)
                         .font(.caption)
@@ -241,7 +241,7 @@ struct AddGoalSheetView: View {
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 16)
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+            .wazaCard()
         }
     }
 
@@ -366,7 +366,7 @@ private struct GoalCardView: View {
             }
         }
         .padding(14)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .wazaCard()
     }
 }
 

@@ -57,7 +57,7 @@ struct TechniqueDetailView: View {
             )
         }
         .padding(16)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .wazaCard()
     }
 
     // MARK: - Promotion Banner
@@ -112,7 +112,7 @@ struct TechniqueDetailView: View {
             }
         }
         .padding(16)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .wazaCard()
     }
 
     private func statItem(label: String, value: String) -> some View {
@@ -188,7 +188,7 @@ struct TechniqueDetailView: View {
             }
         }
         .padding(16)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .wazaCard()
     }
 
     // MARK: - Session History Card
@@ -215,7 +215,7 @@ struct TechniqueDetailView: View {
             }
         }
         .padding(16)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .wazaCard()
     }
 
 }

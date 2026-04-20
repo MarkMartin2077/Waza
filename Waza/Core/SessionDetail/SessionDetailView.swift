@@ -96,7 +96,7 @@ struct SessionDetailView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(16)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .wazaCard()
     }
 
     private func detailPill(icon: String, value: String) -> some View {
@@ -133,7 +133,7 @@ struct SessionDetailView: View {
             }
         }
         .padding(16)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .wazaCard()
     }
 
     // MARK: - Reflection Card
@@ -151,7 +151,7 @@ struct SessionDetailView: View {
             }
         }
         .padding(16)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .wazaCard()
     }
 
     private var readOnlyReflectionContent: some View {
@@ -267,7 +267,7 @@ struct SessionDetailView: View {
             }
         }
         .padding(16)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .wazaCard()
     }
 
     private func moodStat(label: String, emoji: String, value: Int) -> some View {

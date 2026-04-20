@@ -54,7 +54,7 @@ struct SessionRowView: View {
                 .foregroundStyle(.quaternary)
         }
         .padding(10)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+        .wazaCard()
     }
 
     private func relativeDate(_ date: Date) -> String {

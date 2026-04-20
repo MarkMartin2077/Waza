@@ -41,7 +41,7 @@ struct TechniqueRowView: View {
                 .foregroundStyle(.quaternary)
         }
         .padding(10)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+        .wazaCard()
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilityText)
     }

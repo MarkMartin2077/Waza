@@ -90,7 +90,7 @@ struct TrainingStatsView: View {
             }
         }
         .padding(14)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .wazaCard()
     }
 
     private var periodPicker: some View {
@@ -160,7 +160,7 @@ struct TrainingStatsView: View {
             }
         }
         .padding(14)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .wazaCard()
     }
 
     private func typeRow(stat: TypeStat) -> some View {
@@ -205,7 +205,7 @@ struct TrainingStatsView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(12)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .wazaCard()
         .animation(.spring(response: 0.4, dampingFraction: 0.8), value: value)
     }
 }

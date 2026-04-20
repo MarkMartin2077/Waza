@@ -23,7 +23,7 @@ struct ActivationCardView: View {
             }
         }
         .padding(20)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .wazaCard()
     }
 
     // MARK: - Header

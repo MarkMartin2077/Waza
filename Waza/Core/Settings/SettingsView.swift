@@ -49,7 +49,7 @@ struct SettingsView: View {
                 )
             }
         }
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .wazaCard()
     }
 
     // MARK: - Danger Zone Card
@@ -96,7 +96,7 @@ struct SettingsView: View {
                 )
             }
         }
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .wazaCard()
     }
 
     // MARK: - App Info Card
@@ -153,7 +153,7 @@ struct SettingsView: View {
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
         }
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .wazaCard()
     }
 
     // MARK: - Appearance Card
@@ -190,7 +190,7 @@ struct SettingsView: View {
                 action: { presenter.onNotificationsSettingsPressed() }
             )
         }
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .wazaCard()
     }
 
     // MARK: - Store Card
@@ -228,7 +228,7 @@ struct SettingsView: View {
             .buttonStyle(.plain)
             .simultaneousGesture(TapGesture().onEnded { presenter.onShareAppPressed() })
         }
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .wazaCard()
     }
 
     // MARK: - Helpers

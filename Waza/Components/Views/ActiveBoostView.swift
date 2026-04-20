@@ -48,9 +48,9 @@ struct ActiveBoostView: View {
                 }
             }
             .padding(12)
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+            .wazaCard()
             .overlay(
-                RoundedRectangle(cornerRadius: 16)
+                RoundedRectangle(cornerRadius: .wazaCornerStandard)
                     .stroke(fireRoundActive ? Color.orange.opacity(0.3) : Color.clear, lineWidth: 1)
             )
             .onReceive(timer) { newTime in

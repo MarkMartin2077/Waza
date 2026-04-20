@@ -61,7 +61,7 @@ struct LevelUpModal: View {
                             .font(.system(size: 20, weight: .bold))
                             .foregroundStyle(.white.opacity(0.5))
                         Text("\(level)")
-                            .font(.system(size: 44, weight: .bold, design: .rounded))
+                            .font(.wazaStat)
                             .foregroundStyle(.white)
                     }
                 }

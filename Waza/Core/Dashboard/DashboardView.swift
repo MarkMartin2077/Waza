@@ -85,8 +85,7 @@ struct DashboardView: View {
 
     private var greetingHeader: some View {
         Text(presenter.greetingText)
-            .font(.title)
-            .fontWeight(.bold)
+            .font(.wazaDisplayLarge)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
 
@@ -154,7 +153,7 @@ struct DashboardView: View {
                 )
             }
             .padding(.vertical, 14)
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+            .wazaCard()
         }
     }
 
@@ -219,11 +218,7 @@ struct DashboardView: View {
 
     private func sectionHeader(_ title: String) -> some View {
         Text(title)
-            .font(.subheadline)
-            .fontWeight(.semibold)
-            .foregroundStyle(.secondary)
-            .textCase(.uppercase)
-            .tracking(0.5)
+            .wazaLabelStyle()
             .frame(maxWidth: .infinity, alignment: .leading)
     }
 
@@ -294,7 +289,7 @@ struct DashboardView: View {
                 }
         }
         .padding(12)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+        .wazaCard(cornerRadius: .wazaCornerSmall)
         .contentShape(Rectangle())
         .anyButton(.press) {
             presenter.onMonthlyReportBannerTapped()
@@ -324,7 +319,7 @@ struct DashboardView: View {
                 .foregroundStyle(.secondary)
         }
         .padding(14)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .wazaCard()
         .contentShape(Rectangle())
         .anyButton(.press) {
             presenter.onTechniqueJournalCardTapped()

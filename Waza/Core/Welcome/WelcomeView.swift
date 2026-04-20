@@ -78,7 +78,7 @@ struct WelcomeView: View {
 
             VStack(spacing: 10) {
                 Text("Waza")
-                    .font(.system(size: 48, weight: .bold))
+                    .font(.wazaDisplayLarge)
                     .foregroundStyle(.white)
                     .tracking(3)
 

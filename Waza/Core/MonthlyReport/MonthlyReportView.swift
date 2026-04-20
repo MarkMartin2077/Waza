@@ -149,10 +149,10 @@ struct MonthlyReportView: View {
             .padding(.bottom, 16)
         }
         .background(
-            RoundedRectangle(cornerRadius: 20)
-                .fill(.ultraThinMaterial)
+            RoundedRectangle(cornerRadius: .wazaCornerHero)
+                .fill(Color.wazaPaperHi)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 20)
+                    RoundedRectangle(cornerRadius: .wazaCornerHero)
                         .strokeBorder(Color.wazaAccent.opacity(0.15), lineWidth: 1)
                 )
         )
@@ -177,7 +177,7 @@ struct MonthlyReportView: View {
             )
 
             Text(month.uppercased())
-                .font(.system(size: 48, weight: .heavy, design: .rounded))
+                .font(.wazaDisplayLarge)
                 .foregroundStyle(.primary)
                 .minimumScaleFactor(0.6)
                 .lineLimit(1)
@@ -278,7 +278,7 @@ struct MonthlyReportView: View {
             }
         }
         .padding(16)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .wazaCard()
     }
 
     // MARK: - Type Breakdown
@@ -286,7 +286,7 @@ struct MonthlyReportView: View {
     private func typeBreakdownSection(data: MonthlyReportData) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Session Types")
-                .font(.headline)
+                .font(.wazaDisplaySmall)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             VStack(spacing: 8) {
@@ -296,7 +296,7 @@ struct MonthlyReportView: View {
             }
         }
         .padding(14)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .wazaCard()
     }
 
     private func typeRow(stat: TypeStat) -> some View {
@@ -330,7 +330,7 @@ struct MonthlyReportView: View {
     private func topTechniquesSection(data: MonthlyReportData) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Top Focus Areas")
-                .font(.headline)
+                .font(.wazaDisplaySmall)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             VStack(spacing: 8) {
@@ -353,7 +353,7 @@ struct MonthlyReportView: View {
             }
         }
         .padding(14)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .wazaCard()
     }
 
     // MARK: - Mood Trends
@@ -361,7 +361,7 @@ struct MonthlyReportView: View {
     private func moodTrendsSection(data: MonthlyReportData) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Mood Trends")
-                .font(.headline)
+                .font(.wazaDisplaySmall)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             HStack(spacing: 12) {
@@ -388,7 +388,7 @@ struct MonthlyReportView: View {
             }
         }
         .padding(14)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .wazaCard()
     }
 
     private func moodPill(emoji: String, label: String, value: String) -> some View {
@@ -405,7 +405,7 @@ struct MonthlyReportView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 10)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+        .wazaCard(cornerRadius: .wazaCornerSmall)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(label): \(value) out of 5, \(emoji)")
     }
@@ -415,7 +415,7 @@ struct MonthlyReportView: View {
     private func gymDistributionSection(data: MonthlyReportData) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Gyms Visited")
-                .font(.headline)
+                .font(.wazaDisplaySmall)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             VStack(spacing: 8) {
@@ -435,7 +435,7 @@ struct MonthlyReportView: View {
             }
         }
         .padding(14)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .wazaCard()
     }
 
     // MARK: - Summary Footer
@@ -443,7 +443,7 @@ struct MonthlyReportView: View {
     private func summaryFooterSection(data: MonthlyReportData) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Highlights")
-                .font(.headline)
+                .font(.wazaDisplaySmall)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             VStack(spacing: 8) {
@@ -466,7 +466,7 @@ struct MonthlyReportView: View {
             }
         }
         .padding(14)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .wazaCard()
     }
 
     private func summaryRow(icon: String, label: String, value: String) -> some View {

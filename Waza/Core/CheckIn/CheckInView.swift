@@ -59,8 +59,7 @@ struct CheckInView: View {
                 .foregroundStyle(Color.wazaAccent)
 
             Text(presenter.gymName)
-                .font(.title2)
-                .fontWeight(.bold)
+                .font(.wazaDisplayMedium)
 
             if let className = presenter.scheduleName {
                 Text(className)
@@ -117,7 +116,7 @@ struct CheckInView: View {
             }
         }
         .padding(16)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .wazaCard()
     }
 
     // MARK: - Confirm CTA
@@ -185,7 +184,7 @@ struct CheckInView: View {
             }
         }
         .padding(16)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .wazaCard()
         .frame(maxWidth: .infinity)
     }
 

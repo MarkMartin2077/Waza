@@ -47,8 +47,7 @@ struct SessionEntryView: View {
     private var typeCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Session Type")
-                .font(.subheadline)
-                .fontWeight(.semibold)
+                .wazaLabelStyle()
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 10) {
@@ -78,7 +77,7 @@ struct SessionEntryView: View {
             }
         }
         .padding(16)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .wazaCard()
     }
 
     // MARK: - Focus Areas Card
@@ -86,8 +85,7 @@ struct SessionEntryView: View {
     private var focusAreasCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Focus Areas")
-                .font(.subheadline)
-                .fontWeight(.semibold)
+                .wazaLabelStyle()
 
             let customAreas = presenter.selectedFocusAreas
                 .filter { area in !SessionEntryPresenter.presetFocusAreas.contains(where: { $0.caseInsensitiveCompare(area) == .orderedSame }) }
@@ -133,7 +131,7 @@ struct SessionEntryView: View {
             }
         }
         .padding(16)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .wazaCard()
     }
 
     // MARK: - Date & Duration Card
@@ -146,8 +144,7 @@ struct SessionEntryView: View {
 
             VStack(spacing: 8) {
                 Text("Duration")
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
+                    .wazaLabelStyle()
                     .frame(maxWidth: .infinity, alignment: .leading)
 
                 HStack(spacing: 28) {
@@ -178,7 +175,7 @@ struct SessionEntryView: View {
             }
         }
         .padding(16)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .wazaCard()
     }
 
     // MARK: - Location Card
@@ -232,7 +229,7 @@ struct SessionEntryView: View {
                 .padding(16)
             }
         }
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .wazaCard()
         .clipped()
     }
 
@@ -287,7 +284,7 @@ struct SessionEntryView: View {
                 .padding(16)
             }
         }
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .wazaCard()
         .clipped()
     }
 
@@ -298,8 +295,7 @@ struct SessionEntryView: View {
                     .font(.caption)
                     .foregroundStyle(Color.wazaAccent)
                 Text("Reflection")
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
+                    .wazaLabelStyle()
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -370,7 +366,7 @@ struct SessionEntryView: View {
                 .padding(16)
             }
         }
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .wazaCard()
         .clipped()
     }
 
@@ -435,8 +431,7 @@ struct SessionEntryView: View {
     private func collapsibleCardHeader(title: String, badge: String?, isExpanded: Binding<Bool>) -> some View {
         HStack {
             Text(title)
-                .font(.subheadline)
-                .fontWeight(.semibold)
+                .wazaLabelStyle()
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             if let badge {

@@ -120,8 +120,7 @@ struct TechniqueJournalView: View {
                     .foregroundStyle(Color.wazaAccent)
 
                 Text(category.displayName)
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
+                    .font(.wazaDisplaySmall)
                     .foregroundStyle(.primary)
                     .frame(maxWidth: .infinity, alignment: .leading)
 

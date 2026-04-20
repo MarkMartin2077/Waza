@@ -66,7 +66,7 @@ struct XPProgressBarView: View {
             }
         }
         .padding(14)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: .wazaCornerStandard))
+        .wazaCard()
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilityDescription)
     }

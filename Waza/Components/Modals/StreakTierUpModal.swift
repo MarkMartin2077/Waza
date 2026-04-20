@@ -54,7 +54,7 @@ struct StreakTierUpModal: View {
                             .font(.system(size: 28, weight: .semibold))
                             .foregroundStyle(accentColor)
                         Text("+\(tier.bonusPercent)%")
-                            .font(.system(size: 28, weight: .bold, design: .rounded))
+                            .font(.wazaDisplayMedium)
                             .foregroundStyle(.white)
                     }
                 }

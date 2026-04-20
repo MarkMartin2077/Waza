@@ -45,10 +45,10 @@ struct DashboardXPBadgeView: View {
         .padding(.vertical, 10)
         .background(
             RoundedRectangle(cornerRadius: .wazaCornerSmall)
-                .fill(.ultraThinMaterial)
+                .fill(Color.wazaPaperHi)
                 .overlay(
                     RoundedRectangle(cornerRadius: .wazaCornerSmall)
-                        .strokeBorder(showsRiskWarning ? Color.orange.opacity(0.5) : .clear, lineWidth: 1)
+                        .strokeBorder(showsRiskWarning ? Color.orange.opacity(0.5) : Color.wazaInk300.opacity(0.5), lineWidth: showsRiskWarning ? 1 : 0.5)
                 )
         )
         .onReceive(timer) { newTime in
