@@ -127,6 +127,35 @@ class DashboardPresenter {
         return "\(hours)h \(minutes)m"
     }
 
+    /// Weekly practice grid data — one entry per day (Mon–Sun) with the session if trained.
+    var weeklyPracticeGrid: [WeekDay] {
+        let calendar = Calendar.current
+        let range = DateRange.thisCalendarWeek
+        let weekSessions = sessions.filter { $0.date >= range.start && $0.date <= range.end }
+
+        let dayLabels = ["M", "T", "W", "T", "F", "S", "S"]
+        let todayWeekday = calendar.component(.weekday, from: Date())
+        // Calendar.current.weekday: 1 = Sunday. Convert to Mon-based index.
+        let todayIndex = (todayWeekday + 5) % 7
+
+        return (0..<7).map { dayIndex in
+            let dayDate = calendar.date(byAdding: .day, value: dayIndex, to: range.start)!
+            let session = weekSessions.first { calendar.isDate($0.date, inSameDayAs: dayDate) }
+            return WeekDay(
+                label: dayLabels[dayIndex],
+                session: session,
+                isToday: dayIndex == todayIndex
+            )
+        }
+    }
+
+    struct WeekDay {
+        let label: String
+        let session: BJJSessionModel?
+        let isToday: Bool
+        var isTrained: Bool { session != nil }
+    }
+
     // MARK: - User actions
 
     func onLogSessionTapped() {

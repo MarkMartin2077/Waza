@@ -6,15 +6,18 @@ struct DashboardView: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 24) {
+            VStack(spacing: 0) {
+                // MARK: Greeting
                 greetingHeader
                     .scaleAppear(delay: 0)
 
                 if presenter.showMonthlyReportBanner {
                     monthlyReportBanner
+                        .padding(.top, 16)
                         .scaleAppear(delay: 0.02)
                 }
 
+                // MARK: XP + Belt strip
                 if !presenter.isNewUser {
                     DashboardXPBadgeView(
                         levelInfo: presenter.xpLevelInfo,
@@ -29,45 +32,71 @@ struct DashboardView: View {
                             : nil,
                         accentColor: Color.wazaAccent
                     )
+                    .padding(.top, 20)
                     .scaleAppear(delay: 0.03)
                 }
 
+                // MARK: Streak hero
+                if !presenter.isNewUser {
+                    streakHeroSection
+                        .padding(.top, 24)
+                        .scaleAppear(delay: 0.04)
+                }
+
+                // MARK: Weekly practice grid
+                if !presenter.isNewUser {
+                    weeklyPracticeGrid
+                        .padding(.top, 20)
+                        .scaleAppear(delay: 0.05)
+                }
+
+                // MARK: Weekly challenges
                 if !presenter.isNewUser, !presenter.challenges.isEmpty {
                     if presenter.showChallengesTip {
                         challengesTip
-                            .scaleAppear(delay: 0.045)
+                            .padding(.top, 20)
+                            .scaleAppear(delay: 0.06)
                     }
                     WeeklyChallengesCardView(
                         challenges: presenter.challenges,
                         completedCount: presenter.completedChallengeCount,
                         accentColor: Color.wazaAccent
                     )
-                    .scaleAppear(delay: 0.05)
+                    .padding(.top, 20)
+                    .scaleAppear(delay: 0.065)
                 }
 
+                // MARK: Technique journal
                 if !presenter.isNewUser, presenter.sessionStats.totalSessions >= 3 {
                     techniqueJournalCard
-                        .scaleAppear(delay: 0.06)
+                        .padding(.top, 20)
+                        .scaleAppear(delay: 0.07)
                 }
 
+                // MARK: Log session CTA
                 logSessionButton
-                    .scaleAppear(delay: 0.07)
+                    .padding(.top, 24)
+                    .scaleAppear(delay: 0.08)
 
+                // MARK: New user / This week
                 if presenter.isNewUser {
                     activationCard
-                        .scaleAppear(delay: 0.1)
-                } else {
-                    thisWeekSection
+                        .padding(.top, 20)
                         .scaleAppear(delay: 0.1)
                 }
 
+                // MARK: Upcoming class
                 upcomingClassSection
-                    .scaleAppear(delay: 0.15)
+                    .padding(.top, 24)
+                    .scaleAppear(delay: 0.12)
+
+                // MARK: Recent sessions
                 recentSessionsSection
+                    .padding(.top, 24)
+                    .padding(.bottom, 16)
             }
             .padding(.horizontal, 16)
             .padding(.top, 8)
-            .padding(.bottom, 16)
         }
         .toolbar {
             #if !PROD
@@ -84,32 +113,50 @@ struct DashboardView: View {
     // MARK: - Greeting Header
 
     private var greetingHeader: some View {
-        Text(presenter.greetingText)
-            .font(.wazaDisplayLarge)
-            .frame(maxWidth: .infinity, alignment: .leading)
+        VStack(alignment: .leading, spacing: 2) {
+            Text("\(presenter.greeting),")
+                .font(.wazaDisplayLarge)
+                .italic()
+            if presenter.userFirstName != "Athlete" && !presenter.userFirstName.isEmpty {
+                Text("\(presenter.userFirstName).")
+                    .font(.wazaDisplayLarge)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     // MARK: - Log Session Button
 
     private var logSessionButton: some View {
-        HStack(spacing: 8) {
-            Image(systemName: "plus.circle.fill")
-                .font(.title3)
-            Text("Log Session")
-                .font(.system(.title3, weight: .semibold))
+        VStack(spacing: 0) {
+            // Primary CTA
+            HStack {
+                HStack(spacing: 12) {
+                    Text("技")
+                        .font(.system(size: 22))
+                    Text("Record today's session")
+                        .font(.wazaBody)
+                        .fontWeight(.medium)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                Text("+ XP")
+                    .font(.wazaLabel)
+                    .textCase(.uppercase)
+                    .tracking(1.5)
+                    .opacity(0.75)
+            }
+            .foregroundStyle(Color.wazaPaperHi)
+            .padding(.horizontal, 20)
+            .padding(.vertical, 18)
+            .background(
+                RoundedRectangle(cornerRadius: .wazaCornerSmall)
+                    .fill(Color.wazaAccent)
+            )
+            .anyButton(.press) {
+                presenter.onLogSessionTapped()
+            }
+            .accessibilityLabel("Log a new training session")
         }
-        .foregroundStyle(.white)
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 18)
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(Color.wazaAccent)
-                .shadow(color: Color.wazaAccent.opacity(0.35), radius: 12, y: 6)
-        )
-        .anyButton(.press) {
-            presenter.onLogSessionTapped()
-        }
-        .accessibilityLabel("Log a new training session")
     }
 
     // MARK: - Activation Card (new user)
@@ -123,57 +170,101 @@ struct DashboardView: View {
         )
     }
 
-    // MARK: - This Week Section
+    // MARK: - Streak Hero
 
-    private var thisWeekSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            sectionHeader("This Week")
+    private var streakHeroSection: some View {
+        VStack(spacing: 0) {
+            Divider().background(Color.wazaInk300)
 
-            HStack(spacing: 0) {
-                statCell(
-                    icon: "flame.fill",
-                    value: "\(presenter.streakCount)",
-                    label: "day streak"
-                )
+            VStack(spacing: 16) {
+                // Big streak number
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("CURRENT STREAK")
+                        .wazaLabelStyle()
+                    HStack(alignment: .firstTextBaseline, spacing: 10) {
+                        Text("\(presenter.streakCount)")
+                            .font(.wazaHero)
+                            .foregroundStyle(Color.wazaAccent)
+                            .contentTransition(.numericText())
+                        Text("days on the mat")
+                            .font(.wazaDisplaySmall)
+                            .italic()
+                            .foregroundStyle(Color.wazaInk600)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
 
-                Divider().frame(height: 36)
+                Divider().background(Color.wazaInk300)
 
-                statCell(
-                    icon: "figure.wrestling",
-                    value: "\(presenter.sessionsThisWeek)",
-                    label: "sessions"
-                )
-
-                Divider().frame(height: 36)
-
-                statCell(
-                    icon: "clock.fill",
-                    value: presenter.hoursThisWeekFormatted,
-                    label: "trained"
-                )
+                // Streak sub-stats
+                HStack(spacing: 16) {
+                    streakSubStat(label: "FREEZES", value: String(format: "%02d", presenter.freezesAvailable))
+                    streakSubStat(label: "SESSIONS", value: "\(presenter.sessionsThisWeek)")
+                    streakSubStat(label: "TRAINED", value: presenter.hoursThisWeekFormatted)
+                }
             }
-            .padding(.vertical, 14)
-            .wazaCard()
+            .padding(.vertical, 20)
         }
     }
 
-    private func statCell(icon: String, value: String, label: String) -> some View {
-        VStack(spacing: 4) {
-            HStack(spacing: 4) {
-                Image(systemName: icon)
-                    .font(.caption2)
-                    .foregroundStyle(Color.wazaAccent)
-                Text(value)
-                    .font(.wazaTitle)
-                    .foregroundStyle(Color.wazaAccent)
-                    .contentTransition(.numericText())
-            }
+    private func streakSubStat(label: String, value: String) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
             Text(label)
-                .font(.wazaLabel)
-                .foregroundStyle(.secondary)
+                .wazaLabelStyle()
+            Text(value)
+                .font(.wazaNumSmall)
+                .foregroundStyle(Color.wazaInk900)
+                .contentTransition(.numericText())
         }
-        .frame(maxWidth: .infinity)
-        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: value)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    // MARK: - Weekly Practice Grid
+
+    private var weeklyPracticeGrid: some View {
+        VStack(spacing: 0) {
+            Divider().background(Color.wazaInk300)
+
+            VStack(spacing: 14) {
+                HStack {
+                    Text("THIS WEEK'S PRACTICE")
+                        .wazaLabelStyle()
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    Text("MON–SUN")
+                        .wazaLabelStyle()
+                }
+
+                HStack(spacing: 6) {
+                    ForEach(Array(presenter.weeklyPracticeGrid.enumerated()), id: \.offset) { _, day in
+                        weekDayCell(day)
+                    }
+                }
+            }
+            .padding(.vertical, 16)
+        }
+    }
+
+    private func weekDayCell(_ day: DashboardPresenter.WeekDay) -> some View {
+        RoundedRectangle(cornerRadius: 2)
+            .fill(day.isTrained ? Color.wazaAccent : Color.wazaPaperHi)
+            .overlay(
+                RoundedRectangle(cornerRadius: 2)
+                    .strokeBorder(day.isToday ? Color.wazaInk900 : Color.wazaInk300, lineWidth: day.isToday ? 1.5 : 0.5)
+            )
+            .overlay(
+                Group {
+                    if let session = day.session {
+                        Text(session.sessionType.kanji)
+                            .font(.system(size: 14))
+                            .foregroundStyle(Color.wazaPaperHi)
+                    } else {
+                        Text(day.label)
+                            .font(.wazaLabel)
+                            .foregroundStyle(day.isToday ? Color.wazaInk900 : Color.wazaInk400)
+                    }
+                }
+            )
+            .aspectRatio(1, contentMode: .fit)
     }
 
     // MARK: - Upcoming Class
