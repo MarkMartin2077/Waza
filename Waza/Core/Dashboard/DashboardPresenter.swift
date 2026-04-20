@@ -128,32 +128,42 @@ class DashboardPresenter {
     }
 
     /// Weekly practice grid data — one entry per day (Mon–Sun) with the session if trained.
+    /// Always Mon–Sun regardless of locale's firstWeekday setting.
     var weeklyPracticeGrid: [WeekDay] {
-        let calendar = Calendar.current
-        let range = DateRange.thisCalendarWeek
-        let weekSessions = sessions.filter { $0.date >= range.start && $0.date <= range.end }
+        var calendar = Calendar.current
+        calendar.firstWeekday = 2 // Force Monday start
+        let now = Date()
+
+        guard let weekInterval = calendar.dateInterval(of: .weekOfYear, for: now) else {
+            return []
+        }
+        let mondayStart = weekInterval.start
+
+        let weekSessions = sessions.filter {
+            $0.date >= mondayStart && $0.date < calendar.date(byAdding: .day, value: 7, to: mondayStart)!
+        }
 
         let dayLabels = ["M", "T", "W", "T", "F", "S", "S"]
-        let todayWeekday = calendar.component(.weekday, from: Date())
-        // Calendar.current.weekday: 1 = Sunday. Convert to Mon-based index.
-        let todayIndex = (todayWeekday + 5) % 7
 
         return (0..<7).map { dayIndex in
-            let dayDate = calendar.date(byAdding: .day, value: dayIndex, to: range.start)!
-            let session = weekSessions.first { calendar.isDate($0.date, inSameDayAs: dayDate) }
+            let dayDate = calendar.date(byAdding: .day, value: dayIndex, to: mondayStart)!
+            let daySessions = weekSessions.filter { calendar.isDate($0.date, inSameDayAs: dayDate) }
+            let isToday = calendar.isDateInToday(dayDate)
             return WeekDay(
                 label: dayLabels[dayIndex],
-                session: session,
-                isToday: dayIndex == todayIndex
+                sessions: daySessions,
+                isToday: isToday
             )
         }
     }
 
     struct WeekDay {
         let label: String
-        let session: BJJSessionModel?
+        let sessions: [BJJSessionModel]
         let isToday: Bool
-        var isTrained: Bool { session != nil }
+        var isTrained: Bool { !sessions.isEmpty }
+        /// Most recent session for display (kanji, type label).
+        var latestSession: BJJSessionModel? { sessions.last }
     }
 
     // MARK: - User actions

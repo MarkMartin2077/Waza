@@ -254,10 +254,17 @@ struct DashboardView: View {
                 )
                 .overlay(
                     Group {
-                        if let session = day.session {
-                            Text(session.sessionType.kanji)
-                                .font(.system(size: 14))
-                                .foregroundStyle(Color.wazaPaperHi)
+                        if let session = day.latestSession {
+                            VStack(spacing: 0) {
+                                Text(session.sessionType.kanji)
+                                    .font(.system(size: 14))
+                                    .foregroundStyle(Color.wazaPaperHi)
+                                if day.sessions.count > 1 {
+                                    Text("×\(day.sessions.count)")
+                                        .font(.system(size: 7, weight: .bold, design: .monospaced))
+                                        .foregroundStyle(Color.wazaPaperHi.opacity(0.7))
+                                }
+                            }
                         } else {
                             Text(day.label)
                                 .font(.wazaLabel)
@@ -268,7 +275,7 @@ struct DashboardView: View {
                 .aspectRatio(1, contentMode: .fit)
 
             // Short label so users know what the kanji means
-            if let session = day.session {
+            if let session = day.latestSession {
                 Text(session.sessionType.shortLabel)
                     .font(.system(size: 8, weight: .medium, design: .monospaced))
                     .foregroundStyle(Color.wazaInk500)
