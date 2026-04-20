@@ -25,6 +25,7 @@ struct SessionLoggingService {
             academy: params.academy,
             instructor: params.instructor,
             focusAreas: params.focusAreas,
+            techniquesWorked: params.techniquesWorked,
             notes: params.notes,
             preSessionMood: params.preSessionMood,
             postSessionMood: params.postSessionMood,
@@ -35,7 +36,7 @@ struct SessionLoggingService {
         )
 
         StreakRiskNotificationScheduler.cancel()
-        techniqueManager.ensureTechniquesExist(for: params.focusAreas)
+        techniqueManager.ensureTechniquesExist(for: params.focusAreas + params.techniquesWorked)
 
         let oldStreakDays = streakManager.currentStreakData.currentStreak ?? 0
         let result = calculateSessionXP(params: params, streakDays: oldStreakDays)
@@ -52,6 +53,8 @@ struct SessionLoggingService {
             xpReward: result.reward,
             multiplier: result.multiplier
         )
+
+        checkTechniquePromotions(techniquesWorked: params.focusAreas + params.techniquesWorked)
 
         return session
     }
@@ -196,6 +199,40 @@ struct SessionLoggingService {
                     logRewardFailure(source: "weekly_challenge_sweep", error: error)
                 }
             }
+        }
+    }
+
+    /// After a session is saved, find the first technique (from focusAreas + techniquesWorked)
+    /// that has accumulated enough practice sessions to warrant a stage promotion and surface
+    /// the prompt via AppState. Only the first eligible technique is surfaced per session save
+    /// to avoid overwhelming the user.
+    private func checkTechniquePromotions(techniquesWorked: [String]) {
+        let allSessions = sessionManager.sessions
+        for name in techniquesWorked {
+            guard let technique = techniqueManager.techniques.first(where: {
+                $0.name.lowercased() == name.lowercased()
+            }) else { continue }
+
+            // Count sessions that mention this technique in focusAreas or techniquesWorked
+            let practiceCount = allSessions.filter { session in
+                let focusMatch = session.focusAreas.contains(where: { $0.lowercased() == name.lowercased() })
+                let techniqueMatch = session.techniquesWorked.contains(where: { $0.lowercased() == name.lowercased() })
+                return focusMatch || techniqueMatch
+            }.count
+
+            guard let suggested = ProgressionStage.suggestedPromotion(
+                currentStage: technique.stage,
+                practiceCount: practiceCount
+            ) else { continue }
+
+            appState.pendingTechniquePromotion = TechniquePromotionData(
+                techniqueId: technique.techniqueId,
+                techniqueName: technique.name,
+                currentStage: technique.stage.rawValue.capitalized,
+                suggestedStage: suggested.rawValue.capitalized,
+                practiceCount: practiceCount
+            )
+            break
         }
     }
 

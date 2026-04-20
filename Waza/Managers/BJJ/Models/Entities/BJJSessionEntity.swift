@@ -10,6 +10,7 @@ final class BJJSessionEntity {
     var academy: String?
     var instructor: String?
     var focusAreas: [String]
+    var techniquesWorked: [String]
     var notes: String?
     var preSessionMood: Int?
     var postSessionMood: Int?
@@ -26,6 +27,7 @@ final class BJJSessionEntity {
         academy: String? = nil,
         instructor: String? = nil,
         focusAreas: [String] = [],
+        techniquesWorked: [String] = [],
         notes: String? = nil,
         preSessionMood: Int? = nil,
         postSessionMood: Int? = nil,
@@ -41,6 +43,7 @@ final class BJJSessionEntity {
         self.academy = academy
         self.instructor = instructor
         self.focusAreas = focusAreas
+        self.techniquesWorked = techniquesWorked
         self.notes = notes
         self.preSessionMood = preSessionMood
         self.postSessionMood = postSessionMood
@@ -59,6 +62,7 @@ final class BJJSessionEntity {
             academy: model.academy,
             instructor: model.instructor,
             focusAreas: model.focusAreas,
+            techniquesWorked: model.techniquesWorked,
             notes: model.notes,
             preSessionMood: model.preSessionMood,
             postSessionMood: model.postSessionMood,
@@ -78,6 +82,7 @@ final class BJJSessionEntity {
             academy: academy,
             instructor: instructor,
             focusAreas: focusAreas,
+            techniquesWorked: techniquesWorked,
             notes: notes,
             preSessionMood: preSessionMood,
             postSessionMood: postSessionMood,
@@ -95,6 +100,7 @@ final class BJJSessionEntity {
         academy = model.academy
         instructor = model.instructor
         focusAreas = model.focusAreas
+        techniquesWorked = model.techniquesWorked
         notes = model.notes
         preSessionMood = model.preSessionMood
         postSessionMood = model.postSessionMood

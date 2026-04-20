@@ -26,10 +26,25 @@ class AppState {
     /// Consumed by TabBar to surface a toast to the user.
     var pendingChallengeCompletion: String?
 
+    /// Transient signal for technique stage promotion prompt.
+    /// Set after a session is logged, consumed by TabBar to surface the prompt sheet.
+    var pendingTechniquePromotion: TechniquePromotionData?
+
     init(startingModuleId: String = UserDefaults.lastModuleId) {
         self.startingModuleId = startingModuleId
     }
 
+}
+
+// MARK: - Technique Promotion Data
+
+struct TechniquePromotionData: Identifiable, Equatable, Sendable {
+    var id: String { techniqueId }
+    let techniqueId: String
+    let techniqueName: String
+    let currentStage: String
+    let suggestedStage: String
+    let practiceCount: Int
 }
 
 // MARK: - XP Toast Data

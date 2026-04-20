@@ -7,6 +7,7 @@ struct SessionEntryView: View {
     @State private var locationExpanded = false
     @State private var reflectionExpanded = true
     @State private var statsExpanded = false
+    @State private var techniquesExpanded = false
 
     private let moodEmojis = Mood.emojis
     private let moodLabels = Mood.labels
@@ -17,6 +18,7 @@ struct SessionEntryView: View {
                 VStack(spacing: 16) {
                     typeCard
                     focusAreasCard
+                    techniquesWorkedCard
                     dateAndDurationCard
                     locationCard
                     reflectionCard
@@ -132,6 +134,59 @@ struct SessionEntryView: View {
         }
         .padding(16)
         .wazaCard()
+    }
+
+    // MARK: - Techniques Worked Card
+
+    private var techniquesWorkedCard: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            let badgeText = presenter.selectedTechniques.isEmpty ? nil : "\(presenter.selectedTechniques.count)"
+            collapsibleCardHeader(
+                title: "Techniques Worked",
+                badge: badgeText,
+                isExpanded: $techniquesExpanded
+            )
+
+            if techniquesExpanded {
+                Divider()
+                    .padding(.horizontal, 16)
+                    .transition(.opacity)
+
+                VStack(alignment: .leading, spacing: 12) {
+                    if !presenter.selectedTechniques.isEmpty {
+                        FlowLayout(spacing: 8) {
+                            ForEach(Array(presenter.selectedTechniques).sorted(), id: \.self) { name in
+                                HStack(spacing: 4) {
+                                    Text(name)
+                                        .font(.caption)
+                                        .fontWeight(.medium)
+                                    Image(systemName: "xmark")
+                                        .font(.system(size: 9, weight: .bold))
+                                }
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 6)
+                                .background(Color.wazaAccent, in: Capsule())
+                                .foregroundStyle(.white)
+                                .anyButton(.press) {
+                                    presenter.onRemoveTechnique(name)
+                                }
+                                .accessibilityLabel("Remove \(name)")
+                            }
+                        }
+                    }
+
+                    TechniquePickerView(
+                        techniques: presenter.techniquePickerItems,
+                        selectedNames: presenter.selectedTechniques,
+                        onTechniqueToggled: { presenter.onTechniqueToggled($0) },
+                        onAddNewTapped: { presenter.onAddNewTechnique($0) }
+                    )
+                }
+                .padding(16)
+            }
+        }
+        .wazaCard()
+        .clipped()
     }
 
     // MARK: - Date & Duration Card

@@ -7,6 +7,7 @@ struct SessionEntryParams {
     let academy: String?
     let instructor: String?
     let focusAreas: [String]
+    let techniquesWorked: [String]
     let notes: String?
     let preSessionMood: Int?
     let postSessionMood: Int?
@@ -20,6 +21,8 @@ struct SessionEntryParams {
 protocol SessionEntryInteractor: GlobalInteractor {
     var currentBeltEnum: BJJBelt { get }
     var gyms: [GymLocationModel] { get }
+    var allTechniques: [TechniqueModel] { get }
+    func createTechnique(name: String, category: TechniqueCategory)
     func logSessionWithGamification(_ params: SessionEntryParams) async throws -> BJJSessionModel
 }
 

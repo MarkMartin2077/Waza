@@ -58,6 +58,22 @@ struct TabBarView: View {
                 guard let tier = newValue else { return }
                 presenter.onStreakTierUpDetected(tier)
             }
+            .sheet(item: Binding(
+                get: { presenter.pendingTechniquePromotion },
+                set: { if $0 == nil { presenter.onDismissTechniquePromotion() } }
+            )) { data in
+                TechniquePromotionPromptView(
+                    techniqueName: data.techniqueName,
+                    currentStage: data.currentStage,
+                    suggestedStage: data.suggestedStage,
+                    practiceCount: data.practiceCount,
+                    onPromote: { presenter.onPromoteTechnique() },
+                    onSnooze: { presenter.onSnoozeTechniquePromotion() },
+                    onDismiss: { presenter.onDismissTechniquePromotion() }
+                )
+                .presentationDetents([.medium])
+                .presentationDragIndicator(.visible)
+            }
 
             // XP toast — lightweight overlay, not a routed modal
             if let xpData = presenter.pendingXPToast {

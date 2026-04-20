@@ -26,6 +26,9 @@ class SessionEntryPresenter {
     var selectedFocusAreas: Set<String> = []
     var customFocusAreaText: String = ""
 
+    // Techniques
+    private(set) var selectedTechniques: Set<String> = []
+
     static let presetFocusAreas = ["Guard", "Passing", "Takedowns", "Sweeps", "Submissions", "Escapes"]
 
     // Gym Selection
@@ -48,6 +51,44 @@ class SessionEntryPresenter {
             selectedGymId = savedGyms.first?.gymId
             academy = savedGyms.first?.name ?? ""
         }
+    }
+
+    // MARK: - Techniques
+
+    var techniquePickerItems: [TechniquePickerItem] {
+        interactor.allTechniques.map { technique in
+            TechniquePickerItem(
+                name: technique.name,
+                category: technique.category.displayName,
+                stage: technique.stage.displayName,
+                isSelected: selectedTechniques.contains(technique.name)
+            )
+        }
+    }
+
+    func onTechniqueToggled(_ item: TechniquePickerItem) {
+        interactor.trackEvent(event: Event.techniqueToggled(name: item.name))
+        interactor.playHaptic(option: .selection)
+        if selectedTechniques.contains(item.name) {
+            selectedTechniques.remove(item.name)
+        } else {
+            selectedTechniques.insert(item.name)
+        }
+    }
+
+    func onAddNewTechnique(_ name: String) {
+        let capitalized = name.trimmingCharacters(in: .whitespacesAndNewlines).capitalized
+        guard !capitalized.isEmpty else { return }
+        interactor.trackEvent(event: Event.newTechniqueCreated(name: capitalized))
+        interactor.playHaptic(option: .selection)
+        interactor.createTechnique(name: capitalized, category: TechniqueCategory.infer(from: capitalized))
+        selectedTechniques.insert(capitalized)
+    }
+
+    func onRemoveTechnique(_ name: String) {
+        interactor.trackEvent(event: Event.techniqueToggled(name: name))
+        interactor.playHaptic(option: .selection)
+        selectedTechniques.remove(name)
     }
 
     // MARK: - Focus Areas
@@ -152,6 +193,7 @@ class SessionEntryPresenter {
                 academy: academy.isEmpty ? nil : academy,
                 instructor: instructor.isEmpty ? nil : instructor,
                 focusAreas: Array(selectedFocusAreas),
+                techniquesWorked: Array(selectedTechniques),
                 notes: notes.isEmpty ? nil : notes,
                 preSessionMood: showMoodSection ? preSessionMood : nil,
                 postSessionMood: showMoodSection ? postSessionMood : nil,
@@ -201,6 +243,8 @@ extension SessionEntryPresenter {
         case durationChanged(minutes: Int)
         case sectionHeaderTapped
         case moodSelected(isBefore: Bool, rating: Int)
+        case techniqueToggled(name: String)
+        case newTechniqueCreated(name: String)
 
         var eventName: String {
             switch self {
@@ -216,6 +260,8 @@ extension SessionEntryPresenter {
             case .durationChanged:        return "SessionEntryView_Duration_Change"
             case .sectionHeaderTapped:    return "SessionEntryView_SectionHeader_Tap"
             case .moodSelected:           return "SessionEntryView_Mood_Select"
+            case .techniqueToggled:       return "SessionEntryView_Technique_Toggle"
+            case .newTechniqueCreated:    return "SessionEntryView_Technique_New"
             }
         }
 
@@ -235,6 +281,8 @@ extension SessionEntryPresenter {
                 return ["duration_minutes": minutes]
             case .moodSelected(isBefore: let isBefore, rating: let rating):
                 return ["is_before": isBefore, "mood_rating": rating]
+            case .techniqueToggled(name: let name), .newTechniqueCreated(name: let name):
+                return ["technique_name": name]
             default:
                 return nil
             }

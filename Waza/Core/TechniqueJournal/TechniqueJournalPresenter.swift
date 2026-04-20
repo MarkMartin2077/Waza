@@ -93,7 +93,7 @@ class TechniqueJournalPresenter {
     private func rebuildSessionStatsCache() {
         var cache: [String: TechniqueSessionStats] = [:]
         for session in interactor.allSessions {
-            for area in session.focusAreas {
+            for area in Set(session.focusAreas + session.techniquesWorked) {
                 let key = area.lowercased()
                 var stats = cache[key] ?? TechniqueSessionStats(count: 0, lastDate: nil)
                 stats.count += 1

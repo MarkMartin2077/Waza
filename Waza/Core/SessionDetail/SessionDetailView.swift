@@ -8,7 +8,7 @@ struct SessionDetailView: View {
         ScrollView {
             VStack(spacing: 20) {
                 headerCard
-                if !presenter.session.focusAreas.isEmpty {
+                if !presenter.session.focusAreas.isEmpty || !presenter.session.techniquesWorked.isEmpty {
                     focusAreasCard
                 }
                 reflectionCard
@@ -115,25 +115,61 @@ struct SessionDetailView: View {
     // MARK: - Focus Areas
 
     private var focusAreasCard: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("Focus Areas")
-                .font(.headline)
-                .frame(maxWidth: .infinity, alignment: .leading)
+        VStack(alignment: .leading, spacing: 14) {
+            if !presenter.session.focusAreas.isEmpty {
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("Focus Areas")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity, alignment: .leading)
 
-            FlowLayout(spacing: 8) {
-                ForEach(presenter.session.focusAreas, id: \.self) { area in
-                    Text(area)
-                        .font(.caption)
-                        .fontWeight(.medium)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 5)
-                        .background(Color.wazaAccent.opacity(0.12), in: Capsule())
-                        .foregroundStyle(Color.wazaAccent)
+                    FlowLayout(spacing: 8) {
+                        ForEach(presenter.session.focusAreas, id: \.self) { area in
+                            techniqueTag(name: area)
+                                .anyButton {
+                                    presenter.onTechniqueTagTapped(area)
+                                }
+                        }
+                    }
+                }
+            }
+
+            if !presenter.session.techniquesWorked.isEmpty {
+                if !presenter.session.focusAreas.isEmpty {
+                    Divider()
+                }
+
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("Techniques Worked")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                    FlowLayout(spacing: 8) {
+                        ForEach(presenter.session.techniquesWorked, id: \.self) { name in
+                            techniqueTag(name: name)
+                                .anyButton {
+                                    presenter.onTechniqueTagTapped(name)
+                                }
+                        }
+                    }
                 }
             }
         }
         .padding(16)
         .wazaCard()
+    }
+
+    private func techniqueTag(name: String) -> some View {
+        HStack(spacing: 3) {
+            Text(name)
+                .font(.caption)
+                .fontWeight(.medium)
+            Image(systemName: "arrow.up.right")
+                .font(.caption2)
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 5)
+        .background(Color.wazaAccent.opacity(0.12), in: Capsule())
+        .foregroundStyle(Color.wazaAccent)
     }
 
     // MARK: - Reflection Card

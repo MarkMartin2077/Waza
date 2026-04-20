@@ -40,6 +40,10 @@ class TabBarPresenter {
         interactor.xpAppState.pendingStreakTierUp
     }
 
+    var pendingTechniquePromotion: TechniquePromotionData? {
+        interactor.pendingTechniquePromotion
+    }
+
     // MARK: - Signal Handlers
 
     func onAchievementUnlocked(_ achievementId: AchievementId) {
@@ -65,6 +69,26 @@ class TabBarPresenter {
         interactor.xpAppState.pendingStreakTierUp = nil
         guard !isCelebrationShowing else { return }
         showStreakTierUp(tier)
+    }
+
+    // MARK: - Technique Promotion
+
+    func onPromoteTechnique() {
+        guard let data = interactor.pendingTechniquePromotion else { return }
+        interactor.trackEvent(event: Event.techniquePromoted(techniqueId: data.techniqueId, toStage: data.suggestedStage))
+        let stage = ProgressionStage(rawValue: data.suggestedStage.lowercased()) ?? .drilling
+        try? interactor.setTechniqueStage(techniqueId: data.techniqueId, stage: stage)
+        interactor.clearPendingTechniquePromotion()
+    }
+
+    func onSnoozeTechniquePromotion() {
+        interactor.trackEvent(event: Event.techniquePromotionSnoozed)
+        interactor.clearPendingTechniquePromotion()
+    }
+
+    func onDismissTechniquePromotion() {
+        interactor.trackEvent(event: Event.techniquePromotionDismissed)
+        interactor.clearPendingTechniquePromotion()
     }
 
     // MARK: - Gym Arrival
@@ -204,16 +228,22 @@ extension TabBarPresenter {
         case levelUpDismissed
         case fireRoundDismissed
         case streakTierUpDismissed
+        case techniquePromoted(techniqueId: String, toStage: String)
+        case techniquePromotionSnoozed
+        case techniquePromotionDismissed
 
         var eventName: String {
             switch self {
-            case .achievementDisplayed:  return "TabBar_Achievement_Displayed"
-            case .achievementDismissed:  return "TabBar_Achievement_Dismissed"
-            case .gymArrivalDetected:    return "TabBar_GymArrival_Detected"
-            case .checkInPromptDismissed: return "TabBar_CheckIn_Dismissed"
-            case .levelUpDismissed:      return "TabBar_LevelUp_Dismissed"
-            case .fireRoundDismissed:    return "TabBar_FireRound_Dismissed"
-            case .streakTierUpDismissed: return "TabBar_StreakTierUp_Dismissed"
+            case .achievementDisplayed:       return "TabBar_Achievement_Displayed"
+            case .achievementDismissed:       return "TabBar_Achievement_Dismissed"
+            case .gymArrivalDetected:         return "TabBar_GymArrival_Detected"
+            case .checkInPromptDismissed:     return "TabBar_CheckIn_Dismissed"
+            case .levelUpDismissed:           return "TabBar_LevelUp_Dismissed"
+            case .fireRoundDismissed:         return "TabBar_FireRound_Dismissed"
+            case .streakTierUpDismissed:      return "TabBar_StreakTierUp_Dismissed"
+            case .techniquePromoted:          return "TabBar_Technique_Promoted"
+            case .techniquePromotionSnoozed:  return "TabBar_Technique_PromotionSnoozed"
+            case .techniquePromotionDismissed: return "TabBar_Technique_PromotionDismissed"
             }
         }
 
@@ -223,6 +253,8 @@ extension TabBarPresenter {
                 return ["achievement_id": id]
             case .gymArrivalDetected(gymId: let gymId):
                 return ["gym_id": gymId]
+            case .techniquePromoted(techniqueId: let id, toStage: let stage):
+                return ["technique_id": id, "to_stage": stage]
             default:
                 return nil
             }

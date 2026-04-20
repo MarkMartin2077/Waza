@@ -9,6 +9,7 @@ struct BJJSessionModel: Codable, Sendable, Identifiable, StringIdentifiable {
     var academy: String?
     var instructor: String?
     var focusAreas: [String]
+    var techniquesWorked: [String]
     var notes: String?
     var preSessionMood: Int?
     var postSessionMood: Int?
@@ -27,6 +28,7 @@ struct BJJSessionModel: Codable, Sendable, Identifiable, StringIdentifiable {
         academy: String? = nil,
         instructor: String? = nil,
         focusAreas: [String] = [],
+        techniquesWorked: [String] = [],
         notes: String? = nil,
         preSessionMood: Int? = nil,
         postSessionMood: Int? = nil,
@@ -42,6 +44,7 @@ struct BJJSessionModel: Codable, Sendable, Identifiable, StringIdentifiable {
         self.academy = academy
         self.instructor = instructor
         self.focusAreas = focusAreas
+        self.techniquesWorked = techniquesWorked
         self.notes = notes
         self.preSessionMood = preSessionMood
         self.postSessionMood = postSessionMood
@@ -59,6 +62,7 @@ struct BJJSessionModel: Codable, Sendable, Identifiable, StringIdentifiable {
         self.academy = entity.academy
         self.instructor = entity.instructor
         self.focusAreas = entity.focusAreas
+        self.techniquesWorked = entity.techniquesWorked
         self.notes = entity.notes
         self.preSessionMood = entity.preSessionMood
         self.postSessionMood = entity.postSessionMood
@@ -101,6 +105,7 @@ struct BJJSessionModel: Codable, Sendable, Identifiable, StringIdentifiable {
         case academy
         case instructor
         case focusAreas = "focus_areas"
+        case techniquesWorked = "techniques_worked"
         case notes
         case preSessionMood = "pre_session_mood"
         case postSessionMood = "post_session_mood"
@@ -117,7 +122,8 @@ struct BJJSessionModel: Codable, Sendable, Identifiable, StringIdentifiable {
             "session_id": sessionId,
             "session_type": sessionType.rawValue,
             "duration": duration,
-            "rounds_count": roundsCount
+            "rounds_count": roundsCount,
+            "techniques_worked_count": techniquesWorked.count
         ]
         return dict.compactMapValues { $0 }
     }

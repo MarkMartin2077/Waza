@@ -20,7 +20,7 @@ class TechniqueDetailPresenter {
 
     var relatedSessions: [BJJSessionModel] {
         interactor.allSessions.filter { session in
-            session.focusAreas.contains { area in
+            (session.focusAreas + session.techniquesWorked).contains { area in
                 area.caseInsensitiveCompare(technique.name) == .orderedSame
             }
         }.sorted { $0.date > $1.date }
