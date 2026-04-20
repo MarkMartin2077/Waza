@@ -245,26 +245,40 @@ struct DashboardView: View {
     }
 
     private func weekDayCell(_ day: DashboardPresenter.WeekDay) -> some View {
-        RoundedRectangle(cornerRadius: 2)
-            .fill(day.isTrained ? Color.wazaAccent : Color.wazaPaperHi)
-            .overlay(
-                RoundedRectangle(cornerRadius: 2)
-                    .strokeBorder(day.isToday ? Color.wazaInk900 : Color.wazaInk300, lineWidth: day.isToday ? 1.5 : 0.5)
-            )
-            .overlay(
-                Group {
-                    if let session = day.session {
-                        Text(session.sessionType.kanji)
-                            .font(.system(size: 14))
-                            .foregroundStyle(Color.wazaPaperHi)
-                    } else {
-                        Text(day.label)
-                            .font(.wazaLabel)
-                            .foregroundStyle(day.isToday ? Color.wazaInk900 : Color.wazaInk400)
+        VStack(spacing: 3) {
+            RoundedRectangle(cornerRadius: 2)
+                .fill(day.isTrained ? Color.wazaAccent : Color.wazaPaperHi)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 2)
+                        .strokeBorder(day.isToday ? Color.wazaInk900 : Color.wazaInk300, lineWidth: day.isToday ? 1.5 : 0.5)
+                )
+                .overlay(
+                    Group {
+                        if let session = day.session {
+                            Text(session.sessionType.kanji)
+                                .font(.system(size: 14))
+                                .foregroundStyle(Color.wazaPaperHi)
+                        } else {
+                            Text(day.label)
+                                .font(.wazaLabel)
+                                .foregroundStyle(day.isToday ? Color.wazaInk900 : Color.wazaInk400)
+                        }
                     }
-                }
-            )
-            .aspectRatio(1, contentMode: .fit)
+                )
+                .aspectRatio(1, contentMode: .fit)
+
+            // Short label so users know what the kanji means
+            if let session = day.session {
+                Text(session.sessionType.shortLabel)
+                    .font(.system(size: 8, weight: .medium, design: .monospaced))
+                    .foregroundStyle(Color.wazaInk500)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+            } else {
+                Text(" ")
+                    .font(.system(size: 8))
+            }
+        }
     }
 
     // MARK: - Upcoming Class

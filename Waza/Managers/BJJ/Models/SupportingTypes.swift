@@ -33,6 +33,18 @@ enum SessionType: String, Codable, CaseIterable {
         }
     }
 
+    /// Abbreviated label for compact display (e.g. under hanko stamps in the weekly grid).
+    var shortLabel: String {
+        switch self {
+        case .gi: return "GI"
+        case .noGi: return "NOGI"
+        case .openMat: return "OPEN"
+        case .competition: return "COMP"
+        case .drilling: return "DRILL"
+        case .privateLesson: return "PVT"
+        }
+    }
+
     /// Kanji character for the hanko stamp representing this session type.
     var kanji: String {
         switch self {
