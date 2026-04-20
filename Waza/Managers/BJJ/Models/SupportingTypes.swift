@@ -32,6 +32,18 @@ enum SessionType: String, Codable, CaseIterable {
         case .privateLesson: return "person.fill.checkmark"
         }
     }
+
+    /// Kanji character for the hanko stamp representing this session type.
+    var kanji: String {
+        switch self {
+        case .gi: return "技"           // waza — technique
+        case .noGi: return "体"         // karada — body
+        case .openMat: return "道"      // michi — way/path
+        case .competition: return "試"  // tameshi — test
+        case .drilling: return "練"     // ren — practice
+        case .privateLesson: return "師" // shi — teacher
+        }
+    }
 }
 
 // MARK: - BJJ Belt

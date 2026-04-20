@@ -6,13 +6,20 @@ struct SessionRowView: View {
 
     private var resolvedAccent: Color { accentColor ?? .accentColor }
 
+    /// Deterministic rotation derived from the session ID so stamps don't jitter on rerender.
+    private var hankoRotation: Double {
+        let hash = session.id.hashValue
+        return Double(hash % 7) - 3 // range: -3 to +3 degrees
+    }
+
     var body: some View {
         HStack(spacing: 10) {
-            Image(systemName: session.sessionType.iconName)
-                .font(.subheadline)
-                .foregroundStyle(resolvedAccent)
-                .frame(width: 32, height: 32)
-                .background(resolvedAccent.opacity(0.08), in: RoundedRectangle(cornerRadius: 8))
+            HankoView(
+                kanji: session.sessionType.kanji,
+                size: 36,
+                rotation: hankoRotation,
+                color: resolvedAccent
+            )
 
             VStack(alignment: .leading, spacing: 3) {
                 HStack {
