@@ -44,7 +44,3 @@ xcodebuild test -project Waza.xcodeproj \
 ## Requirements
 
 iPhone running iOS 26 or later. Apple Intelligence features require iPhone 15 Pro or later.
-
-## Credits
-
-Waza stands on the shoulders of [Swiftful Thinking](https://github.com/SwiftfulThinking).
