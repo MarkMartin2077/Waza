@@ -4,179 +4,36 @@ A BJJ training tracker for iOS 26. Log sessions, check in at your gym, track tec
 
 [Available on the App Store →](https://apps.apple.com/app/id6759821384)
 
-> **For engineers and recruiters:** jump to the [Engineering Overview](#engineering-overview).
-
----
-
-## Screenshots
-
 <p align="center">
-  <img src="Screenshots/01_home.png" width="24%" alt="Home — streak hero, weekly grid, quick log" />
-  <img src="Screenshots/03_train_calendar.png" width="24%" alt="Calendar — unified past sessions and future classes" />
-  <img src="Screenshots/05_train_techniques.png" width="24%" alt="Technique Journal — stage tracking by category" />
-  <img src="Screenshots/07_progress.png" width="24%" alt="Progress — goals, session types, belt progression" />
+  <img src="Screenshots/01_home.png" width="24%" alt="Home" />
+  <img src="Screenshots/03_train_calendar.png" width="24%" alt="Calendar" />
+  <img src="Screenshots/05_train_techniques.png" width="24%" alt="Techniques" />
+  <img src="Screenshots/10_monthly_report.png" width="24%" alt="Monthly report" />
 </p>
 
-<p align="center">
-  <img src="Screenshots/02_home_scrolled.png" width="24%" alt="Weekly challenges with progress bars" />
-  <img src="Screenshots/09_achievements.png" width="24%" alt="Achievements — session, streak, and attendance unlocks" />
-  <img src="Screenshots/10_monthly_report.png" width="24%" alt="Monthly Report — month-over-month trajectory" />
-  <img src="Screenshots/11_profile.png" width="24%" alt="Profile — level, XP, lifetime stats" />
-</p>
+## Features
 
----
+- **Log every session** — Gi, No-Gi, Open Mat, Competition, Drilling, Private Lesson — with technique tags, reflections, and pre/post-session mood.
+- **A unified training calendar** that stamps past sessions with a kanji and marks upcoming classes on the same monthly grid.
+- **Gym check-ins** with a personalized AI message when you arrive, plus attendance-driven perfect-week bonuses.
+- **XP, streaks, and freezes** tuned for a 3–5x/week sport — earn freezes from first session, monthly, perfect weeks, and weekly-challenge progress.
+- **Weekly challenges** generated from your training gaps. Sweep all three to unlock a Fire Round — 24 hours of doubled XP.
+- **Technique journal** that auto-grows as you train, with a four-stage progression ladder from Learning to Polishing.
+- **Monthly report** — automatic trajectory with stats, streaks, mood trends, and shareable recap cards.
+- **Belt progression, goals, achievements, and a next-class home-screen widget.**
 
-## What You Can Do (User-Facing Features)
+## Engineering
 
-### Log Your Training
-- Track every session: Gi, No-Gi, Open Mat, Competition, Drilling, Private Lesson
-- Tag techniques you worked on and write reflections on what clicked
-- Record your mood before and after training to spot patterns
-- Search and filter your entire training history by technique, gym, mood, or session type
-
-### Your Training Calendar
-- A single monthly grid for everything that happened on the mat and everything coming up
-- Past sessions stamp the day with the session type kanji (`技`, `道`, `練`, `体`)
-- Scheduled classes show as outlined `時` markers on future days
-- Tap any day to drill into session details, check in to an upcoming class, or add a class to your schedule
-
-### Check In at Your Gym
-- Get notified when you arrive at your gym — tap to check in
-- See a personalized AI message after each check-in
-
-### Rank Up with XP
-- Earn XP for every session, check-in, and milestone
-- Climb through 8 ranked leagues borrowed from Japanese martial-arts grammar: Shoshinsha, Monjin, Deshi, Kenshi, Uchideshi, Sensei, Shihan, Soke — plus Legend for the dedicated
-- Boost your XP with streak multipliers and perfect-week bonuses
-- Earn a 24-hour Fire Round (2× XP) by sweeping all 3 weekly challenges
-- Full-screen celebrations when you level up or unlock a new streak tier
-
-### Build Your Technique Journal
-- Your personal technique library grows automatically as you train
-- Track where each technique stands: Learning, Drilling, Applying, or Polishing
-- See a visual map of your entire game at a glance
-- Get nudged when a technique is ready to promote to the next stage
-
-### Crush Weekly Challenges
-- 3 new challenges every Monday, tailored to your training gaps
-- Challenges push you to try new session types, techniques, gyms, and habits
-- Earn XP, streak freezes, and achievements for completing them
-
-### Review Your Month
-- Automatic monthly training report with stats, streaks, mood trends, and highlights
-- Compare month over month to see your trajectory
-- Browse reports for the last 6 months
-- Share a branded recap card to your socials
-
-### Share Your Progress
-- Generate shareable cards for sessions, streaks, level-ups, and monthly recaps
-- Dark-themed cards with your name and Waza branding — ready for Instagram Stories
-
-### Track Your Progress
-- See your session count, hours, and averages by week, month, year, or all time
-- Set training goals and track them with visual progress bars
-- Get AI-powered weekly summaries and training insights
-
-### Manage Your Schedule
-- Add your gyms with location and map
-- Set up recurring class reminders
-- Never miss a session with customizable notifications
-
-### Stay Motivated
-- Training streaks with a 24-hour rest-day grace so consistency matches how BJJ is actually trained
-- Earn streak freezes four ways: starter freeze on your first session, one per month, hitting a perfect week, and completing 2/3 weekly challenges — up to 3 held at a time, never expire
-- 13 achievements to unlock across sessions, streaks, attendance, and goals
-- Home-screen widget for your next class
-
----
-
-## Engineering Overview
-
-A solo iOS portfolio project designed to demonstrate production-grade engineering on a real (shipped) app.
-
-### Stack
-
-- **Language:** Swift 6 (strict concurrency enabled)
-- **UI:** SwiftUI, iOS 26 — widgets, Apple Intelligence integration
-- **State:** `@Observable` classes, `@MainActor` discipline, structured concurrency
-- **Persistence:** SwiftData + FileManager (local cache, offline-first) with Firestore sync
-- **Backends:** Firebase (auth, storage, messaging, crashlytics), RevenueCat (IAP), Mixpanel (analytics)
-- **Architecture:** VIPER per screen + RIBs-style core coordination
-
-### Code quality signals
-
-- **~85 unit tests** across business logic (challenge generation, evaluation, monthly report aggregation, technique CRUD, calendar month building)
-- **XCUI screenshot-automation test** drives the signed-in app through 10 key screens and writes PNGs to disk — reproducible visual review
-- **SwiftLint enforced** (line length, file length, identifier name, function parameter count, todo violations surface in CI)
-- **Swift 6 strict concurrency** clean — no `@unchecked Sendable` escape hatches in new code
-- **Zero `TODO` / `FIXME` / `HACK` comments** in production source as of the most recent preship pass
-
-### Architecture at a glance
-
-Every screen follows VIPER (View → Presenter → Router + Interactor). The three RIBs-core types (`CoreRouter`, `CoreInteractor`, `CoreBuilder`) implement every screen's Router and Interactor protocols via extensions, so screens stay decoupled while sharing one coordination layer. Managers live behind protocols, are registered in a single `DependencyContainer`, and are resolved through the `CoreInteractor` — views never touch them directly.
+- **Swift 6 / SwiftUI / iOS 26.** Strict concurrency, `@Observable` + `@MainActor` discipline throughout.
+- **VIPER per screen + RIBs-style core.** Every screen is a pure unit-test harness — `StubInteractor` + `SpyRouter` covers the layer.
+- **SwiftData + FileManager** for offline-first local cache; Firestore for sync. Firebase (auth, messaging, crashlytics), RevenueCat (IAP), Mixpanel (analytics).
 
 ```mermaid
-graph TB
-    V[View]
-    P[Presenter]
-    I[Interactor]
-    M[Managers]
-    S[(Persistence)]
-
-    V --> P
-    P --> I
-    I --> M
-    M --> S
+graph LR
+    V[View] --> P[Presenter] --> I[Interactor] --> M[Managers] --> S[(Persistence)]
 ```
 
-**Data flow is strictly one-way:**
-
-```
-View  →  Presenter  →  Interactor  →  Manager  →  Service (local / remote)
-View  ←  Presenter  ←  Interactor  ←  Manager  ←  Service
-```
-
-Views never reach into the Interactor or Manager layer directly; Presenters never touch Managers directly — always through the Interactor protocol. That discipline is what makes every screen unit-testable with a plain `StubInteractor` and `SpyRouter` (see `CalendarPresenterTests.swift` for a representative harness).
-
-**Build configurations:**
-
-| Scheme | Managers wired to | Purpose |
-|---|---|---|
-| `Waza - Mock` | `MockAuthService`, `MockSessionServices`, `MockStreakServices`, … | No Firebase · no network · seeded fixtures |
-| `Waza - Development` | `FirebaseAuthService`, `ProductionGoalServices`, … | Firebase Dev project · real analytics |
-| `Waza - Production` | Same as Dev but against Prod Firebase + RevenueCat production keys |
-
-`Dependencies.swift` is the single construction site — it switches on the scheme's `BuildConfiguration` enum and registers the right service implementations into `DependencyContainer`. Swapping schemes swaps *implementations*, never protocols.
-
-### Places to look for judgment, not just features
-
-- **[`CalendarMonthBuilder.swift`](./Waza/Managers/BJJ/CalendarMonthBuilder.swift)** — pure static struct with injected `calendar` and `now`. Powers the Calendar tab's 42-cell monthly grid. Expands recurring schedules into concrete occurrences, buckets sessions per day, stays test-friendly across DST boundaries. 9 unit tests, no hidden wall-clock dependencies.
-
-- **[`MonthlyReportCalculator.swift`](./Waza/Managers/BJJ/MonthlyReportCalculator.swift)** — pure static enum. Extracted from a 300-line `CoreInteractor+BJJ.swift` extension specifically to make the aggregation logic unit-testable without spinning up 6 managers.
-
-- **[`ChallengeGenerator.swift`](./Waza/Managers/BJJ/ChallengeGenerator.swift)** — weighted-selection algorithm with category-variety enforcement. Deterministic via injectable RNG seed; the unit tests exercise the seed to verify variety and distribution.
-
-- **[`CoreInteractor.swift`](./Waza/Root/RIBs/Core/CoreInteractor.swift)** — single interactor plus 3 orchestration services (`AccountLifecycleService`, `SessionLoggingService`, `MonthlyReportBuilder`) after consolidating 7 domain-grouped extension files into one.
-
-- **[`SessionLoggingService.swift`](./Waza/Managers/BJJ/SessionLoggingService.swift)** — cross-manager orchestration for the "log a session" flow: session creation, XP calculation with multipliers, streak updates, achievement checks, weekly challenge evaluation, toast firing. All writes log to Crashlytics on failure — no silent `try?` swallows.
-
-- **[`Waza/Utilities/WazaCornerRadius.swift`](./Waza/Utilities/WazaCornerRadius.swift) + [`WazaFont.swift`](./Waza/Utilities/WazaFont.swift)** — design tokens with documented semantics (small / standard / hero radii; typography ladder). Added during a UI/UX consistency pass.
-
-- **[`WazaUITests/ScreenshotTests.swift`](./WazaUITests/ScreenshotTests.swift)** — opt-in test that launches with a `MARKETING_MODE` flag and captures App-Store-ready screenshots.
-
-- **[`MarketingDataSeeder.swift`](./Waza/Utilities/MarketingDataSeeder.swift)** — separates aspirational-user seeding for screenshots from the default beginner mock. Honest about its limitations in file-level docs.
-
-### Build
-
-Three schemes:
-
-| Scheme | Purpose |
-|---|---|
-| **Waza - Mock** | Fast iteration, no Firebase, seeded mock data. Use for 90% of dev. |
-| **Waza - Development** | Firebase Dev credentials, real analytics, real auth |
-| **Waza - Production** | Production Firebase + RevenueCat |
-
-Run tests from the Mock scheme:
+Three schemes — `Mock`, `Development`, `Production` — switch service implementations from a single construction site in `Dependencies.swift`. Run from the Mock scheme for 90% of development:
 
 ```bash
 xcodebuild test -project Waza.xcodeproj \
@@ -184,74 +41,9 @@ xcodebuild test -project Waza.xcodeproj \
   -destination "platform=iOS Simulator,name=iPhone 17 Pro"
 ```
 
-Regenerate App Store screenshots (output lands in `./Screenshots/`):
-
-```bash
-xcodebuild test -project Waza.xcodeproj \
-  -scheme "Waza - Mock" \
-  -destination "platform=iOS Simulator,name=iPhone 17 Pro" \
-  -only-testing:WazaUITests/ScreenshotTests
-```
-
----
-
-## Full Screenshot Tour
-
-<table>
-  <tr>
-    <td><img src="Screenshots/01_home.png" alt="Home" /></td>
-    <td><img src="Screenshots/02_home_scrolled.png" alt="Home scrolled — weekly challenges" /></td>
-    <td><img src="Screenshots/03_train_calendar.png" alt="Train — Calendar segment" /></td>
-  </tr>
-  <tr>
-    <td align="center"><b>Home</b><br/>Greeting, streak hero, weekly grid, log CTA</td>
-    <td align="center"><b>Weekly Challenges</b><br/>3 rotating challenges, progress bars</td>
-    <td align="center"><b>Calendar</b><br/>Past sessions + future classes in one grid</td>
-  </tr>
-  <tr>
-    <td><img src="Screenshots/05_train_techniques.png" alt="Train — Techniques" /></td>
-    <td><img src="Screenshots/07_progress.png" alt="Progress overview" /></td>
-    <td><img src="Screenshots/08_progress_scrolled.png" alt="Progress scrolled — session types, belt, achievements" /></td>
-  </tr>
-  <tr>
-    <td align="center"><b>Techniques</b><br/>Auto-organized by category and stage</td>
-    <td align="center"><b>Progress</b><br/>Goals, stats, session breakdown</td>
-    <td align="center"><b>Progress · More</b><br/>Belt progression, achievements, monthly report</td>
-  </tr>
-  <tr>
-    <td><img src="Screenshots/09_achievements.png" alt="Achievements list" /></td>
-    <td><img src="Screenshots/10_monthly_report.png" alt="Monthly report" /></td>
-    <td><img src="Screenshots/11_profile.png" alt="Profile" /></td>
-  </tr>
-  <tr>
-    <td align="center"><b>Achievements</b><br/>Session, streak, attendance unlocks</td>
-    <td align="center"><b>Monthly Report</b><br/>Trajectory + month-over-month delta</td>
-    <td align="center"><b>Profile</b><br/>Level, XP, lifetime stats</td>
-  </tr>
-  <tr>
-    <td><img src="Screenshots/12_settings.png" alt="Settings" /></td>
-    <td></td>
-    <td></td>
-  </tr>
-  <tr>
-    <td align="center"><b>Settings</b><br/>Anonymous → Apple/Google upgrade path</td>
-    <td></td>
-    <td></td>
-  </tr>
-</table>
-
----
-
 ## Requirements
 
-- iPhone running iOS 26 or later
-- Apple Intelligence features require iPhone 15 Pro or later
-
-## Download
-
-[Available on the App Store](https://apps.apple.com/app/id6759821384)
-
----
+iPhone running iOS 26 or later. Apple Intelligence features require iPhone 15 Pro or later.
 
 ## Credits
 
