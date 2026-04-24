@@ -133,6 +133,12 @@ View → Presenter → Interactor → Manager
 - ✅ ALL Presenter methods MUST track events
 - ✅ ALL Manager methods MUST track events with logger
 
+### SwiftLint Conventions
+- ✅ Identifier names must be 3–40 characters. Rename short locals (`f` → `formatter`, `hs` → `hasSessions`, `dir` → `direction`). Applies to local vars, pattern bindings in `case let`, and closure params.
+- ✅ Only allowed short names (in `.swiftlint.yml`): `id`, `gi`. Do not add exceptions — fix the name instead.
+- ✅ Functions must have ≤5 parameters. When a router/presenter/component method needs more, bundle related closures or data into a dedicated struct (see `CalendarDayDetailCallbacks` in `Waza/Core/Calendar/CalendarRouter.swift` for the pattern).
+- ❌ No `TODO` comments in committed code — trips the `todo` rule. Resolve, remove, or track the work outside the source.
+
 ---
 
 ## 🔧 Build Configurations

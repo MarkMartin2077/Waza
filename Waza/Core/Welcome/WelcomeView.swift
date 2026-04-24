@@ -106,20 +106,47 @@ struct WelcomeView: View {
     // MARK: - CTA
 
     private var ctaSection: some View {
-        Text("Get Started")
-            .font(.wazaBody)
-            .fontWeight(.semibold)
-            .foregroundStyle(Color.wazaPaperHi)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 16)
-            .background(
-                RoundedRectangle(cornerRadius: .wazaCornerSmall)
-                    .fill(Color.wazaAccent)
-            )
-            .anyButton(.press) {
-                presenter.onGetStartedPressed()
+        VStack(spacing: 14) {
+            Text("Get Started")
+                .font(.wazaBody)
+                .fontWeight(.semibold)
+                .foregroundStyle(Color.wazaPaperHi)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 16)
+                .background(
+                    RoundedRectangle(cornerRadius: .wazaCornerSmall)
+                        .fill(Color.wazaAccent)
+                )
+                .anyButton(.press) {
+                    presenter.onGetStartedPressed()
+                }
+                .accessibilityIdentifier("StartButton")
+
+            continueAsGuestButton
+        }
+    }
+
+    private var continueAsGuestButton: some View {
+        HStack(spacing: 6) {
+            if presenter.isGuestContinuing {
+                ProgressView()
+                    .scaleEffect(0.8)
+                    .tint(Color.wazaInk500)
             }
-            .accessibilityIdentifier("StartButton")
+            Text(presenter.isGuestContinuing ? "Just a moment…" : "Continue without signing in")
+                .font(.wazaLabel)
+                .textCase(.uppercase)
+                .tracking(1.5)
+                .foregroundStyle(Color.wazaInk500)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 6)
+        .contentShape(Rectangle())
+        .accessibilityIdentifier("ContinueAsGuestButton")
+        .anyButton {
+            presenter.onContinueAsGuestPressed()
+        }
+        .disabled(presenter.isGuestContinuing)
     }
 
     // MARK: - Policy

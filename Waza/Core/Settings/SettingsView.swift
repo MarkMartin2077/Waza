@@ -42,12 +42,37 @@ struct SettingsView: View {
             Divider().padding(.leading, 16)
 
             if presenter.isAnonymousUser {
-                saveAccountButton
+                saveAccountSection
             } else {
                 signOutButton
             }
         }
         .wazaCard()
+    }
+
+    private var saveAccountSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .top, spacing: 10) {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .font(.system(size: 14))
+                    .foregroundStyle(Color.wazaAccent)
+                    .padding(.top, 2)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Your data lives only on this device.")
+                        .font(.wazaBody)
+                        .fontWeight(.medium)
+                        .foregroundStyle(Color.wazaInk900)
+                    Text("Sign in with Apple or Google to back up your sessions, sync across devices, and recover if you lose this phone.")
+                        .font(.wazaLabel)
+                        .foregroundStyle(Color.wazaInk600)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 8)
+
+            saveAccountButton
+        }
     }
 
     private var identityRow: some View {
@@ -109,7 +134,7 @@ struct SettingsView: View {
         HStack(spacing: 10) {
             Image(systemName: "person.crop.circle.badge.plus")
                 .font(.system(size: 14, weight: .semibold))
-            Text("Save & back up account")
+            Text("Sign in with Apple or Google")
                 .font(.wazaBody)
                 .fontWeight(.medium)
         }
@@ -121,7 +146,8 @@ struct SettingsView: View {
                 .fill(Color.wazaAccent)
         )
         .padding(.horizontal, 16)
-        .padding(.vertical, 12)
+        .padding(.bottom, 12)
+        .accessibilityIdentifier("Settings.SaveAccountButton")
         .anyButton(.press) {
             presenter.onCreateAccountPressed()
         }

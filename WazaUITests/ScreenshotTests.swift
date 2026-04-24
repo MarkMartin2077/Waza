@@ -63,15 +63,16 @@ final class ScreenshotTests: XCTestCase {
         guard tap(app, label: "Train") else { return }
         sleep(1)
 
-        // Default segment is History.
-        capture(app, name: "03_train_history")
+        // Default segment is Calendar.
+        capture(app, name: "03_train_calendar")
 
-        // Session detail — tap first cell.
+        // Day detail — tap a today-ish cell if present (seeder data may not populate mid-month).
+        // Best-effort; calendar cells aren't individually accessible without identifiers.
         let firstCell = app.cells.firstMatch
         if firstCell.waitForExistence(timeout: 3) {
             firstCell.tap()
             sleep(1)
-            capture(app, name: "04_session_detail")
+            capture(app, name: "04_day_detail_or_session")
             app.navigationBars.buttons.firstMatch.tap()
             sleep(1)
         }
@@ -83,11 +84,11 @@ final class ScreenshotTests: XCTestCase {
             capture(app, name: "05_train_techniques")
         }
 
-        // Switch to Schedule segment.
-        if app.buttons["Schedule"].waitForExistence(timeout: 3) {
-            app.buttons["Schedule"].tap()
+        // Back to Calendar to finish the sweep.
+        if app.buttons["Calendar"].waitForExistence(timeout: 3) {
+            app.buttons["Calendar"].tap()
             sleep(1)
-            capture(app, name: "06_train_schedule")
+            capture(app, name: "06_train_calendar_again")
         }
     }
 

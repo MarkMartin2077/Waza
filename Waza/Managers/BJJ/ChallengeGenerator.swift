@@ -129,7 +129,7 @@ enum ChallengeGenerator {
 
         let maxConsecutive = maxConsecutiveDays(from: recentSessions)
         result.append(ChallengeCandidate(
-            type: .miniStreak, title: "Train 2 days in a row",
+            type: .miniStreak, title: "Train 2 days in a row this week",
             targetValue: 2, metadata: nil, weight: maxConsecutive < 2 ? 0.9 : 0.4, category: .frequency
         ))
 

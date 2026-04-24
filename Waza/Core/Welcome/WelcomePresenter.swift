@@ -11,6 +11,8 @@ class WelcomePresenter {
     private let interactor: WelcomeInteractor
     private let router: WelcomeRouter
 
+    var isGuestContinuing = false
+
     init(interactor: WelcomeInteractor, router: WelcomeRouter) {
         self.interactor = interactor
         self.router = router
@@ -22,6 +24,36 @@ class WelcomePresenter {
 
     func onViewDisappear(delegate: WelcomeDelegate) {
         interactor.trackEvent(event: Event.onDisappear(delegate: delegate))
+    }
+
+    func onContinueAsGuestPressed() {
+        guard !isGuestContinuing else { return }
+        interactor.trackEvent(event: Event.continueAsGuestPressed)
+        isGuestContinuing = true
+
+        Task {
+            defer { isGuestContinuing = false }
+            do {
+                // Use existing anonymous auth if AppPresenter.checkUserStatus() already created it;
+                // otherwise create one now. Either way the user needs full logIn() to populate managers.
+                let user: UserAuthInfo
+                let isNewUser: Bool
+                if let existing = interactor.auth {
+                    user = existing
+                    isNewUser = false
+                } else {
+                    let result = try await interactor.signInAnonymously()
+                    user = result.user
+                    isNewUser = result.isNewUser
+                }
+                try await interactor.logIn(user: user, isNewUser: isNewUser)
+                interactor.trackEvent(event: Event.continueAsGuestSuccess)
+                handleDidSignIn(isNewUser: isNewUser)
+            } catch {
+                interactor.trackEvent(event: Event.continueAsGuestFail(error: error))
+                router.showAlert(error: error)
+            }
+        }
     }
 
     func onGetStartedPressed() {
@@ -63,13 +95,19 @@ extension WelcomePresenter {
         case onDisappear(delegate: WelcomeDelegate)
         case didSignIn(isNewUser: Bool)
         case getStartedPressed
+        case continueAsGuestPressed
+        case continueAsGuestSuccess
+        case continueAsGuestFail(error: Error)
 
         var eventName: String {
             switch self {
-            case .onAppear:             return "WelcomeView_Appear"
-            case .onDisappear:          return "WelcomeView_Disappear"
-            case .didSignIn:            return "WelcomeView_DidSignIn"
-            case .getStartedPressed:    return "WelcomeView_GetStarted_Pressed"
+            case .onAppear:                 return "WelcomeView_Appear"
+            case .onDisappear:              return "WelcomeView_Disappear"
+            case .didSignIn:                return "WelcomeView_DidSignIn"
+            case .getStartedPressed:        return "WelcomeView_GetStarted_Pressed"
+            case .continueAsGuestPressed:   return "WelcomeView_Guest_Start"
+            case .continueAsGuestSuccess:   return "WelcomeView_Guest_Success"
+            case .continueAsGuestFail:      return "WelcomeView_Guest_Fail"
             }
         }
 
@@ -79,6 +117,8 @@ extension WelcomePresenter {
                 return delegate.eventParameters
             case .didSignIn(isNewUser: let isNewUser):
                 return ["is_new_user": isNewUser]
+            case .continueAsGuestFail(error: let error):
+                return error.eventParameters
             default:
                 return nil
             }
@@ -86,8 +126,8 @@ extension WelcomePresenter {
 
         var type: LogType {
             switch self {
-            default:
-                return .analytic
+            case .continueAsGuestFail: return .severe
+            default:                   return .analytic
             }
         }
     }

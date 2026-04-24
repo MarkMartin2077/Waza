@@ -165,8 +165,8 @@ class SettingsPresenter {
         interactor.trackEvent(event: Event.createAccountPressed)
 
         let delegate = CreateAccountDelegate(
-            title: "Save your journey",
-            subtitle: "Back up your sessions and sync across every device.",
+            title: "Back up your training",
+            subtitle: "Sign in to sync across devices and never lose your sessions.",
             kanji: "守"
         )
         router.showCreateAccountView(delegate: delegate, onDismiss: {

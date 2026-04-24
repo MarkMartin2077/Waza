@@ -77,12 +77,9 @@ struct DashboardView: View {
     private var greetingHeader: some View {
         let hasName = presenter.userFirstName != "Athlete" && !presenter.userFirstName.isEmpty
         let trimmed = presenter.greeting.trimmingCharacters(in: .whitespaces)
-        let endsInPunctuation = trimmed.last.map { "?!.".contains($0) } ?? false
-        // If greeting ends in ? or !, keep it as its own line; otherwise add a comma before the name.
-        let greetingText = hasName && !endsInPunctuation ? "\(trimmed)," : trimmed
 
         return VStack(alignment: .leading, spacing: 2) {
-            Text(greetingText)
+            Text(trimmed)
                 .font(.wazaDisplayLarge)
                 .italic()
             if hasName {
@@ -102,7 +99,7 @@ struct DashboardView: View {
                 HStack(spacing: 12) {
                     Text("技")
                         .font(.system(size: 22))
-                    Text("Record today's session")
+                    Text("Log Session")
                         .font(.wazaBody)
                         .fontWeight(.medium)
                 }

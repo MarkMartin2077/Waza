@@ -183,7 +183,7 @@ struct WeeklyChallengesCardView: View {
                 challengeId: "2",
                 weekStartDate: weekStart,
                 challengeType: .miniStreak,
-                title: "Train 2 days in a row",
+                title: "Train 2 days in a row this week",
                 targetValue: 2,
                 currentValue: 2,
                 isCompleted: true,

@@ -59,11 +59,11 @@ final class WazaUITests: XCTestCase {
         )
         XCTAssertTrue(greeting.firstMatch.waitForExistence(timeout: 5))
 
-        // Navigate to Sessions
-        let sessionsTab = app.descendants(matching: .any)["Sessions"]
-        XCTAssertTrue(sessionsTab.waitForExistence(timeout: 5))
-        sessionsTab.tap()
-        XCTAssertTrue(app.navigationBars["Sessions"].waitForExistence(timeout: 5))
+        // Navigate to Train → Calendar is the default segment
+        let trainTab = app.descendants(matching: .any)["Train"]
+        XCTAssertTrue(trainTab.waitForExistence(timeout: 5))
+        trainTab.tap()
+        XCTAssertTrue(app.navigationBars["Calendar"].waitForExistence(timeout: 5))
 
         // Navigate to Progress
         let progressTab = app.descendants(matching: .any)["Progress"]
@@ -76,32 +76,50 @@ final class WazaUITests: XCTestCase {
         XCTAssertTrue(app.navigationBars["Profile"].waitForExistence(timeout: 5))
     }
 
-    // MARK: - Sessions Flow
+    // MARK: - Train Tab — Calendar ↔ Techniques
 
-    func testSessionsFlow_showsDataAndSupportsLogSession() throws {
+    func testTrainTab_canToggleBetweenCalendarAndTechniques() throws {
         let app = launchSignedIn()
 
-        // Navigate to Sessions tab
-        let sessionsTab = app.descendants(matching: .any)["Sessions"]
-        XCTAssertTrue(sessionsTab.waitForExistence(timeout: 5))
-        sessionsTab.tap()
-        XCTAssertTrue(app.navigationBars["Sessions"].waitForExistence(timeout: 5))
+        let trainTab = app.descendants(matching: .any)["Train"]
+        XCTAssertTrue(trainTab.waitForExistence(timeout: 5))
+        trainTab.tap()
 
-        // Seed data means "No Sessions Yet" should NOT appear
-        XCTAssertFalse(app.staticTexts["No Sessions Yet"].exists)
+        // Default lands on Calendar.
+        XCTAssertTrue(app.navigationBars["Calendar"].waitForExistence(timeout: 5))
 
-        // Open log session sheet via "+" button
-        let addButton = app.buttons["Log session"]
-        XCTAssertTrue(addButton.waitForExistence(timeout: 5))
-        addButton.tap()
+        // Segment pills exist and Techniques is selectable.
+        let techniquesPill = app.buttons["Techniques"]
+        XCTAssertTrue(techniquesPill.waitForExistence(timeout: 3))
+        techniquesPill.tap()
+        XCTAssertTrue(app.navigationBars["Techniques"].waitForExistence(timeout: 5))
+
+        // Back to Calendar.
+        let calendarPill = app.buttons["Calendar"]
+        XCTAssertTrue(calendarPill.exists)
+        calendarPill.tap()
+        XCTAssertTrue(app.navigationBars["Calendar"].waitForExistence(timeout: 5))
+    }
+
+    // MARK: - Log Session (entry point from Home)
+
+    func testLogSession_fromHomeOpensSessionEntry() throws {
+        let app = launchSignedIn()
+
+        // Home's primary CTA opens the session entry sheet.
+        let logButton = app.buttons["Log a new training session"]
+        XCTAssertTrue(logButton.waitForExistence(timeout: 5))
+        logButton.tap()
 
         // Sheet opens
-        let sheetTitle = app.navigationBars["Log Session"]
-        XCTAssertTrue(sheetTitle.waitForExistence(timeout: 5))
+        XCTAssertTrue(app.navigationBars["Log Session"].waitForExistence(timeout: 5))
 
-        // Cancel dismisses back to Sessions
+        // Cancel dismisses cleanly back to Home.
         app.buttons["Cancel"].tap()
-        XCTAssertTrue(app.navigationBars["Sessions"].waitForExistence(timeout: 5))
+        let greeting = app.staticTexts.matching(
+            NSPredicate(format: "label CONTAINS 'Good' OR label CONTAINS 'Ready'")
+        )
+        XCTAssertTrue(greeting.firstMatch.waitForExistence(timeout: 5))
     }
 
     // MARK: - Log Session Form
@@ -109,21 +127,14 @@ final class WazaUITests: XCTestCase {
     func testLogSessionForm_showsRequiredSections() throws {
         let app = launchSignedIn()
 
-        // Navigate to Sessions > open sheet
-        let sessionsTab = app.descendants(matching: .any)["Sessions"]
-        XCTAssertTrue(sessionsTab.waitForExistence(timeout: 5))
-        sessionsTab.tap()
+        let logButton = app.buttons["Log a new training session"]
+        XCTAssertTrue(logButton.waitForExistence(timeout: 5))
+        logButton.tap()
 
-        let addButton = app.buttons["Log session"]
-        XCTAssertTrue(addButton.waitForExistence(timeout: 5))
-        addButton.tap()
-
-        // Verify form sections
         XCTAssertTrue(app.navigationBars["Log Session"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.staticTexts["Session Type"].exists)
         XCTAssertTrue(app.staticTexts["Focus Areas"].exists)
 
-        // Save button present
         let saveButton = app.descendants(matching: .any)["Save Session"]
         XCTAssertTrue(saveButton.exists)
     }

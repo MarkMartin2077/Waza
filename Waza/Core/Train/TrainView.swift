@@ -1,11 +1,10 @@
 import SwiftUI
 
-struct TrainView<HistoryContent: View, TechniquesContent: View, ScheduleContent: View>: View {
+struct TrainView<CalendarContent: View, TechniquesContent: View>: View {
 
     @State var presenter: TrainPresenter
-    @ViewBuilder let historyContent: HistoryContent
+    @ViewBuilder let calendarContent: CalendarContent
     @ViewBuilder let techniquesContent: TechniquesContent
-    @ViewBuilder let scheduleContent: ScheduleContent
 
     var body: some View {
         VStack(spacing: 0) {
@@ -19,9 +18,8 @@ struct TrainView<HistoryContent: View, TechniquesContent: View, ScheduleContent:
 
             Group {
                 switch presenter.selectedSegment {
-                case .history:    historyContent
+                case .calendar:   calendarContent
                 case .techniques: techniquesContent
-                case .schedule:   scheduleContent
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -67,9 +65,8 @@ extension CoreBuilder {
         let coreRouter = CoreRouter(router: router, builder: self)
         return TrainView(
             presenter: TrainPresenter(router: coreRouter, interactor: interactor),
-            historyContent: { self.sessionsView(router: router) },
-            techniquesContent: { self.techniqueJournalView(router: router) },
-            scheduleContent: { self.classScheduleView(router: router) }
+            calendarContent: { self.calendarView(router: router) },
+            techniquesContent: { self.techniqueJournalView(router: router) }
         )
     }
 
@@ -77,7 +74,7 @@ extension CoreBuilder {
 
 // MARK: - Previews
 
-#Preview("Train - History") {
+#Preview("Train - Calendar") {
     let container = DevPreview.shared.container()
     let builder = CoreBuilder(interactor: CoreInteractor(container: container))
     return RouterView { router in

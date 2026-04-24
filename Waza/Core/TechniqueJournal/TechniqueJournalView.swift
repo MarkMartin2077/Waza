@@ -14,7 +14,11 @@ struct TechniqueJournalView: View {
         }
         .navigationTitle("Techniques")
         .toolbarTitleDisplayMode(.inlineLarge)
-        .searchable(text: $presenter.searchText, prompt: "Search techniques...")
+        .searchable(
+            text: $presenter.searchText,
+            placement: .navigationBarDrawer(displayMode: .automatic),
+            prompt: "Search techniques..."
+        )
         .toolbar {
             // Separate ToolbarItems so iOS 26 renders each as its own liquid-glass capsule.
             ToolbarItem(placement: .topBarTrailing) {

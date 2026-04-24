@@ -5,17 +5,15 @@ import SwiftUI
 class TrainPresenter {
 
     enum Segment: String, CaseIterable, Identifiable {
-        case history = "History"
+        case calendar = "Calendar"
         case techniques = "Techniques"
-        case schedule = "Schedule"
 
         var id: String { rawValue }
 
         var kanji: String {
             switch self {
-            case .history:    return "録"
+            case .calendar:   return "暦"
             case .techniques: return "技"
-            case .schedule:   return "時"
             }
         }
     }
@@ -23,7 +21,7 @@ class TrainPresenter {
     let router: any TrainRouter
     let interactor: any TrainInteractor
 
-    var selectedSegment: Segment = .history
+    var selectedSegment: Segment = .calendar
 
     init(router: any TrainRouter, interactor: any TrainInteractor) {
         self.router = router
@@ -36,13 +34,9 @@ class TrainPresenter {
 
     func onSegmentSelected(_ segment: Segment) {
         guard segment != selectedSegment else { return }
-        interactor.trackEvent(event: Event.segmentChanged(segment: segment))
+        let from = selectedSegment
+        interactor.trackEvent(event: Event.segmentChanged(from: from, to: segment))
         selectedSegment = segment
-    }
-
-    func onLogSessionTapped() {
-        interactor.trackEvent(event: Event.logSessionTapped)
-        router.showSessionEntryView(onDismiss: nil)
     }
 }
 
@@ -50,21 +44,19 @@ extension TrainPresenter {
 
     enum Event: LoggableEvent {
         case onAppear
-        case segmentChanged(segment: TrainPresenter.Segment)
-        case logSessionTapped
+        case segmentChanged(from: TrainPresenter.Segment, to: TrainPresenter.Segment)
 
         var eventName: String {
             switch self {
-            case .onAppear:         return "TrainView_Appear"
-            case .segmentChanged:   return "TrainView_SegmentChanged"
-            case .logSessionTapped: return "TrainView_LogSession_Tap"
+            case .onAppear:       return "TrainView_Appear"
+            case .segmentChanged: return "TrainView_SegmentChanged"
             }
         }
 
         var parameters: [String: Any]? {
             switch self {
-            case .segmentChanged(segment: let segment):
-                return ["segment": segment.rawValue]
+            case .segmentChanged(from: let from, to: let to):
+                return ["from_segment": from.rawValue, "to_segment": to.rawValue]
             default:
                 return nil
             }
