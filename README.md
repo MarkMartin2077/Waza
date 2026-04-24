@@ -4,7 +4,7 @@ A BJJ training tracker for iOS 26. Log sessions, check in at your gym, track tec
 
 [Available on the App Store →](https://apps.apple.com/app/id6759821384)
 
-> **For engineers and recruiters:** jump to [Engineering Overview](#engineering-overview) or the featured [CoreInteractor refactor case study](./docs/refactor-coreinteractor-case-study.md) ([open as PR #1](https://github.com/MarkMartin2077/Waza/pull/1)).
+> **For engineers and recruiters:** jump to the [Engineering Overview](#engineering-overview).
 
 ---
 
@@ -117,83 +117,16 @@ Every screen follows VIPER (View → Presenter → Router + Interactor). The thr
 
 ```mermaid
 graph TB
-    subgraph Screen["VIPER · per-screen"]
-        V["View<br/>SwiftUI · @State"]
-        P["Presenter<br/>@Observable · @MainActor<br/>all business logic"]
-        R["Router protocol<br/>navigation only"]
-        I["Interactor protocol<br/>data access only"]
-    end
+    V[View]
+    P[Presenter]
+    I[Interactor]
+    M[Managers]
+    S[(Persistence)]
 
-    subgraph Core["Core · one per app"]
-        CR["CoreRouter<br/>implements every screen Router"]
-        CI["CoreInteractor<br/>implements every screen Interactor"]
-        CB["CoreBuilder<br/>screen factory · VIPER wiring"]
-    end
-
-    DC["DependencyContainer<br/>service locator"]
-
-    subgraph Managers["Managers · protocol-based, @MainActor"]
-        AM["AuthManager"]
-        UM["UserManager"]
-        SM["SessionManager"]
-        StrM["StreakManager"]
-        XM["XPManager"]
-        ChM["ChallengeManager"]
-        TM["TechniqueManager"]
-        CSM["ClassScheduleManager"]
-        ALS["AccountLifecycleService<br/>orchestrates login/logout<br/>across managers"]
-        SLS["SessionLoggingService<br/>orchestrates the log-a-session flow"]
-    end
-
-    subgraph Persist["Persistence"]
-        SD["SwiftData<br/>local structured data"]
-        FMg["FileManager<br/>local cache / offline"]
-        FS["Firestore<br/>remote sync"]
-    end
-
-    subgraph Ext["External services"]
-        FB["Firebase<br/>Auth · Messaging · Crashlytics · Analytics"]
-        RC["RevenueCat<br/>IAP"]
-        MP["Mixpanel<br/>Analytics"]
-    end
-
-    V -->|"@State presenter"| P
-    P -->|"routes via"| R
-    P -->|"fetches / mutates via"| I
-    R -.->|"extended by"| CR
-    I -.->|"extended by"| CI
-    CB -->|"wires"| V
-    CB -->|"wires"| P
-    CR -->|"creates screens via"| CB
-    CI -->|"resolves managers from"| DC
-    DC --> AM
-    DC --> UM
-    DC --> SM
-    DC --> StrM
-    DC --> XM
-    DC --> ChM
-    DC --> TM
-    DC --> CSM
-    DC --> ALS
-    DC --> SLS
-    ALS -.->|"coordinates"| UM
-    ALS -.->|"coordinates"| SM
-    ALS -.->|"coordinates"| StrM
-    ALS -.->|"coordinates"| XM
-    SLS -.->|"coordinates"| SM
-    SLS -.->|"coordinates"| XM
-    SLS -.->|"coordinates"| ChM
-    AM --> FB
-    UM --> FS
-    SM --> SD
-    SM --> FS
-    StrM --> FB
-    ChM --> SD
-    TM --> SD
-    CSM --> SD
-    FS --> FB
-    UM -.->|"events"| MP
-    SM -.->|"IAP status"| RC
+    V --> P
+    P --> I
+    I --> M
+    M --> S
 ```
 
 **Data flow is strictly one-way:**
@@ -215,10 +148,6 @@ Views never reach into the Interactor or Manager layer directly; Presenters neve
 
 `Dependencies.swift` is the single construction site — it switches on the scheme's `BuildConfiguration` enum and registers the right service implementations into `DependencyContainer`. Swapping schemes swaps *implementations*, never protocols.
 
-### Featured case study
-
-📖 **[The CoreInteractor refactor](./docs/refactor-coreinteractor-case-study.md)** — detailed walkthrough of the decision to consolidate 7 domain extension files into one file plus 3 orchestration services. Covers context, options considered, tradeoffs accepted, and a real bug the refactor surfaced (`trainDuration` challenges could never complete). Also available as [PR #1](https://github.com/MarkMartin2077/Waza/pull/1) for reviewing the structured diff.
-
 ### Places to look for judgment, not just features
 
 - **[`CalendarMonthBuilder.swift`](./Waza/Managers/BJJ/CalendarMonthBuilder.swift)** — pure static struct with injected `calendar` and `now`. Powers the Calendar tab's 42-cell monthly grid. Expands recurring schedules into concrete occurrences, buckets sessions per day, stays test-friendly across DST boundaries. 9 unit tests, no hidden wall-clock dependencies.
@@ -227,7 +156,7 @@ Views never reach into the Interactor or Manager layer directly; Presenters neve
 
 - **[`ChallengeGenerator.swift`](./Waza/Managers/BJJ/ChallengeGenerator.swift)** — weighted-selection algorithm with category-variety enforcement. Deterministic via injectable RNG seed; the unit tests exercise the seed to verify variety and distribution.
 
-- **[`CoreInteractor.swift`](./Waza/Root/RIBs/Core/CoreInteractor.swift)** — the result of a deliberate refactor that consolidated 7 domain-grouped extension files (`+BJJ.swift`, `+Gamification.swift`, etc.) into a single interactor plus 3 orchestration services (`AccountLifecycleService`, `SessionLoggingService`, `MonthlyReportBuilder`). See the [case study](./docs/refactor-coreinteractor-case-study.md) for rationale and the bug it surfaced.
+- **[`CoreInteractor.swift`](./Waza/Root/RIBs/Core/CoreInteractor.swift)** — single interactor plus 3 orchestration services (`AccountLifecycleService`, `SessionLoggingService`, `MonthlyReportBuilder`) after consolidating 7 domain-grouped extension files into one.
 
 - **[`SessionLoggingService.swift`](./Waza/Managers/BJJ/SessionLoggingService.swift)** — cross-manager orchestration for the "log a session" flow: session creation, XP calculation with multipliers, streak updates, achievement checks, weekly challenge evaluation, toast firing. All writes log to Crashlytics on failure — no silent `try?` swallows.
 
