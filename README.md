@@ -326,16 +326,4 @@ xcodebuild test -project Waza.xcodeproj \
 
 ## Credits
 
-Waza stands on the shoulders of [**Swiftful Thinking**](https://www.swiftful-thinking.com) by [Nick Sarno](https://github.com/SwiftfulThinking). The project scaffolded from the [SwiftfulStarterProject](https://github.com/SwiftfulThinking/SwiftfulStarterProject) template and leans on his open-source packages for most of its infrastructure:
-
-- [**SwiftfulRouting**](https://github.com/SwiftfulThinking/SwiftfulRouting) — every screen transition, sheet, and alert in the app.
-- [**SwiftfulAuthenticating**](https://github.com/SwiftfulThinking/SwiftfulAuthenticating) + [**SwiftfulAuthenticatingFirebase**](https://github.com/SwiftfulThinking/SwiftfulAuthenticatingFirebase) — Apple, Google, and anonymous sign-in abstractions.
-- [**SwiftfulFirestore**](https://github.com/SwiftfulThinking/SwiftfulFirestore) + [**SwiftfulDataManagers**](https://github.com/SwiftfulThinking/SwiftfulDataManagers) — the manager-sync pattern that keeps local SwiftData and Firestore in step.
-- [**SwiftfulLogging**](https://github.com/SwiftfulThinking/SwiftfulLogging) + Mixpanel/Crashlytics/Analytics backends — the `LoggableEvent` protocol and multi-service fan-out used in every presenter.
-- [**SwiftfulPurchasing**](https://github.com/SwiftfulThinking/SwiftfulPurchasing) + [**SwiftfulPurchasingRevenueCat**](https://github.com/SwiftfulThinking/SwiftfulPurchasingRevenueCat) — IAP wiring.
-- [**SwiftfulGamification**](https://github.com/SwiftfulThinking/SwiftfulGamification) — the underlying streaks, XP, and progress managers.
-- [**SwiftfulUI**](https://github.com/SwiftfulThinking/SwiftfulUI) — `.anyButton`, `.tappableBackground`, and other view modifiers used throughout.
-- [**SwiftfulHaptics**](https://github.com/SwiftfulThinking/SwiftfulHaptics) + [**SwiftfulSoundEffects**](https://github.com/SwiftfulThinking/SwiftfulSoundEffects) + [**SwiftfulUtilities**](https://github.com/SwiftfulThinking/SwiftfulUtilities) — haptic feedback, audio, device-info helpers.
-- [**Xcode Templates**](https://github.com/SwiftfulThinking/XcodeTemplates) — VIPER screen / manager / model scaffolds used as the starting point for every new feature.
-
-The VIPER-per-screen + RIBs-style core architecture is borrowed directly from Nick's teaching work at [swiftful-thinking.com](https://www.swiftful-thinking.com) and his YouTube course on SwiftUI architecture. Highly recommended.
+Waza stands on the shoulders of [Swiftful Thinking](https://github.com/SwiftfulThinking).
