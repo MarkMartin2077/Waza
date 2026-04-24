@@ -125,19 +125,16 @@ struct OnboardingView: View {
     @ViewBuilder
     private var bottomArea: some View {
         // Page tags: 0 welcome, 1 name, 2 goal, 3 notifications, 4 location, 5 ready.
+        // All pages use the same single-button layout for consistent bottom positioning.
         switch presenter.currentPage {
         case 3:
-            permissionButtons(
-                primaryLabel: "Enable Notifications",
-                onPrimary: { presenter.onEnableNotificationsTapped() },
-                onSkip: { presenter.onSkipNotificationsTapped() }
-            )
+            primaryButton(label: "Enable Notifications") {
+                presenter.onEnableNotificationsTapped()
+            }
         case 4:
-            permissionButtons(
-                primaryLabel: "Enable Location",
-                onPrimary: { presenter.onEnableLocationTapped() },
-                onSkip: { presenter.onSkipLocationTapped() }
-            )
+            primaryButton(label: "Enable Location") {
+                presenter.onEnableLocationTapped()
+            }
         case 5:
             finishButton
         default:
@@ -185,35 +182,18 @@ struct OnboardingView: View {
         }
     }
 
-    private func permissionButtons(
-        primaryLabel: String,
-        onPrimary: @escaping () -> Void,
-        onSkip: @escaping () -> Void
-    ) -> some View {
-        VStack(spacing: 10) {
-            Text(primaryLabel)
-                .font(.wazaBody)
-                .fontWeight(.medium)
-                .foregroundStyle(Color.wazaPaperHi)
-                .frame(maxWidth: .infinity)
-                .frame(height: 52)
-                .background(
-                    RoundedRectangle(cornerRadius: .wazaCornerSmall)
-                        .fill(Color.wazaAccent)
-                )
-                .anyButton(.press) { onPrimary() }
-
-            Text("Not Now")
-                .font(.wazaBody)
-                .foregroundStyle(Color.wazaInk500)
-                .frame(maxWidth: .infinity)
-                .frame(height: 44)
-                .overlay(
-                    RoundedRectangle(cornerRadius: .wazaCornerSmall)
-                        .stroke(Color.wazaInk300, lineWidth: 0.5)
-                )
-                .anyButton(.press) { onSkip() }
-        }
+    private func primaryButton(label: String, action: @escaping () -> Void) -> some View {
+        Text(label)
+            .font(.wazaBody)
+            .fontWeight(.medium)
+            .foregroundStyle(Color.wazaPaperHi)
+            .frame(maxWidth: .infinity)
+            .frame(height: 52)
+            .background(
+                RoundedRectangle(cornerRadius: .wazaCornerSmall)
+                    .fill(Color.wazaAccent)
+            )
+            .anyButton(.press) { action() }
     }
 
     // MARK: - Pages
