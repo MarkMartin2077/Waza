@@ -13,14 +13,13 @@ struct WelcomeView: View {
 
     var body: some View {
         ZStack {
-            // Slightly lifted base so the bottom half isn't pure black
-            Color(white: 0.04).ignoresSafeArea()
+            Color.wazaPaper.ignoresSafeArea()
 
-            // Diffuse glow centred on where the logo sits (~35% down the screen)
+            // Subtle radial glow from the hanko stamp location
             Circle()
                 .fill(
                     RadialGradient(
-                        colors: [Color.wazaAccent.opacity(0.22), .clear],
+                        colors: [Color.wazaAccent.opacity(0.12), .clear],
                         center: .center,
                         startRadius: 0,
                         endRadius: 280
@@ -31,8 +30,6 @@ struct WelcomeView: View {
                 .offset(y: -120)
                 .ignoresSafeArea()
 
-            // frame(maxWidth: .infinity) anchors the VStack to full screen width
-            // so all children are laid out against real screen edges
             VStack(spacing: 0) {
                 Spacer(minLength: 0)
 
@@ -50,7 +47,6 @@ struct WelcomeView: View {
             }
             .frame(maxWidth: .infinity)
         }
-        .preferredColorScheme(.dark)
         .onAppear {
             presenter.onViewAppear(delegate: delegate)
         }
@@ -63,28 +59,18 @@ struct WelcomeView: View {
 
     private var heroSection: some View {
         VStack(spacing: 24) {
-            // App icon with glow
-            ZStack {
-                Circle()
-                    .fill(Color.wazaAccent.opacity(0.35))
-                    .frame(width: 140, height: 140)
-                    .blur(radius: 36)
-
-                Image("waza-logo-white")
-                    .resizable()
-                    .frame(width: 90, height: 90)
-                    .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-            }
+            HankoView(kanji: "技", size: 88, rotation: -3)
 
             VStack(spacing: 10) {
                 Text("Waza")
                     .font(.wazaDisplayLarge)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(Color.wazaInk900)
                     .tracking(3)
 
                 Text("Your BJJ journey, tracked.")
-                    .font(.subheadline)
-                    .foregroundStyle(.white.opacity(0.5))
+                    .font(.wazaBody)
+                    .italic()
+                    .foregroundStyle(Color.wazaInk500)
                     .tracking(0.4)
             }
         }
@@ -95,12 +81,15 @@ struct WelcomeView: View {
     private var ctaSection: some View {
         VStack(spacing: 14) {
             Text("Get Started")
-                .font(.headline)
-                .fontWeight(.semibold)
-                .foregroundStyle(.white)
+                .font(.wazaBody)
+                .fontWeight(.medium)
+                .foregroundStyle(Color.wazaPaperHi)
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 15)
-                .background(Color.wazaAccent, in: Capsule())
+                .padding(.vertical, 18)
+                .background(
+                    RoundedRectangle(cornerRadius: .wazaCornerSmall)
+                        .fill(Color.wazaAccent)
+                )
                 .anyButton(.press) {
                     presenter.onGetStartedPressed()
                 }
@@ -110,8 +99,8 @@ struct WelcomeView: View {
             Button("Already have an account? Sign In") {
                 presenter.onSignInPressed()
             }
-            .font(.subheadline)
-            .foregroundStyle(.white.opacity(0.45))
+            .font(.wazaBody)
+            .foregroundStyle(Color.wazaInk500)
         }
     }
 
@@ -127,7 +116,7 @@ struct WelcomeView: View {
                 }
             }
             Circle()
-                .fill(.white.opacity(0.25))
+                .fill(Color.wazaInk400)
                 .frame(width: 3, height: 3)
             if let url = URL(string: Constants.privacyPolicyUrlString) {
                 Link(destination: url) {
@@ -137,8 +126,8 @@ struct WelcomeView: View {
                 }
             }
         }
-        .font(.caption2)
-        .foregroundStyle(.white.opacity(0.25))
+        .wazaLabelStyle()
+        .foregroundStyle(Color.wazaInk400)
     }
 }
 

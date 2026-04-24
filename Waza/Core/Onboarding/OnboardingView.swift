@@ -39,7 +39,6 @@ struct OnboardingView: View {
         // circle was forcing the whole hierarchy to 480pt wide and clipping right-edge
         // content on iPhone 15 Pro (393pt) and smaller devices.
         .background(background)
-        .preferredColorScheme(.dark)
         .onAppear {
             presenter.onViewAppear(delegate: delegate)
         }
@@ -52,11 +51,11 @@ struct OnboardingView: View {
 
     private var background: some View {
         ZStack {
-            Color.black.ignoresSafeArea()
+            Color.wazaPaper.ignoresSafeArea()
 
             Circle()
                 .fill(RadialGradient(
-                    colors: [beltColor.opacity(0.3), Color.clear],
+                    colors: [accentColor.opacity(0.14), Color.clear],
                     center: .center,
                     startRadius: 0,
                     endRadius: 240
@@ -67,7 +66,7 @@ struct OnboardingView: View {
 
             Circle()
                 .fill(RadialGradient(
-                    colors: [Color.white.opacity(0.04), Color.clear],
+                    colors: [Color.wazaInk300.opacity(0.25), Color.clear],
                     center: .center,
                     startRadius: 0,
                     endRadius: 180
@@ -79,7 +78,7 @@ struct OnboardingView: View {
         .ignoresSafeArea()
     }
 
-    private var beltColor: Color {
+    private var accentColor: Color {
         .wazaAccent
     }
 
@@ -88,8 +87,7 @@ struct OnboardingView: View {
     private var skipButton: some View {
         HStack {
             Text("Skip")
-                .font(.subheadline)
-                .foregroundStyle(.white.opacity(0.5))
+                .wazaLabelStyle()
                 .padding(.trailing, 20)
                 .anyButton(.press) {
                     presenter.onSkipPressed()
@@ -107,12 +105,12 @@ struct OnboardingView: View {
             ForEach(0..<OnboardingPresenter.totalPages, id: \.self) { index in
                 ZStack {
                     Capsule()
-                        .fill(Color.white.opacity(0.22))
+                        .fill(Color.wazaInk300)
                         .frame(width: 8, height: 8)
 
                     if index == presenter.currentPage {
                         Capsule()
-                            .fill(Color.white)
+                            .fill(Color.wazaInk900)
                             .frame(width: 24, height: 8)
                             .matchedGeometryEffect(id: "pill", in: indicatorNamespace)
                     }
@@ -150,12 +148,15 @@ struct OnboardingView: View {
 
     private var continueButton: some View {
         Text("Continue")
-            .font(.subheadline.weight(.semibold))
-            .foregroundStyle(.white)
+            .font(.wazaBody)
+            .fontWeight(.medium)
+            .foregroundStyle(Color.wazaPaperHi)
             .frame(maxWidth: .infinity)
             .frame(height: 52)
-            .background(Color.wazaAccent)
-            .clipShape(RoundedRectangle(cornerRadius: 14))
+            .background(
+                RoundedRectangle(cornerRadius: .wazaCornerSmall)
+                    .fill(Color.wazaAccent)
+            )
             .anyButton(.press) {
                 presenter.onContinuePressed()
             }
@@ -164,17 +165,20 @@ struct OnboardingView: View {
     private var finishButton: some View {
         ZStack {
             if presenter.isCompletingOnboarding {
-                ProgressView().tint(.white)
+                ProgressView().tint(Color.wazaPaperHi)
             } else {
                 Text("Let's Train")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(.white)
+                    .font(.wazaBody)
+                    .fontWeight(.medium)
+                    .foregroundStyle(Color.wazaPaperHi)
             }
         }
         .frame(maxWidth: .infinity)
         .frame(height: 52)
-        .background(Color.wazaAccent)
-        .clipShape(RoundedRectangle(cornerRadius: 14))
+        .background(
+            RoundedRectangle(cornerRadius: .wazaCornerSmall)
+                .fill(Color.wazaAccent)
+        )
         .anyButton(.press) {
             if !presenter.isCompletingOnboarding {
                 presenter.onFinishPressed()
@@ -189,22 +193,25 @@ struct OnboardingView: View {
     ) -> some View {
         VStack(spacing: 10) {
             Text(primaryLabel)
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.white)
+                .font(.wazaBody)
+                .fontWeight(.medium)
+                .foregroundStyle(Color.wazaPaperHi)
                 .frame(maxWidth: .infinity)
                 .frame(height: 52)
-                .background(Color.wazaAccent)
-                .clipShape(RoundedRectangle(cornerRadius: 14))
+                .background(
+                    RoundedRectangle(cornerRadius: .wazaCornerSmall)
+                        .fill(Color.wazaAccent)
+                )
                 .anyButton(.press) { onPrimary() }
 
             Text("Not Now")
-                .font(.subheadline)
-                .foregroundStyle(.white.opacity(0.45))
+                .font(.wazaBody)
+                .foregroundStyle(Color.wazaInk500)
                 .frame(maxWidth: .infinity)
                 .frame(height: 44)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 14)
-                        .stroke(Color.white.opacity(0.15), lineWidth: 1)
+                    RoundedRectangle(cornerRadius: .wazaCornerSmall)
+                        .stroke(Color.wazaInk300, lineWidth: 0.5)
                 )
                 .anyButton(.press) { onSkip() }
         }
@@ -214,30 +221,20 @@ struct OnboardingView: View {
 
     private var welcomePage: some View {
         VStack(spacing: 0) {
-            ZStack {
-                Circle()
-                    .fill(beltColor.opacity(0.1))
-                    .frame(width: 160, height: 160)
-                Circle()
-                    .strokeBorder(beltColor.opacity(0.25), lineWidth: 1.5)
-                    .frame(width: 160, height: 160)
-                Image(systemName: "figure.wrestling")
-                    .font(.system(size: 60, weight: .medium))
-                    .symbolRenderingMode(.hierarchical)
-                    .foregroundStyle(beltColor)
-            }
+            HankoView(kanji: "始", size: 120, rotation: -3)
 
             Color.clear.frame(height: 44)
 
             VStack(spacing: 14) {
                 Text("Welcome to Waza.")
-                    .font(.title.weight(.bold))
-                    .foregroundStyle(.white)
+                    .font(.wazaDisplayLarge)
+                    .italic()
+                    .foregroundStyle(Color.wazaInk900)
                     .multilineTextAlignment(.center)
 
                 Text("Track every mat session.\nMeasure your growth. Earn your next belt.")
-                    .font(.subheadline)
-                    .foregroundStyle(.white.opacity(0.6))
+                    .font(.wazaBody)
+                    .foregroundStyle(Color.wazaInk500)
                     .multilineTextAlignment(.center)
                     .lineSpacing(4)
             }
@@ -250,12 +247,13 @@ struct OnboardingView: View {
         VStack(spacing: 36) {
             VStack(spacing: 10) {
                 Text("What should we call you?")
-                    .font(.title2.weight(.bold))
-                    .foregroundStyle(.white)
+                    .font(.wazaDisplayMedium)
+                    .italic()
+                    .foregroundStyle(Color.wazaInk900)
                     .multilineTextAlignment(.center)
                 Text("Just your first name.")
-                    .font(.subheadline)
-                    .foregroundStyle(.white.opacity(0.6))
+                    .font(.wazaBody)
+                    .foregroundStyle(Color.wazaInk500)
                     .multilineTextAlignment(.center)
             }
             .padding(.horizontal, 32)
@@ -267,11 +265,17 @@ struct OnboardingView: View {
                     set: { presenter.enteredName = $0 }
                 )
             )
-            .foregroundStyle(Color.black)
-            .font(.body)
+            .foregroundStyle(Color.wazaInk900)
+            .font(.wazaDisplaySmall)
             .padding(14)
-            .background(Color.white)
-            .clipShape(RoundedRectangle(cornerRadius: 10))
+            .background(
+                RoundedRectangle(cornerRadius: .wazaCornerSmall)
+                    .fill(Color.wazaPaperHi)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: .wazaCornerSmall)
+                    .strokeBorder(Color.wazaInk300, lineWidth: 0.5)
+            )
             .padding(.horizontal, 24)
             .submitLabel(.done)
             .onSubmit {
@@ -287,13 +291,14 @@ struct OnboardingView: View {
 
             VStack(spacing: 8) {
                 Text("How often do you want to train?")
-                    .font(.title2.weight(.bold))
-                    .foregroundStyle(.white)
+                    .font(.wazaDisplayMedium)
+                    .italic()
+                    .foregroundStyle(Color.wazaInk900)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 32)
                 Text("We'll track your progress each week.")
-                    .font(.subheadline)
-                    .foregroundStyle(.white.opacity(0.6))
+                    .font(.wazaBody)
+                    .foregroundStyle(Color.wazaInk500)
             }
 
             Color.clear.frame(height: 24)
@@ -314,30 +319,30 @@ struct OnboardingView: View {
 
         return HStack(spacing: 14) {
             Text(label)
-                .font(.title3.weight(.bold))
-                .foregroundStyle(isSelected ? beltColor : .white)
-                .frame(width: 52, alignment: .leading)
+                .font(.wazaDisplaySmall)
+                .foregroundStyle(isSelected ? accentColor : Color.wazaInk900)
+                .frame(width: 60, alignment: .leading)
 
             Text(detail)
-                .font(.subheadline)
-                .foregroundStyle(.white.opacity(0.6))
+                .font(.wazaBody)
+                .foregroundStyle(Color.wazaInk500)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             if isSelected {
                 Image(systemName: "checkmark.circle.fill")
                     .font(.body)
-                    .foregroundStyle(beltColor)
+                    .foregroundStyle(accentColor)
             }
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 16)
         .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(isSelected ? beltColor.opacity(0.15) : Color.white.opacity(0.06))
+            RoundedRectangle(cornerRadius: .wazaCornerStandard)
+                .fill(isSelected ? accentColor.opacity(0.1) : Color.wazaPaperHi)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .strokeBorder(isSelected ? beltColor.opacity(0.5) : Color.clear, lineWidth: 1)
+            RoundedRectangle(cornerRadius: .wazaCornerStandard)
+                .strokeBorder(isSelected ? accentColor : Color.wazaInk300, lineWidth: isSelected ? 1.5 : 0.5)
         )
         .animation(.spring(response: 0.28, dampingFraction: 0.7), value: isSelected)
         .anyButton(.press) {
@@ -347,32 +352,31 @@ struct OnboardingView: View {
 
     private func permissionPage(
         iconName: String,
-        iconColor: Color,
         title: String,
         subtitle: String
     ) -> some View {
         VStack(spacing: 40) {
             ZStack {
-                Circle()
-                    .fill(iconColor.opacity(0.12))
+                RoundedRectangle(cornerRadius: .wazaCornerStandard)
+                    .fill(Color.wazaPaperHi)
                     .frame(width: 120, height: 120)
-                Circle()
-                    .strokeBorder(iconColor.opacity(0.3), lineWidth: 1.5)
+                RoundedRectangle(cornerRadius: .wazaCornerStandard)
+                    .strokeBorder(Color.wazaInk300, lineWidth: 0.5)
                     .frame(width: 120, height: 120)
                 Image(systemName: iconName)
-                    .font(.system(size: 46, weight: .medium))
-                    .symbolRenderingMode(.hierarchical)
-                    .foregroundStyle(iconColor)
+                    .font(.system(size: 46, weight: .regular))
+                    .foregroundStyle(accentColor)
             }
 
             VStack(spacing: 12) {
                 Text(title)
-                    .font(.title2.weight(.bold))
-                    .foregroundStyle(.white)
+                    .font(.wazaDisplayMedium)
+                    .italic()
+                    .foregroundStyle(Color.wazaInk900)
                     .multilineTextAlignment(.center)
                 Text(subtitle)
-                    .font(.subheadline)
-                    .foregroundStyle(.white.opacity(0.6))
+                    .font(.wazaBody)
+                    .foregroundStyle(Color.wazaInk500)
                     .multilineTextAlignment(.center)
                     .lineSpacing(3)
             }
@@ -384,7 +388,6 @@ struct OnboardingView: View {
     private var notificationsPage: some View {
         permissionPage(
             iconName: "bell.badge.fill",
-            iconColor: Color(red: 0.65, green: 0.45, blue: 1.0),
             title: "Never miss a class.",
             subtitle: "Get a reminder before each session so you always show up ready to train."
         )
@@ -393,7 +396,6 @@ struct OnboardingView: View {
     private var locationPage: some View {
         permissionPage(
             iconName: "location.fill",
-            iconColor: Color(red: 0.2, green: 0.8, blue: 0.7),
             title: "Auto check-in at your gym.",
             subtitle: "Waza detects when you arrive and logs your attendance automatically.\n\nYour location is never stored or shared."
         )
@@ -401,26 +403,17 @@ struct OnboardingView: View {
 
     private var readyPage: some View {
         VStack(spacing: 36) {
-            ZStack {
-                Circle()
-                    .fill(beltColor.opacity(0.12))
-                    .frame(width: 120, height: 120)
-                Circle()
-                    .strokeBorder(beltColor.opacity(0.3), lineWidth: 1.5)
-                    .frame(width: 120, height: 120)
-                Image(systemName: "checkmark")
-                    .font(.system(size: 50, weight: .semibold))
-                    .foregroundStyle(beltColor)
-            }
+            HankoView(kanji: "道", size: 120, rotation: -2)
 
             VStack(spacing: 12) {
                 Text("You're all set.")
-                    .font(.title.weight(.bold))
-                    .foregroundStyle(.white)
+                    .font(.wazaDisplayLarge)
+                    .italic()
+                    .foregroundStyle(Color.wazaInk900)
                     .multilineTextAlignment(.center)
                 Text("The mats are waiting.\nTime to track your journey.")
-                    .font(.subheadline)
-                    .foregroundStyle(.white.opacity(0.6))
+                    .font(.wazaBody)
+                    .foregroundStyle(Color.wazaInk500)
                     .multilineTextAlignment(.center)
                     .lineSpacing(4)
             }
