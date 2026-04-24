@@ -15,37 +15,24 @@ struct WelcomeView: View {
         ZStack {
             Color.wazaPaper.ignoresSafeArea()
 
-            // Subtle radial glow from the hanko stamp location
-            Circle()
-                .fill(
-                    RadialGradient(
-                        colors: [Color.wazaAccent.opacity(0.12), .clear],
-                        center: .center,
-                        startRadius: 0,
-                        endRadius: 280
-                    )
-                )
-                .frame(width: 560, height: 560)
-                .blur(radius: 40)
-                .offset(y: -120)
-                .ignoresSafeArea()
-
             VStack(spacing: 0) {
-                Spacer(minLength: 0)
+                Spacer(minLength: 40)
 
                 heroSection
-                    .padding(.top, 100)
 
-                Spacer()
+                Spacer(minLength: 40)
+
+                featureList
+
+                Spacer(minLength: 40)
 
                 ctaSection
-                    .padding(.horizontal, 24)
 
                 policyLinks
-                    .padding(.top, 12)
-                    .padding(.bottom, 20)
+                    .padding(.top, 18)
+                    .padding(.bottom, 12)
             }
-            .frame(maxWidth: .infinity)
+            .padding(.horizontal, 24)
         }
         .onAppear {
             presenter.onViewAppear(delegate: delegate)
@@ -58,10 +45,10 @@ struct WelcomeView: View {
     // MARK: - Hero
 
     private var heroSection: some View {
-        VStack(spacing: 24) {
-            HankoView(kanji: "技", size: 88, rotation: -3)
+        VStack(spacing: 16) {
+            HankoView(kanji: "技", size: 72, rotation: -3)
 
-            VStack(spacing: 10) {
+            VStack(spacing: 6) {
                 Text("Waza")
                     .font(.wazaDisplayLarge)
                     .foregroundStyle(Color.wazaInk900)
@@ -71,7 +58,47 @@ struct WelcomeView: View {
                     .font(.wazaBody)
                     .italic()
                     .foregroundStyle(Color.wazaInk500)
-                    .tracking(0.4)
+            }
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    // MARK: - Features
+
+    private var featureList: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            featureRow(
+                kanji: "録",
+                title: "Log every session",
+                subtitle: "Capture technique, mood, and mat time."
+            )
+            featureRow(
+                kanji: "連",
+                title: "Build your streak",
+                subtitle: "Weekly challenges keep you coming back."
+            )
+            featureRow(
+                kanji: "道",
+                title: "Map your path",
+                subtitle: "Track techniques from learning to mastery."
+            )
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func featureRow(kanji: String, title: String, subtitle: String) -> some View {
+        HStack(alignment: .top, spacing: 16) {
+            HankoView(kanji: kanji, size: 36, rotation: -2)
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(Color.wazaInk900)
+
+                Text(subtitle)
+                    .font(.system(size: 13))
+                    .foregroundStyle(Color.wazaInk500)
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
     }
@@ -79,29 +106,20 @@ struct WelcomeView: View {
     // MARK: - CTA
 
     private var ctaSection: some View {
-        VStack(spacing: 14) {
-            Text("Get Started")
-                .font(.wazaBody)
-                .fontWeight(.medium)
-                .foregroundStyle(Color.wazaPaperHi)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 18)
-                .background(
-                    RoundedRectangle(cornerRadius: .wazaCornerSmall)
-                        .fill(Color.wazaAccent)
-                )
-                .anyButton(.press) {
-                    presenter.onGetStartedPressed()
-                }
-                .accessibilityIdentifier("StartButton")
-                .frame(maxWidth: 500)
-
-            Button("Already have an account? Sign In") {
-                presenter.onSignInPressed()
-            }
+        Text("Get Started")
             .font(.wazaBody)
-            .foregroundStyle(Color.wazaInk500)
-        }
+            .fontWeight(.semibold)
+            .foregroundStyle(Color.wazaPaperHi)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 16)
+            .background(
+                RoundedRectangle(cornerRadius: .wazaCornerSmall)
+                    .fill(Color.wazaAccent)
+            )
+            .anyButton(.press) {
+                presenter.onGetStartedPressed()
+            }
+            .accessibilityIdentifier("StartButton")
     }
 
     // MARK: - Policy

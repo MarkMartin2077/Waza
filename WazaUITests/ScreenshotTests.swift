@@ -1,7 +1,7 @@
 import XCTest
 
 /// Drives the signed-in mock app through every key screen and writes PNG screenshots
-/// to `/Users/Markyminaj/Desktop/WazaScreenshots/`.
+/// to `/Users/Markyminaj/Desktop/PersonalApps/Waza/Screenshots/`.
 ///
 /// Not part of the regular test suite — opt-in via `-only-testing`. Each step is best-effort:
 /// if a screen can't be reached (UI changed, data missing), the test logs and moves on rather
@@ -9,7 +9,7 @@ import XCTest
 @MainActor
 final class ScreenshotTests: XCTestCase {
 
-    private let outputDirectory = URL(fileURLWithPath: "/Users/Markyminaj/Desktop/WazaScreenshots")
+    private let outputDirectory = URL(fileURLWithPath: "/Users/Markyminaj/Desktop/PersonalApps/Waza/Screenshots")
 
     override func setUpWithError() throws {
         continueAfterFailure = true
@@ -20,20 +20,18 @@ final class ScreenshotTests: XCTestCase {
 
     func testCaptureAllKeyScreens() throws {
         let app = launchApp()
-        captureDashboard(app)
-        captureSessionsFlow(app)
+        captureHome(app)
+        captureTrainTab(app)
         captureProgressTab(app)
-        captureProfileFlow(app)
-        captureTechniqueJournal(app)
+        captureProfileTab(app)
     }
 
     // MARK: - Steps
 
     private func launchApp() -> XCUIApplication {
         let app = XCUIApplication()
-        // Launch flag seeds an impressive "active user" state for App Store shots —
-        // level 12, 22-day streak, 30+ sessions, unlocked achievements, completed goals.
-        // See MarketingDataSeeder.swift.
+        // Launch flag seeds an impressive "active user" state — level 12, 22-day streak,
+        // 30+ sessions, unlocked achievements, completed goals. See MarketingDataSeeder.swift.
         app.launchArguments = ["UI_TESTING", "SIGNED_IN", "MARKETING_MODE"]
         app.launch()
 
@@ -48,22 +46,25 @@ final class ScreenshotTests: XCTestCase {
         return app
     }
 
-    private func captureDashboard(_ app: XCUIApplication) {
-        capture(app, name: "01_dashboard")
+    private func captureHome(_ app: XCUIApplication) {
+        guard tap(app, label: "Home") else { return }
+        sleep(1)
+        capture(app, name: "01_home")
 
-        // Scroll the dashboard to show lower sections (This Week, Recent Sessions).
+        // Scroll to show lower sections (challenges, upcoming class).
         app.swipeUp()
         sleep(1)
-        capture(app, name: "02_dashboard_scrolled")
+        capture(app, name: "02_home_scrolled")
         app.swipeDown()
         sleep(1)
     }
 
-    private func captureSessionsFlow(_ app: XCUIApplication) {
-        guard tap(app, label: "Sessions") else { return }
-        _ = app.navigationBars["Sessions"].waitForExistence(timeout: 5)
+    private func captureTrainTab(_ app: XCUIApplication) {
+        guard tap(app, label: "Train") else { return }
         sleep(1)
-        capture(app, name: "03_sessions")
+
+        // Default segment is History.
+        capture(app, name: "03_train_history")
 
         // Session detail — tap first cell.
         let firstCell = app.cells.firstMatch
@@ -75,14 +76,18 @@ final class ScreenshotTests: XCTestCase {
             sleep(1)
         }
 
-        // Log Session sheet.
-        if app.buttons["Log session"].waitForExistence(timeout: 3) {
-            app.buttons["Log session"].tap()
-            _ = app.navigationBars["Log Session"].waitForExistence(timeout: 5)
+        // Switch to Techniques segment.
+        if app.buttons["Techniques"].waitForExistence(timeout: 3) {
+            app.buttons["Techniques"].tap()
             sleep(1)
-            capture(app, name: "05_log_session")
-            app.buttons["Cancel"].tap()
+            capture(app, name: "05_train_techniques")
+        }
+
+        // Switch to Schedule segment.
+        if app.buttons["Schedule"].waitForExistence(timeout: 3) {
+            app.buttons["Schedule"].tap()
             sleep(1)
+            capture(app, name: "06_train_schedule")
         }
     }
 
@@ -90,14 +95,12 @@ final class ScreenshotTests: XCTestCase {
         guard tap(app, label: "Progress") else { return }
         _ = app.navigationBars["Progress"].waitForExistence(timeout: 5)
         sleep(2) // charts may take a beat to render
-        capture(app, name: "06_progress")
-    }
+        capture(app, name: "07_progress")
 
-    private func captureProfileFlow(_ app: XCUIApplication) {
-        guard tap(app, label: "Profile") else { return }
-        _ = app.navigationBars["Profile"].waitForExistence(timeout: 5)
+        // Scroll to reveal achievements / monthly report / belt cards.
+        app.swipeUp()
         sleep(1)
-        capture(app, name: "07_profile")
+        capture(app, name: "08_progress_scrolled")
 
         // Achievements
         let achievementsRow = app.buttons
@@ -105,7 +108,7 @@ final class ScreenshotTests: XCTestCase {
         if achievementsRow.waitForExistence(timeout: 3) {
             achievementsRow.tap()
             sleep(2)
-            capture(app, name: "08_achievements")
+            capture(app, name: "09_achievements")
             app.navigationBars.buttons.firstMatch.tap()
             sleep(1)
         }
@@ -116,28 +119,25 @@ final class ScreenshotTests: XCTestCase {
         if monthlyReportRow.waitForExistence(timeout: 3) {
             monthlyReportRow.tap()
             sleep(3) // report builder takes a moment
-            capture(app, name: "09_monthly_report")
+            capture(app, name: "10_monthly_report")
             app.navigationBars.buttons.firstMatch.tap()
             sleep(1)
         }
     }
 
-    private func captureTechniqueJournal(_ app: XCUIApplication) {
-        guard tap(app, label: "Home") else { return }
+    private func captureProfileTab(_ app: XCUIApplication) {
+        guard tap(app, label: "Profile") else { return }
+        _ = app.navigationBars["Profile"].waitForExistence(timeout: 5)
         sleep(1)
+        capture(app, name: "11_profile")
 
-        // Scroll to surface the technique journal card if needed.
-        let journalCard = app.buttons
-            .containing(NSPredicate(format: "label CONTAINS 'Technique Journal'")).firstMatch
-        if !journalCard.waitForExistence(timeout: 2) {
-            app.swipeUp()
-            sleep(1)
-        }
-        if journalCard.waitForExistence(timeout: 3) {
-            journalCard.tap()
-            _ = app.navigationBars["Technique Journal"].waitForExistence(timeout: 5)
-            sleep(1)
-            capture(app, name: "10_technique_journal")
+        // Settings
+        let settingsButton = app.buttons
+            .containing(NSPredicate(format: "label CONTAINS[c] 'Settings'")).firstMatch
+        if settingsButton.waitForExistence(timeout: 3) {
+            settingsButton.tap()
+            sleep(2)
+            capture(app, name: "12_settings")
         }
     }
 

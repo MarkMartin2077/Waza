@@ -351,9 +351,13 @@ enum MarketingDataSeeder {
     // MARK: - Achievements
 
     private static func seedAchievements(on manager: AchievementManager, sessionCount: Int) {
-        // checkAndAward evaluates thresholds against the snapshot we pass. Fabricate
-        // stats that represent an active user so the session-count + streak achievements
-        // auto-unlock.
+        // Use the same streak value the rest of the app shows so achievements don't
+        // read as unlocked while the dashboard still reads 0. The backing streak
+        // manager can't be backdated (SwiftfulGamification limitation), so all seeded
+        // events collapse to today — meaning actual streak is at most 1. Unlocking
+        // 3/7/30-day streak achievements here would create a visible inconsistency
+        // with the dashboard and profile.
+        let seededStreak = 0
         let stats = SessionStats(
             totalSessions: sessionCount,
             totalTrainingTime: TimeInterval(sessionCount) * 5400,
@@ -363,14 +367,14 @@ enum MarketingDataSeeder {
         )
 
         _ = manager.checkAndAward(
-            event: .sessionLogged(totalCount: sessionCount, streakCount: 22),
+            event: .sessionLogged(totalCount: sessionCount, streakCount: seededStreak),
             sessionStats: stats,
-            streakCount: 22
+            streakCount: seededStreak
         )
         _ = manager.checkAndAward(
             event: .classCheckedIn(totalCount: 18, isPerfectWeek: true, consecutivePerfectWeeks: 3),
             sessionStats: stats,
-            streakCount: 22
+            streakCount: seededStreak
         )
     }
 
@@ -387,9 +391,14 @@ enum MarketingDataSeeder {
             _ = try? await xpManager.addExperiencePoints(points: chunk, metadata: [:])
         }
 
-        // Seed 22 consecutive days of streak events. `addStreakEvent` uses today's
-        // timestamp internally, so adding 22 events today produces a 1-day streak
-        // rather than 22. The metadata is informational only.
+        // KNOWN LIMITATION: `addStreakEvent` in SwiftfulGamification uses today's
+        // timestamp internally and does not accept a backdated date. Adding 22
+        // events in a loop produces a 1-day streak (all events share today's date),
+        // not a 22-day streak. As a result, the Dashboard/Profile marketing shots
+        // show a 0-1 day streak even though session count + Perfect Week appear
+        // active. Real users training on consecutive days accumulate correctly
+        // because each session fires one streak event per logged date via
+        // SessionLoggingService. Do not chase streak=0 as a production bug.
         for _ in 0..<22 {
             _ = try? await streakManager.addStreakEvent(metadata: [:])
         }

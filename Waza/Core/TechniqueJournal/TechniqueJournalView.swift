@@ -12,7 +12,7 @@ struct TechniqueJournalView: View {
                 listContent
             }
         }
-        .navigationTitle("Technique Journal")
+        .navigationTitle("Techniques")
         .toolbarTitleDisplayMode(.inlineLarge)
         .searchable(text: $presenter.searchText, prompt: "Search techniques...")
         .toolbar {
@@ -177,7 +177,8 @@ struct TechniqueJournalView: View {
             title: "No Techniques Yet",
             subtitle: "Techniques are added from your session focus areas, or tap + to add one manually.",
             actionTitle: nil,
-            onAction: nil
+            onAction: nil,
+            kanji: "技"
         )
     }
 }

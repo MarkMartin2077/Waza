@@ -37,6 +37,8 @@ struct SessionsView: View {
             }
         }
         .listStyle(.plain)
+        .scrollContentBackground(.hidden)
+        .background(Color.wazaPaper)
         .searchable(text: $presenter.searchText, prompt: "Search sessions by technique or note")
         .navigationTitle("Sessions")
         .toolbarTitleDisplayMode(.inlineLarge)
@@ -95,7 +97,8 @@ struct SessionsView: View {
                     title: "No Matches",
                     subtitle: "Try adjusting your search or filters.",
                     actionTitle: "Clear Filters",
-                    onAction: { presenter.onClearFilters() }
+                    onAction: { presenter.onClearFilters() },
+                    kanji: "無"
                 )
             } else {
                 EmptyStateView(
@@ -103,7 +106,8 @@ struct SessionsView: View {
                     title: "No Sessions Yet",
                     subtitle: "Tap + to log your first training session.",
                     actionTitle: nil,
-                    onAction: nil
+                    onAction: nil,
+                    kanji: "録"
                 )
             }
         }

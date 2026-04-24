@@ -28,10 +28,12 @@ struct AchievementsView: View {
                 }
             }
         }
-        .listStyle(.insetGrouped)
+        .listStyle(.plain)
+        .scrollContentBackground(.hidden)
+        .background(Color.wazaPaper)
         .contentMargins(.bottom, 24, for: .scrollContent)
         .navigationTitle("Achievements")
-        .navigationBarTitleDisplayMode(.large)
+        .toolbarTitleDisplayMode(.inlineLarge)
         .onAppear {
             presenter.onViewAppear()
         }
@@ -125,6 +127,12 @@ struct AchievementDetailSheetView: View {
 // MARK: - CoreRouter Extension
 
 extension CoreRouter {
+
+    func showAchievementsView() {
+        router.showScreen(.push) { router in
+            self.builder.achievementsView(router: router)
+        }
+    }
 
     func showAchievementDetail(achievementId: AchievementId, isEarned: Bool, earnedDate: Date?, progressHint: String?) {
         let config = ResizableSheetConfig(detents: [.medium], selection: nil, dragIndicator: .visible)

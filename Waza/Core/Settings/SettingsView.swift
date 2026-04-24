@@ -9,7 +9,6 @@ struct SettingsView: View {
             VStack(spacing: 16) {
                 appearanceCard
                 accountCard
-                purchaseCard
                 storeCard
                 appInfoCard
                 dangerZoneCard
@@ -18,7 +17,12 @@ struct SettingsView: View {
             .padding(.top, 8)
             .padding(.bottom, 32)
         }
+        .scrollContentBackground(.hidden)
+        .background(Color.wazaPaper)
         .navigationTitle("Settings")
+        .toolbarTitleDisplayMode(.inlineLarge)
+        .toolbarBackground(Color.wazaPaper, for: .navigationBar)
+        .toolbarBackground(.visible, for: .navigationBar)
         .onAppear {
             presenter.onViewAppear()
         }
@@ -33,23 +37,120 @@ struct SettingsView: View {
         VStack(spacing: 0) {
             sectionHeader("Account")
 
+            identityRow
+
+            Divider().padding(.leading, 16)
+
             if presenter.isAnonymousUser {
-                settingsRow(
-                    icon: "person.crop.circle.badge.plus",
-                    iconColor: Color.wazaAccent,
-                    label: "Save & back-up account",
-                    action: { presenter.onCreateAccountPressed() }
-                )
+                saveAccountButton
             } else {
-                settingsRow(
-                    icon: "rectangle.portrait.and.arrow.right",
-                    iconColor: .orange,
-                    label: "Sign out",
-                    action: { presenter.onSignOutPressed() }
-                )
+                signOutButton
             }
         }
         .wazaCard()
+    }
+
+    private var identityRow: some View {
+        HStack(spacing: 14) {
+            identityAvatar
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(presenter.isAnonymousUser ? "Anonymous Grappler" : presenter.userName)
+                    .font(.wazaBody)
+                    .fontWeight(.medium)
+                    .foregroundStyle(Color.wazaInk900)
+                    .lineLimit(1)
+
+                if let email = presenter.userEmail {
+                    Text(email)
+                        .font(.wazaLabel)
+                        .foregroundStyle(Color.wazaInk500)
+                        .lineLimit(1)
+                } else if presenter.isAnonymousUser {
+                    Text("Not signed in")
+                        .font(.wazaLabel)
+                        .foregroundStyle(Color.wazaInk500)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            if let label = presenter.authProviderLabel, let icon = presenter.authProviderIcon {
+                HStack(spacing: 4) {
+                    Image(systemName: icon)
+                        .font(.system(size: 11, weight: .semibold))
+                    Text(label.uppercased())
+                        .font(.wazaLabel)
+                }
+                .foregroundStyle(Color.wazaInk600)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(
+                    RoundedRectangle(cornerRadius: .wazaCornerSmall)
+                        .fill(Color.wazaInk100)
+                )
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
+    }
+
+    private var identityAvatar: some View {
+        ZStack {
+            Circle()
+                .fill(Color.wazaAccent.opacity(0.15))
+            Text(presenter.userInitial)
+                .font(.system(size: 16, weight: .semibold, design: .serif))
+                .foregroundStyle(Color.wazaAccent)
+        }
+        .frame(width: 36, height: 36)
+    }
+
+    private var saveAccountButton: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "person.crop.circle.badge.plus")
+                .font(.system(size: 14, weight: .semibold))
+            Text("Save & back up account")
+                .font(.wazaBody)
+                .fontWeight(.medium)
+        }
+        .foregroundStyle(Color.wazaPaperHi)
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 14)
+        .background(
+            RoundedRectangle(cornerRadius: .wazaCornerSmall)
+                .fill(Color.wazaAccent)
+        )
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .anyButton(.press) {
+            presenter.onCreateAccountPressed()
+        }
+    }
+
+    private var signOutButton: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "rectangle.portrait.and.arrow.right")
+                .font(.system(size: 14, weight: .semibold))
+            Text("Sign out")
+                .font(.wazaBody)
+                .fontWeight(.medium)
+        }
+        .foregroundStyle(Color.orange)
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 14)
+        .background(
+            RoundedRectangle(cornerRadius: .wazaCornerSmall)
+                .fill(Color.orange.opacity(0.10))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: .wazaCornerSmall)
+                .strokeBorder(Color.orange.opacity(0.25), lineWidth: 0.5)
+        )
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .anyButton(.press) {
+            presenter.onSignOutPressed()
+        }
     }
 
     // MARK: - Danger Zone Card
@@ -71,32 +172,6 @@ struct SettingsView: View {
             RoundedRectangle(cornerRadius: 16)
                 .stroke(Color.red.opacity(0.15), lineWidth: 1)
         )
-    }
-
-    // MARK: - Purchase Card
-
-    private var purchaseCard: some View {
-        VStack(spacing: 0) {
-            sectionHeader("Membership")
-
-            if presenter.isPremium {
-                settingsRow(
-                    icon: "creditcard",
-                    iconColor: Color.wazaAccent,
-                    label: "Manage Subscription",
-                    action: { presenter.onManageSubscriptionPressed() }
-                )
-            } else {
-                settingsRow(
-                    icon: "arrow.up.circle",
-                    iconColor: Color.wazaAccent,
-                    label: "Upgrade to Premium",
-                    labelColor: Color.wazaAccent,
-                    action: { presenter.onUpgradeToPremiumPressed() }
-                )
-            }
-        }
-        .wazaCard()
     }
 
     // MARK: - App Info Card

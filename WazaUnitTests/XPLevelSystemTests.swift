@@ -250,7 +250,7 @@ struct XPRewardCalculatorTests {
     func baseSession() {
         let params = SessionEntryParams(
             date: Date(), duration: 3600, sessionType: .gi,
-            academy: nil, instructor: nil, focusAreas: [],
+            academy: nil, instructor: nil, focusAreas: [], techniquesWorked: [],
             notes: nil, preSessionMood: nil, postSessionMood: nil,
             roundsCount: 0, whatWorkedWell: nil, needsImprovement: nil, keyInsights: nil
         )
@@ -262,7 +262,7 @@ struct XPRewardCalculatorTests {
     func competitionSession() {
         let params = SessionEntryParams(
             date: Date(), duration: 3600, sessionType: .competition,
-            academy: nil, instructor: nil, focusAreas: [],
+            academy: nil, instructor: nil, focusAreas: [], techniquesWorked: [],
             notes: nil, preSessionMood: nil, postSessionMood: nil,
             roundsCount: 0, whatWorkedWell: nil, needsImprovement: nil, keyInsights: nil
         )
@@ -275,7 +275,7 @@ struct XPRewardCalculatorTests {
     func fullReflections() {
         let params = SessionEntryParams(
             date: Date(), duration: 3600, sessionType: .gi,
-            academy: nil, instructor: nil, focusAreas: [],
+            academy: nil, instructor: nil, focusAreas: [], techniquesWorked: [],
             notes: "Good session", preSessionMood: nil, postSessionMood: nil,
             roundsCount: 0, whatWorkedWell: "Guard passing", needsImprovement: "Escapes", keyInsights: "Hip movement"
         )
@@ -288,7 +288,7 @@ struct XPRewardCalculatorTests {
     func partialReflections() {
         let params = SessionEntryParams(
             date: Date(), duration: 3600, sessionType: .gi,
-            academy: nil, instructor: nil, focusAreas: [],
+            academy: nil, instructor: nil, focusAreas: [], techniquesWorked: [],
             notes: "Good session", preSessionMood: nil, postSessionMood: nil,
             roundsCount: 0, whatWorkedWell: "Guard passing", needsImprovement: nil, keyInsights: nil
         )
@@ -301,7 +301,7 @@ struct XPRewardCalculatorTests {
     func whitespaceReflections() {
         let params = SessionEntryParams(
             date: Date(), duration: 3600, sessionType: .gi,
-            academy: nil, instructor: nil, focusAreas: [],
+            academy: nil, instructor: nil, focusAreas: [], techniquesWorked: [],
             notes: "  ", preSessionMood: nil, postSessionMood: nil,
             roundsCount: 0, whatWorkedWell: "Guard", needsImprovement: "Escapes", keyInsights: "Hips"
         )
@@ -313,7 +313,7 @@ struct XPRewardCalculatorTests {
     func bothMoods() {
         let params = SessionEntryParams(
             date: Date(), duration: 3600, sessionType: .gi,
-            academy: nil, instructor: nil, focusAreas: [],
+            academy: nil, instructor: nil, focusAreas: [], techniquesWorked: [],
             notes: nil, preSessionMood: 3, postSessionMood: 5,
             roundsCount: 0, whatWorkedWell: nil, needsImprovement: nil, keyInsights: nil
         )
@@ -326,7 +326,7 @@ struct XPRewardCalculatorTests {
     func onlyPreMood() {
         let params = SessionEntryParams(
             date: Date(), duration: 3600, sessionType: .gi,
-            academy: nil, instructor: nil, focusAreas: [],
+            academy: nil, instructor: nil, focusAreas: [], techniquesWorked: [],
             notes: nil, preSessionMood: 3, postSessionMood: nil,
             roundsCount: 0, whatWorkedWell: nil, needsImprovement: nil, keyInsights: nil
         )
@@ -338,7 +338,7 @@ struct XPRewardCalculatorTests {
     func newFocusArea() {
         let params = SessionEntryParams(
             date: Date(), duration: 3600, sessionType: .gi,
-            academy: nil, instructor: nil, focusAreas: ["Leg Locks"],
+            academy: nil, instructor: nil, focusAreas: ["Leg Locks"], techniquesWorked: [],
             notes: nil, preSessionMood: nil, postSessionMood: nil,
             roundsCount: 0, whatWorkedWell: nil, needsImprovement: nil, keyInsights: nil
         )
@@ -351,7 +351,7 @@ struct XPRewardCalculatorTests {
     func noNewFocusArea() {
         let params = SessionEntryParams(
             date: Date(), duration: 3600, sessionType: .gi,
-            academy: nil, instructor: nil, focusAreas: ["Guard"],
+            academy: nil, instructor: nil, focusAreas: ["Guard"], techniquesWorked: [],
             notes: nil, preSessionMood: nil, postSessionMood: nil,
             roundsCount: 0, whatWorkedWell: nil, needsImprovement: nil, keyInsights: nil
         )
@@ -364,7 +364,7 @@ struct XPRewardCalculatorTests {
         // Competition (20) + reflection (5) + mood (3) + new focus (5) = 33
         let params = SessionEntryParams(
             date: Date(), duration: 3600, sessionType: .competition,
-            academy: nil, instructor: nil, focusAreas: ["New Technique"],
+            academy: nil, instructor: nil, focusAreas: ["New Technique"], techniquesWorked: [],
             notes: "Great comp", preSessionMood: 5, postSessionMood: 5,
             roundsCount: 4, whatWorkedWell: "Pressure", needsImprovement: "Cardio", keyInsights: "Stay calm"
         )

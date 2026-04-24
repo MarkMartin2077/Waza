@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftfulRouting
 
 @MainActor
 protocol TabBarRouter: GlobalRouter {
@@ -8,6 +9,13 @@ protocol TabBarRouter: GlobalRouter {
     func showStreakTierUpModal(tier: StreakTier, accentColor: Color, onDismiss: @escaping @MainActor @Sendable () -> Void)
     func dismissCelebrationModal()
     func showCheckInView(gym: GymLocationModel, schedule: ClassScheduleModel?, checkInMethod: CheckInMethod, onDismiss: (() -> Void)?)
+    func showTechniquePromotion(
+        data: TechniquePromotionData,
+        onPromote: @escaping @MainActor @Sendable () -> Void,
+        onSnooze: @escaping @MainActor @Sendable () -> Void,
+        onDismissPressed: @escaping @MainActor @Sendable () -> Void,
+        onSheetDismissed: @escaping @MainActor @Sendable () -> Void
+    )
 }
 
 extension CoreRouter: TabBarRouter {
@@ -52,5 +60,30 @@ extension CoreRouter: TabBarRouter {
 
     func dismissCelebrationModal() {
         router.dismissModal()
+    }
+
+    func showTechniquePromotion(
+        data: TechniquePromotionData,
+        onPromote: @escaping @MainActor @Sendable () -> Void,
+        onSnooze: @escaping @MainActor @Sendable () -> Void,
+        onDismissPressed: @escaping @MainActor @Sendable () -> Void,
+        onSheetDismissed: @escaping @MainActor @Sendable () -> Void
+    ) {
+        let config = ResizableSheetConfig(
+            detents: [.medium],
+            selection: nil,
+            dragIndicator: .visible
+        )
+        router.showScreen(.sheetConfig(config: config), onDismiss: onSheetDismissed) { _ in
+            TechniquePromotionPromptView(
+                techniqueName: data.techniqueName,
+                currentStage: data.currentStage,
+                suggestedStage: data.suggestedStage,
+                practiceCount: data.practiceCount,
+                onPromote: onPromote,
+                onSnooze: onSnooze,
+                onDismiss: onDismissPressed
+            )
+        }
     }
 }

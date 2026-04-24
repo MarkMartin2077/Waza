@@ -11,17 +11,11 @@ class DashboardPresenter {
     private(set) var sessionStats: SessionStats = .empty
     private(set) var streakCount: Int = 0
     private(set) var nextUpcomingClass: (ClassScheduleModel, GymLocationModel)?
-    private(set) var xpLevelInfo: XPLevelInfo = XPLevelSystem.levelInfo(forXP: 0)
-    private(set) var streakTier: StreakTier = .none
-    private(set) var fireRoundExpiresAt: Date?
-    private(set) var isStreakAtRisk: Bool = false
     private(set) var freezesAvailable: Int = 0
     private(set) var challenges: [WeeklyChallengeModel] = []
     private(set) var completedChallengeCount: Int = 0
-    private(set) var techniqueCount: Int = 0
-    private(set) var perfectWeekActive: Bool = false
     var showChallengesTip: Bool = false
-    var showMonthlyReportBanner: Bool = false
+    var showReorganizationNudge: Bool = false
 
     init(interactor: DashboardInteractor, router: DashboardRouter, delegate: DashboardDelegate) {
         self.interactor = interactor
@@ -39,33 +33,25 @@ class DashboardPresenter {
         sessionStats = interactor.sessionStats
         streakCount = interactor.currentStreakData.currentStreak ?? 0
         nextUpcomingClass = interactor.nextUpcomingClass
-        let totalXP = interactor.currentExperiencePointsData.pointsAllTime ?? 0
-        xpLevelInfo = XPLevelSystem.levelInfo(forXP: totalXP)
-        streakTier = StreakTier.tier(forDays: streakCount)
-        fireRoundExpiresAt = XPMultiplierCalculator.fireRoundExpiresAt()
 
         let streakData = interactor.currentStreakData
-        isStreakAtRisk = streakData.isStreakAtRisk
         freezesAvailable = streakData.freezesAvailableCount ?? 0
 
         // Schedule/cancel streak risk notification
         if streakCount >= 2 {
-            StreakRiskNotificationScheduler.scheduleIfNeeded(
+            interactor.scheduleStreakRiskNotificationIfNeeded(
                 currentStreak: streakCount,
-                isAtRisk: isStreakAtRisk
+                isAtRisk: streakData.isStreakAtRisk
             )
         }
 
         interactor.generateChallengesIfNeeded()
         challenges = interactor.currentChallenges
         completedChallengeCount = interactor.completedChallengeCount
-        techniqueCount = interactor.allTechniques.count
-        perfectWeekActive = sessionStats.thisWeekSessions >= XPMultiplierCalculator.perfectWeekTarget
 
         // Onboarding tips
         showChallengesTip = !challenges.isEmpty && !OnboardingFlags.hasSeenChallengesTip
-        showMonthlyReportBanner = sessionStats.totalSessions > 0
-            && OnboardingFlags.shouldShowMonthlyReportBanner()
+        showReorganizationNudge = !OnboardingFlags.hasSeenReorganizationNudge
 
         interactor.updateWidgetData(WazaWidgetData(
             streakCount: streakCount,
@@ -192,23 +178,6 @@ class DashboardPresenter {
         })
     }
 
-    func onUseStreakFreezePressed() {
-        interactor.trackEvent(event: Event.streakFreezeUsed)
-        Task {
-            do {
-                try await interactor.useStreakFreezes()
-                loadData()
-            } catch {
-                router.showAlert(error: error)
-            }
-        }
-    }
-
-    func onDevSettingsTapped() {
-        interactor.trackEvent(event: Event.devSettingsTapped)
-        router.showDevSettingsView()
-    }
-
     // MARK: - Discovery / Tips
 
     func onDismissChallengesTip() {
@@ -217,22 +186,10 @@ class DashboardPresenter {
         showChallengesTip = false
     }
 
-    func onTechniqueJournalCardTapped() {
-        interactor.trackEvent(event: Event.techniqueJournalCardTapped)
-        router.showTechniqueJournalView()
-    }
-
-    func onMonthlyReportBannerTapped() {
-        interactor.trackEvent(event: Event.monthlyReportBannerTapped)
-        OnboardingFlags.dismissMonthlyReportBanner()
-        showMonthlyReportBanner = false
-        router.showMonthlyReportView()
-    }
-
-    func onDismissMonthlyReportBanner() {
-        interactor.trackEvent(event: Event.monthlyReportBannerDismissed)
-        OnboardingFlags.dismissMonthlyReportBanner()
-        showMonthlyReportBanner = false
+    func onDismissReorganizationNudge() {
+        interactor.trackEvent(event: Event.reorganizationNudgeDismissed)
+        OnboardingFlags.hasSeenReorganizationNudge = true
+        showReorganizationNudge = false
     }
 }
 
@@ -244,12 +201,8 @@ extension DashboardPresenter {
         case logSessionTapped
         case sessionTapped
         case checkInTapped
-        case devSettingsTapped
-        case streakFreezeUsed
         case challengesTipDismissed
-        case techniqueJournalCardTapped
-        case monthlyReportBannerTapped
-        case monthlyReportBannerDismissed
+        case reorganizationNudgeDismissed
 
         var eventName: String {
             switch self {
@@ -257,12 +210,8 @@ extension DashboardPresenter {
             case .logSessionTapped:              return "DashboardView_LogSession_Tap"
             case .sessionTapped:                 return "DashboardView_Session_Tap"
             case .checkInTapped:                 return "DashboardView_CheckIn_Tap"
-            case .devSettingsTapped:             return "DashboardView_DevSettings_Tap"
-            case .streakFreezeUsed:              return "DashboardView_StreakFreeze_Used"
             case .challengesTipDismissed:        return "DashboardView_ChallengesTip_Dismissed"
-            case .techniqueJournalCardTapped:    return "DashboardView_TechniqueJournalCard_Tap"
-            case .monthlyReportBannerTapped:     return "DashboardView_MonthlyReportBanner_Tap"
-            case .monthlyReportBannerDismissed:  return "DashboardView_MonthlyReportBanner_Dismissed"
+            case .reorganizationNudgeDismissed:  return "DashboardView_ReorgNudge_Dismissed"
             }
         }
 

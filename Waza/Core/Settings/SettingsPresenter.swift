@@ -14,7 +14,6 @@ class SettingsPresenter {
     private let interactor: SettingsInteractor
     private let router: SettingsRouter
 
-    private(set) var isPremium: Bool = false
     private(set) var isAnonymousUser: Bool = false
 
     var colorSchemeIndex: Int = UserDefaults.standard.integer(forKey: Constants.colorSchemeStorageKey) {
@@ -45,10 +44,33 @@ class SettingsPresenter {
         interactor.currentUserName
     }
 
+    var userEmail: String? {
+        let email = interactor.auth?.email
+        return (email?.isEmpty == false) ? email : nil
+    }
+
+    var authProviderLabel: String? {
+        guard let providers = interactor.auth?.authProviders else { return nil }
+        if providers.contains(.apple) { return "Apple" }
+        if providers.contains(.google) { return "Google" }
+        return nil
+    }
+
+    var authProviderIcon: String? {
+        guard let providers = interactor.auth?.authProviders else { return nil }
+        if providers.contains(.apple) { return "apple.logo" }
+        if providers.contains(.google) { return "g.circle.fill" }
+        return nil
+    }
+
+    var userInitial: String {
+        let trimmed = userName.trimmingCharacters(in: .whitespaces)
+        return String(trimmed.first ?? "W").uppercased()
+    }
+
     func onViewAppear() {
         interactor.trackScreenEvent(event: Event.onAppear)
         setAnonymousAccountStatus()
-        isPremium = interactor.isPremium
     }
     
     func onViewDisappear() {
@@ -142,7 +164,11 @@ class SettingsPresenter {
     func onCreateAccountPressed() {
         interactor.trackEvent(event: Event.createAccountPressed)
 
-        let delegate = CreateAccountDelegate()
+        let delegate = CreateAccountDelegate(
+            title: "Save your journey",
+            subtitle: "Back up your sessions and sync across every device.",
+            kanji: "守"
+        )
         router.showCreateAccountView(delegate: delegate, onDismiss: {
             self.setAnonymousAccountStatus()
         })
@@ -178,16 +204,6 @@ class SettingsPresenter {
         router.openURL(url)
     }
 
-    func onManageSubscriptionPressed() {
-        interactor.trackEvent(event: Event.manageSubscriptionPressed)
-        router.showPaywallView()
-    }
-
-    func onUpgradeToPremiumPressed() {
-        interactor.trackEvent(event: Event.upgradeToPremiumPressed)
-        router.showPaywallView()
-    }
-
 }
 
 extension SettingsPresenter {
@@ -210,8 +226,6 @@ extension SettingsPresenter {
         case rateAppNoPressed
         case shareAppPressed
         case notificationsSettingsPressed
-        case manageSubscriptionPressed
-        case upgradeToPremiumPressed
 
         var eventName: String {
             switch self {
@@ -232,8 +246,6 @@ extension SettingsPresenter {
             case .rateAppNoPressed:               return "SettingsView_RateApp_No_Pressed"
             case .shareAppPressed:                return "SettingsView_ShareApp_Pressed"
             case .notificationsSettingsPressed:   return "SettingsView_Notifications_Pressed"
-            case .manageSubscriptionPressed:      return "SettingsView_ManageSubscription_Pressed"
-            case .upgradeToPremiumPressed:        return "SettingsView_UpgradeToPremium_Pressed"
             }
         }
 

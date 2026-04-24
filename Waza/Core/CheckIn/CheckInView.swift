@@ -87,12 +87,14 @@ struct CheckInView: View {
             HStack(spacing: 12) {
                 ForEach(1...5, id: \.self) { rating in
                     let isSelected = presenter.selectedMood == rating
-                    VStack(spacing: 4) {
-                        Text(moodEmojis[rating - 1])
-                            .font(.system(size: 36))
+                    VStack(spacing: 6) {
+                        Image(systemName: Mood.symbol(for: rating))
+                            .font(.system(size: 26, weight: .regular))
+                            .foregroundStyle(isSelected ? Color.wazaAccent : Color.wazaInk500)
+                            .frame(height: 30)
                         Text(moodLabels[rating - 1])
                             .font(.caption2)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(isSelected ? Color.wazaInk900 : Color.wazaInk500)
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 8)

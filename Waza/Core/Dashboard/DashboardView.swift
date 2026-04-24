@@ -11,31 +11,6 @@ struct DashboardView: View {
                 greetingHeader
                     .scaleAppear(delay: 0)
 
-                if presenter.showMonthlyReportBanner {
-                    monthlyReportBanner
-                        .padding(.top, 16)
-                        .scaleAppear(delay: 0.02)
-                }
-
-                // MARK: XP + Belt strip
-                if !presenter.isNewUser {
-                    DashboardXPBadgeView(
-                        levelInfo: presenter.xpLevelInfo,
-                        fireRoundExpiresAt: presenter.fireRoundExpiresAt,
-                        streakTier: presenter.streakTier,
-                        streakCount: presenter.streakCount,
-                        isStreakAtRisk: presenter.isStreakAtRisk,
-                        freezesAvailable: presenter.freezesAvailable,
-                        perfectWeekActive: presenter.perfectWeekActive,
-                        onUseFreezePressed: presenter.freezesAvailable > 0
-                            ? { presenter.onUseStreakFreezePressed() }
-                            : nil,
-                        accentColor: Color.wazaAccent
-                    )
-                    .padding(.top, 20)
-                    .scaleAppear(delay: 0.03)
-                }
-
                 // MARK: Streak hero
                 if !presenter.isNewUser {
                     streakHeroSection
@@ -48,6 +23,15 @@ struct DashboardView: View {
                     weeklyPracticeGrid
                         .padding(.top, 20)
                         .scaleAppear(delay: 0.05)
+                }
+
+                // MARK: Reorganization nudge (one-time, below primary content)
+                if presenter.showReorganizationNudge {
+                    ReorganizationNudgeView(
+                        onDismiss: { presenter.onDismissReorganizationNudge() }
+                    )
+                    .padding(.top, 20)
+                    .scaleAppear(delay: 0.055)
                 }
 
                 // MARK: Weekly challenges
@@ -66,13 +50,6 @@ struct DashboardView: View {
                     .scaleAppear(delay: 0.065)
                 }
 
-                // MARK: Technique journal
-                if !presenter.isNewUser, presenter.sessionStats.totalSessions >= 3 {
-                    techniqueJournalCard
-                        .padding(.top, 20)
-                        .scaleAppear(delay: 0.07)
-                }
-
                 // MARK: Log session CTA
                 logSessionButton
                     .padding(.top, 24)
@@ -85,25 +62,10 @@ struct DashboardView: View {
                         .scaleAppear(delay: 0.1)
                 }
 
-                // MARK: Upcoming class
-                upcomingClassSection
-                    .padding(.top, 24)
-                    .scaleAppear(delay: 0.12)
-
-                // MARK: Recent sessions
-                recentSessionsSection
-                    .padding(.top, 24)
-                    .padding(.bottom, 16)
+                Color.clear.frame(height: 16)
             }
             .padding(.horizontal, 16)
             .padding(.top, 8)
-        }
-        .toolbar {
-            #if !PROD
-            ToolbarItem(placement: .topBarTrailing) {
-                devSettingsButton
-            }
-            #endif
         }
         .onAppear {
             presenter.onViewAppear()
@@ -113,11 +75,17 @@ struct DashboardView: View {
     // MARK: - Greeting Header
 
     private var greetingHeader: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text("\(presenter.greeting),")
+        let hasName = presenter.userFirstName != "Athlete" && !presenter.userFirstName.isEmpty
+        let trimmed = presenter.greeting.trimmingCharacters(in: .whitespaces)
+        let endsInPunctuation = trimmed.last.map { "?!.".contains($0) } ?? false
+        // If greeting ends in ? or !, keep it as its own line; otherwise add a comma before the name.
+        let greetingText = hasName && !endsInPunctuation ? "\(trimmed)," : trimmed
+
+        return VStack(alignment: .leading, spacing: 2) {
+            Text(greetingText)
                 .font(.wazaDisplayLarge)
                 .italic()
-            if presenter.userFirstName != "Athlete" && !presenter.userFirstName.isEmpty {
+            if hasName {
                 Text("\(presenter.userFirstName).")
                     .font(.wazaDisplayLarge)
             }
@@ -198,7 +166,7 @@ struct DashboardView: View {
 
                 // Streak sub-stats
                 HStack(spacing: 16) {
-                    streakSubStat(label: "FREEZES", value: String(format: "%02d", presenter.freezesAvailable))
+                    streakSubStat(label: "FREEZES", value: "\(presenter.freezesAvailable)")
                     streakSubStat(label: "SESSIONS", value: "\(presenter.sessionsThisWeek)")
                     streakSubStat(label: "TRAINED", value: presenter.hoursThisWeekFormatted)
                 }
@@ -288,61 +256,12 @@ struct DashboardView: View {
         }
     }
 
-    // MARK: - Upcoming Class
-
-    @ViewBuilder
-    private var upcomingClassSection: some View {
-        if let (schedule, gym) = presenter.nextUpcomingClass {
-            VStack(alignment: .leading, spacing: 10) {
-                sectionHeader("Next Class")
-
-                UpcomingClassCardView(
-                    schedule: schedule,
-                    gym: gym,
-                    onTap: {
-                        presenter.onCheckInTapped(gym: gym, schedule: schedule)
-                    }
-                )
-            }
-        }
-    }
-
-    // MARK: - Recent Sessions
-
-    @ViewBuilder
-    private var recentSessionsSection: some View {
-        if !presenter.sessions.isEmpty {
-            VStack(alignment: .leading, spacing: 10) {
-                sectionHeader("Recent Sessions")
-
-                ForEach(Array(presenter.sessions.prefix(3).enumerated()), id: \.element.id) { index, session in
-                    SessionRowView(session: session, accentColor: Color.wazaAccent)
-                        .staggeredAppear(index: index)
-                        .anyButton {
-                            presenter.onSessionTapped(session)
-                        }
-                }
-            }
-        }
-    }
-
     // MARK: - Helpers
 
     private func sectionHeader(_ title: String) -> some View {
         Text(title)
             .wazaLabelStyle()
             .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    private var devSettingsButton: some View {
-        Button {
-            presenter.onDevSettingsTapped()
-        } label: {
-            Image(systemName: "gearshape")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-        }
-        .accessibilityLabel("Developer settings")
     }
 
     // MARK: - Onboarding Tips & Discovery
@@ -376,75 +295,6 @@ struct DashboardView: View {
         )
     }
 
-    private var monthlyReportBanner: some View {
-        HStack(alignment: .center, spacing: 10) {
-            Image(systemName: "chart.bar.doc.horizontal")
-                .font(.subheadline)
-                .foregroundStyle(Color.wazaAccent)
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Your monthly report is ready")
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                Text("Stats, trends, and highlights from last month.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            Image(systemName: "xmark")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .padding(6)
-                .contentShape(Rectangle())
-                .accessibilityLabel("Dismiss banner")
-                .anyButton {
-                    presenter.onDismissMonthlyReportBanner()
-                }
-        }
-        .padding(12)
-        .wazaCard(cornerRadius: .wazaCornerSmall)
-        .contentShape(Rectangle())
-        .anyButton(.press) {
-            presenter.onMonthlyReportBannerTapped()
-        }
-    }
-
-    private var techniqueJournalCard: some View {
-        HStack(alignment: .center, spacing: 12) {
-            // Rounded-rectangle icon container matches the pattern used on Profile's
-            // navigation rows (Achievements, Monthly Report) for consistency.
-            Image(systemName: "book.fill")
-                .font(.title3)
-                .foregroundStyle(Color.wazaAccent)
-                .frame(width: 44, height: 44)
-                .background(Color.wazaAccent.opacity(0.12), in: RoundedRectangle(cornerRadius: .wazaCornerSmall))
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Technique Journal")
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                Text(techniqueJournalSubtitle)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            Image(systemName: "chevron.right")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-        }
-        .padding(14)
-        .wazaCard()
-        .contentShape(Rectangle())
-        .anyButton(.press) {
-            presenter.onTechniqueJournalCardTapped()
-        }
-    }
-
-    private var techniqueJournalSubtitle: String {
-        let count = presenter.techniqueCount
-        if count == 0 {
-            return "Track what you're learning and drilling"
-        }
-        return "\(count) technique\(count == 1 ? "" : "s") in your library"
-    }
 }
 
 // MARK: - Builder Extension

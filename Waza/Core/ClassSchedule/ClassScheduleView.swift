@@ -12,7 +12,8 @@ struct ClassScheduleView: View {
                     title: "No Gyms Added",
                     subtitle: "Add your gym to set up recurring class reminders and automatic check-ins.",
                     actionTitle: nil,
-                    onAction: nil
+                    onAction: nil,
+                    kanji: "場"
                 )
                 .listRowBackground(Color.clear)
                 .listRowSeparator(.hidden)
@@ -53,8 +54,11 @@ struct ClassScheduleView: View {
                 }
             }
         }
-        .listStyle(.insetGrouped)
-        .navigationTitle("Training Schedule")
+        .listStyle(.plain)
+        .scrollContentBackground(.hidden)
+        .background(Color.wazaPaper)
+        .navigationTitle("Schedule")
+        .toolbarTitleDisplayMode(.inlineLarge)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 addGymButton

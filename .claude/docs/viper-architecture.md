@@ -381,6 +381,11 @@ VStack(spacing: 8) {
 - ✅ Let SwiftUI's natural sizing work for you
 - ✅ Use spacing parameters in stacks instead of padding when possible
 
+**Navigation Title Rules:**
+- ✅ **ALWAYS pair `.navigationTitle(...)` with `.toolbarTitleDisplayMode(.inlineLarge)`** — keeps the title inline with toolbar buttons instead of pushing it to its own row
+- ✅ Keep titles short (one word when possible) to avoid truncation next to toolbar buttons
+- ✅ Match segment/tab labels when a screen is embedded in a segmented container
+
 ---
 
 ## 🖼️ Image Handling

@@ -7,17 +7,15 @@ class ProfilePresenter {
     private let router: ProfileRouter
 
     private(set) var sessionStats: SessionStats = .empty
-    private(set) var earnedAchievements: [AchievementEarnedModel] = []
     private(set) var isPremium: Bool = false
     private(set) var userName: String = ""
-    private(set) var gyms: [GymLocationModel] = []
-    private(set) var scheduleCount: Int = 0
     private(set) var streakCount: Int = 0
     private(set) var xpLevelInfo: XPLevelInfo = XPLevelSystem.levelInfo(forXP: 0)
     private(set) var streakTier: StreakTier = .none
     private(set) var fireRoundExpiresAt: Date?
     private(set) var perfectWeekActive: Bool = false
     private(set) var profileImageURL: String?
+    private(set) var pendingLocalImage: UIImage?
     var isUploadingProfileImage: Bool = false
 
     init(interactor: ProfileInteractor, router: ProfileRouter) {
@@ -36,11 +34,8 @@ class ProfilePresenter {
 
     func loadData() {
         sessionStats = interactor.sessionStats
-        earnedAchievements = interactor.earnedAchievements
         isPremium = interactor.isPremium
         userName = interactor.currentUser?.commonNameCalculated ?? interactor.currentUser?.displayName ?? "Grappler"
-        gyms = interactor.gyms
-        scheduleCount = interactor.schedules.count
         streakCount = interactor.currentStreakData.currentStreak ?? 0
         let totalXP = interactor.currentExperiencePointsData.pointsAllTime ?? 0
         xpLevelInfo = XPLevelSystem.levelInfo(forXP: totalXP)
@@ -54,49 +49,37 @@ class ProfilePresenter {
 
     func onProfileImageSelected(_ image: UIImage) {
         interactor.trackEvent(event: Event.profileImageSelected)
+        pendingLocalImage = image
         isUploadingProfileImage = true
         Task {
             defer { isUploadingProfileImage = false }
             do {
                 try await interactor.saveUserProfileImage(image: image)
                 loadData()
+                if profileImageURL != nil {
+                    pendingLocalImage = nil
+                }
             } catch {
+                pendingLocalImage = nil
                 router.showAlert(error: error)
             }
         }
     }
 
-    // MARK: - Achievement actions
-
-    func onAchievementsTapped() {
-        interactor.trackEvent(event: Event.achievementsTapped)
-        router.showAchievementsView()
-    }
-
-    // MARK: - Monthly Report
-
-    var hasMonthlyReport: Bool {
-        interactor.sessionStats.totalSessions > 0
-    }
-
-    func onMonthlyReportTapped() {
-        interactor.trackEvent(event: Event.monthlyReportTapped)
-        router.showMonthlyReportView()
+    func onProfileImageLoadFailed(error: Error?) {
+        interactor.trackEvent(event: Event.profileImageLoadFailed(error: error))
+        router.showAlert(
+            .alert,
+            title: "Couldn't load photo",
+            subtitle: "This photo may still be in iCloud. Open the Photos app to download it, or choose a different photo.",
+            buttons: nil
+        )
     }
 
     // MARK: - Computed display values
 
     var beltAccentColor: Color {
         .wazaAccent
-    }
-
-    var achievementsProgress: String {
-        "\(earnedAchievements.count)/\(AchievementId.allCases.count)"
-    }
-
-    func onManageScheduleTapped() {
-        interactor.trackEvent(event: Event.manageScheduleTapped)
-        router.showClassScheduleView()
     }
 
     func onSettingsButtonPressed() {
@@ -129,20 +112,16 @@ extension ProfilePresenter {
         case onAppear(delegate: ProfileDelegate)
         case onDisappear(delegate: ProfileDelegate)
         case settingsPressed
-        case manageScheduleTapped
-        case achievementsTapped
-        case monthlyReportTapped
         case profileImageSelected
+        case profileImageLoadFailed(error: Error?)
 
         var eventName: String {
             switch self {
-            case .onAppear:              return "ProfileView_Appear"
-            case .onDisappear:           return "ProfileView_Disappear"
-            case .settingsPressed:       return "ProfileView_Settings_Pressed"
-            case .manageScheduleTapped:  return "ProfileView_ManageSchedule_Tap"
-            case .achievementsTapped:    return "ProfileView_Achievements_Tap"
-            case .monthlyReportTapped:   return "ProfileView_MonthlyReport_Tap"
-            case .profileImageSelected:  return "ProfileView_ProfileImage_Selected"
+            case .onAppear:                return "ProfileView_Appear"
+            case .onDisappear:             return "ProfileView_Disappear"
+            case .settingsPressed:         return "ProfileView_Settings_Pressed"
+            case .profileImageSelected:    return "ProfileView_ProfileImage_Selected"
+            case .profileImageLoadFailed:  return "ProfileView_ProfileImage_LoadFail"
             }
         }
 
@@ -150,12 +129,19 @@ extension ProfilePresenter {
             switch self {
             case .onAppear(delegate: let delegate), .onDisappear(delegate: let delegate):
                 return delegate.eventParameters
+            case .profileImageLoadFailed(error: let error):
+                return error?.eventParameters
             default:
                 return nil
             }
         }
 
-        var type: LogType { .analytic }
+        var type: LogType {
+            switch self {
+            case .profileImageLoadFailed: return .warning
+            default:                      return .analytic
+            }
+        }
     }
 
 }

@@ -26,33 +26,32 @@ class WelcomePresenter {
 
     func onGetStartedPressed() {
         interactor.trackEvent(event: Event.getStartedPressed)
-        if interactor.hasCompletedOnboarding {
-            router.switchToCoreModule()
-        } else {
-            router.showOnboardingView()
-        }
+
+        let delegate = CreateAccountDelegate(
+            title: "Continue to Waza",
+            subtitle: "Sign in to save sessions and sync across devices.",
+            kanji: "入",
+            onDidSignIn: { [weak self] isNewUser in
+                self?.handleDidSignIn(isNewUser: isNewUser)
+            }
+        )
+        router.showCreateAccountView(delegate: delegate, onDismiss: nil)
     }
 
     private func handleDidSignIn(isNewUser: Bool) {
         interactor.trackEvent(event: Event.didSignIn(isNewUser: isNewUser))
+
         if interactor.hasCompletedOnboarding {
-            router.switchToCoreModule()
+            let delegate = WelcomeBackDelegate(
+                isNewUser: false,
+                onComplete: { [weak self] in
+                    self?.router.switchToCoreModule()
+                }
+            )
+            router.showWelcomeBackView(delegate: delegate)
         } else {
             router.showOnboardingView()
         }
-    }
-
-    func onSignInPressed() {
-        interactor.trackEvent(event: Event.signInPressed)
-
-        let delegate = CreateAccountDelegate(
-            title: "Sign in",
-            subtitle: "Connect to an existing account.",
-            onDidSignIn: { isNewUser in
-                self.handleDidSignIn(isNewUser: isNewUser)
-            }
-        )
-        router.showCreateAccountView(delegate: delegate, onDismiss: nil)
     }
 
 }
@@ -63,7 +62,6 @@ extension WelcomePresenter {
         case onAppear(delegate: WelcomeDelegate)
         case onDisappear(delegate: WelcomeDelegate)
         case didSignIn(isNewUser: Bool)
-        case signInPressed
         case getStartedPressed
 
         var eventName: String {
@@ -71,7 +69,6 @@ extension WelcomePresenter {
             case .onAppear:             return "WelcomeView_Appear"
             case .onDisappear:          return "WelcomeView_Disappear"
             case .didSignIn:            return "WelcomeView_DidSignIn"
-            case .signInPressed:        return "WelcomeView_SignIn_Pressed"
             case .getStartedPressed:    return "WelcomeView_GetStarted_Pressed"
             }
         }

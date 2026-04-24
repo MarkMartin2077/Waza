@@ -303,7 +303,7 @@ struct SessionEntryView: View {
 
     private var reflectionCard: some View {
         VStack(alignment: .leading, spacing: 0) {
-            let hasData = [presenter.whatWorkedWell, presenter.needsImprovement].contains(where: { !$0.isEmpty })
+            let hasData = [presenter.notes, presenter.whatWorkedWell, presenter.needsImprovement, presenter.keyInsights].contains(where: { !$0.isEmpty })
             reflectionCardHeader(hasData: hasData)
 
             if reflectionExpanded {
@@ -311,8 +311,10 @@ struct SessionEntryView: View {
                     .padding(.horizontal, 16)
 
                 VStack(spacing: 10) {
-                    reflectionField("What went well? Techniques that clicked, wins...", text: $presenter.whatWorkedWell, lines: 3...6)
-                    reflectionField("What to work on? Struggles, areas to drill next...", text: $presenter.needsImprovement, lines: 3...6)
+                    reflectionField("Notes — general thoughts from this session...", text: $presenter.notes, lines: 2...5)
+                    reflectionField("What went well? Techniques that clicked, wins...", text: $presenter.whatWorkedWell, lines: 2...5)
+                    reflectionField("What to work on? Struggles, areas to drill next...", text: $presenter.needsImprovement, lines: 2...5)
+                    reflectionField("Key insights — lessons, patterns, details to remember...", text: $presenter.keyInsights, lines: 2...5)
                 }
                 .padding(16)
             }
@@ -412,10 +414,11 @@ struct SessionEntryView: View {
             HStack(spacing: 8) {
                 ForEach(1...5, id: \.self) { rating in
                     let isSelected = value.wrappedValue == rating
-                    Text(moodEmojis[rating - 1])
-                        .font(.title3)
+                    Image(systemName: Mood.symbol(for: rating))
+                        .font(.system(size: 20, weight: .regular))
+                        .foregroundStyle(isSelected ? Color.wazaAccent : Color.wazaInk500)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 6)
+                        .padding(.vertical, 8)
                         .background(
                             isSelected ? Color.wazaAccent.opacity(0.15) : Color.clear,
                             in: RoundedRectangle(cornerRadius: 12)
@@ -424,7 +427,7 @@ struct SessionEntryView: View {
                             RoundedRectangle(cornerRadius: 12)
                                 .stroke(isSelected ? Color.wazaAccent : Color.clear, lineWidth: 1.5)
                         )
-                        .scaleEffect(isSelected ? 1.15 : 1.0)
+                        .scaleEffect(isSelected ? 1.1 : 1.0)
                         .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isSelected)
                         .accessibilityLabel("\(moodLabels[rating - 1]), mood \(rating) of 5")
                         .anyButton {

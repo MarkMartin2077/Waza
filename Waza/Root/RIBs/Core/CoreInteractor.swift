@@ -575,6 +575,15 @@ struct CoreInteractor: GlobalInteractor {
         WidgetDataStore.shared.update(data)
     }
 
+    // MARK: - Notifications
+
+    func scheduleStreakRiskNotificationIfNeeded(currentStreak: Int, isAtRisk: Bool) {
+        StreakRiskNotificationScheduler.scheduleIfNeeded(
+            currentStreak: currentStreak,
+            isAtRisk: isAtRisk
+        )
+    }
+
     // MARK: - Training Stats
 
     func getTrainingSnapshot(period: DateRange) -> TrainingSnapshot {

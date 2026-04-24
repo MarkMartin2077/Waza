@@ -8,6 +8,7 @@ enum OnboardingFlags {
     private enum Keys {
         static let hasSeenChallengesTip = "onboarding.hasSeenChallengesTip"
         static let lastDismissedMonthlyReportKey = "onboarding.lastDismissedMonthlyReportKey"
+        static let hasSeenReorganizationNudge = "onboarding.hasSeenReorganizationNudge"
     }
 
     // MARK: - Challenge Tip
@@ -15,6 +16,16 @@ enum OnboardingFlags {
     static var hasSeenChallengesTip: Bool {
         get { UserDefaults.standard.bool(forKey: Keys.hasSeenChallengesTip) }
         set { UserDefaults.standard.set(newValue, forKey: Keys.hasSeenChallengesTip) }
+    }
+
+    // MARK: - Tab Reorganization Nudge
+    //
+    // One-time nudge on Home after the v1.x → v2.0 IA reshuffle. Points users at the
+    // new Train and Progress tabs so they can find features that moved.
+
+    static var hasSeenReorganizationNudge: Bool {
+        get { UserDefaults.standard.bool(forKey: Keys.hasSeenReorganizationNudge) }
+        set { UserDefaults.standard.set(newValue, forKey: Keys.hasSeenReorganizationNudge) }
     }
 
     // MARK: - Monthly Report Banner

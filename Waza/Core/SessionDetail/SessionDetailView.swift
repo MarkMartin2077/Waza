@@ -17,8 +17,10 @@ struct SessionDetailView: View {
             .padding(.horizontal, 16)
             .padding(.top, 8)
         }
+        .scrollContentBackground(.hidden)
+        .background(Color.wazaPaper)
         .navigationTitle(presenter.session.sessionType.displayName)
-        .navigationBarTitleDisplayMode(.large)
+        .toolbarTitleDisplayMode(.inlineLarge)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 if presenter.isEditing {

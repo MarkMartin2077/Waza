@@ -31,14 +31,6 @@ struct ProfileView: View {
                 .scaleAppear(delay: 0.04)
                 statsSection
                     .scaleAppear(delay: 0.06)
-                achievementsSection
-                    .scaleAppear(delay: 0.12)
-                if presenter.hasMonthlyReport {
-                    monthlyReportSection
-                        .scaleAppear(delay: 0.15)
-                }
-                trainingScheduleSection
-                    .scaleAppear(delay: 0.18)
             }
             .padding(.horizontal, 16)
             .padding(.top, 8)
@@ -109,21 +101,38 @@ struct ProfileView: View {
         // PhotosPicker closure — the label closure is @Sendable and can't touch
         // main-actor-isolated state directly.
         let imageURL = presenter.profileImageURL
+        let localImage = presenter.pendingLocalImage
         let userName = presenter.userName
         let isUploading = presenter.isUploadingProfileImage
 
         return PhotosPicker(selection: $selectedPhotoItem, matching: .images) {
-            AvatarLabelView(imageURL: imageURL, userName: userName, isUploading: isUploading)
+            AvatarLabelView(
+                imageURL: imageURL,
+                localImage: localImage,
+                userName: userName,
+                isUploading: isUploading
+            )
         }
         .accessibilityLabel("Change profile photo")
     }
 
     private func handlePhotoSelection(_ item: PhotosPickerItem?) async {
-        guard let item,
-              let data = try? await item.loadTransferable(type: Data.self),
-              let image = UIImage(data: data) else { return }
-        presenter.onProfileImageSelected(image)
-        selectedPhotoItem = nil
+        guard let item else { return }
+        defer { selectedPhotoItem = nil }
+
+        do {
+            guard let data = try await item.loadTransferable(type: Data.self) else {
+                presenter.onProfileImageLoadFailed(error: nil)
+                return
+            }
+            guard let image = UIImage(data: data) else {
+                presenter.onProfileImageLoadFailed(error: nil)
+                return
+            }
+            presenter.onProfileImageSelected(image)
+        } catch {
+            presenter.onProfileImageLoadFailed(error: error)
+        }
     }
 
     // MARK: - Stats
@@ -154,122 +163,14 @@ struct ProfileView: View {
         .animation(.spring(response: 0.4, dampingFraction: 0.8), value: value)
     }
 
-    // MARK: - Achievements
-
-    private var achievementsSection: some View {
-        HStack(spacing: 14) {
-            Image(systemName: "trophy.fill")
-                .font(.title3)
-                .foregroundStyle(Color.wazaAccent)
-                .frame(width: 44, height: 44)
-                .background(Color.wazaAccent.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Achievements")
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                Text(presenter.achievementsProgress + " unlocked")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
-
-            Image(systemName: "chevron.right")
-                .font(.caption)
-                .fontWeight(.semibold)
-                .foregroundStyle(.tertiary)
-        }
-        .padding(16)
-        .wazaCard()
-        .anyButton(.press) {
-            presenter.onAchievementsTapped()
-        }
-    }
-
-    // MARK: - Monthly Report
-
-    private var monthlyReportSection: some View {
-        HStack(spacing: 14) {
-            Image(systemName: "chart.bar.doc.horizontal.fill")
-                .font(.title3)
-                .foregroundStyle(Color.wazaAccent)
-                .frame(width: 44, height: 44)
-                .background(Color.wazaAccent.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Monthly Report")
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                Text("Stats and highlights from last month")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
-
-            Image(systemName: "chevron.right")
-                .font(.caption)
-                .fontWeight(.semibold)
-                .foregroundStyle(.tertiary)
-        }
-        .padding(16)
-        .wazaCard()
-        .anyButton(.press) {
-            presenter.onMonthlyReportTapped()
-        }
-    }
-
-    // MARK: - Training Schedule
-
-    private var trainingScheduleSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Text("Training Schedule")
-                    .font(.wazaDisplaySmall)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                Text("Manage")
-                    .font(.caption)
-                    .foregroundStyle(Color.wazaAccent)
-                    .anyButton {
-                        presenter.onManageScheduleTapped()
-                    }
-            }
-
-            if presenter.gyms.isEmpty {
-                Text("No gyms added yet. Tap Manage to set up your training schedule.")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            } else {
-                ForEach(presenter.gyms, id: \.gymId) { gym in
-                    HStack(spacing: 10) {
-                        Image(systemName: "mappin.circle.fill")
-                            .foregroundStyle(Color.wazaAccent)
-                        Text(gym.name)
-                            .font(.subheadline)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                }
-                if presenter.scheduleCount > 0 {
-                    Text("^[\(presenter.scheduleCount) class](inflect: true) scheduled")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-            }
-        }
-        .padding(16)
-        .wazaCard()
-    }
-
     private var settingsButton: some View {
-        Button {
-            presenter.onSettingsButtonPressed()
-        } label: {
-            Image(systemName: "gear")
-                .font(.headline)
-                .foregroundStyle(Color.wazaAccent)
-        }
+        Image(systemName: "gear")
+            .font(.headline)
+            .foregroundStyle(Color.wazaAccent)
+            .anyButton(.press) {
+                presenter.onSettingsButtonPressed()
+            }
+            .accessibilityLabel("Settings")
     }
 }
 
@@ -310,6 +211,7 @@ struct ProfileView: View {
 /// time through standard SwiftUI View conformance.
 private struct AvatarLabelView: View {
     let imageURL: String?
+    let localImage: UIImage?
     let userName: String
     let isUploading: Bool
 
@@ -319,7 +221,13 @@ private struct AvatarLabelView: View {
                 .fill(Color.wazaAccent.opacity(0.15))
                 .frame(width: 80, height: 80)
 
-            if let imageURL, !imageURL.isEmpty {
+            if let localImage {
+                Image(uiImage: localImage)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(width: 80, height: 80)
+                    .clipShape(Circle())
+            } else if let imageURL, !imageURL.isEmpty {
                 ImageLoaderView(urlString: imageURL)
                     .frame(width: 80, height: 80)
                     .clipShape(Circle())

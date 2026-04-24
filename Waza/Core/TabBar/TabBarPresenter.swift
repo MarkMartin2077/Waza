@@ -73,20 +73,42 @@ class TabBarPresenter {
 
     // MARK: - Technique Promotion
 
+    func onPendingTechniquePromotionReceived(_ data: TechniquePromotionData) {
+        router.showTechniquePromotion(
+            data: data,
+            onPromote: { [weak self] in self?.onPromoteTechnique() },
+            onSnooze: { [weak self] in self?.onSnoozeTechniquePromotion() },
+            onDismissPressed: { [weak self] in self?.onTechniquePromotionDismissPressed() },
+            onSheetDismissed: { [weak self] in self?.onTechniquePromotionSheetDismissed() }
+        )
+    }
+
     func onPromoteTechnique() {
         guard let data = interactor.pendingTechniquePromotion else { return }
         interactor.trackEvent(event: Event.techniquePromoted(techniqueId: data.techniqueId, toStage: data.suggestedStage))
         let stage = ProgressionStage(rawValue: data.suggestedStage.lowercased()) ?? .drilling
         try? interactor.setTechniqueStage(techniqueId: data.techniqueId, stage: stage)
         interactor.clearPendingTechniquePromotion()
+        router.dismissScreen()
     }
 
     func onSnoozeTechniquePromotion() {
         interactor.trackEvent(event: Event.techniquePromotionSnoozed)
         interactor.clearPendingTechniquePromotion()
+        router.dismissScreen()
     }
 
-    func onDismissTechniquePromotion() {
+    func onTechniquePromotionDismissPressed() {
+        interactor.trackEvent(event: Event.techniquePromotionDismissed)
+        interactor.clearPendingTechniquePromotion()
+        router.dismissScreen()
+    }
+
+    // Fires when the sheet is dismissed by swipe or backdrop. If the user didn't
+    // already tap promote/snooze/dismiss, we still want to clear the signal so
+    // the prompt doesn't re-appear next frame. Idempotent when state is already nil.
+    func onTechniquePromotionSheetDismissed() {
+        guard interactor.pendingTechniquePromotion != nil else { return }
         interactor.trackEvent(event: Event.techniquePromotionDismissed)
         interactor.clearPendingTechniquePromotion()
     }

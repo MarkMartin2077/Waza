@@ -58,21 +58,9 @@ struct TabBarView: View {
                 guard let tier = newValue else { return }
                 presenter.onStreakTierUpDetected(tier)
             }
-            .sheet(item: Binding(
-                get: { presenter.pendingTechniquePromotion },
-                set: { if $0 == nil { presenter.onDismissTechniquePromotion() } }
-            )) { data in
-                TechniquePromotionPromptView(
-                    techniqueName: data.techniqueName,
-                    currentStage: data.currentStage,
-                    suggestedStage: data.suggestedStage,
-                    practiceCount: data.practiceCount,
-                    onPromote: { presenter.onPromoteTechnique() },
-                    onSnooze: { presenter.onSnoozeTechniquePromotion() },
-                    onDismiss: { presenter.onDismissTechniquePromotion() }
-                )
-                .presentationDetents([.medium])
-                .presentationDragIndicator(.visible)
+            .onChange(of: presenter.pendingTechniquePromotion) { _, newValue in
+                guard let data = newValue else { return }
+                presenter.onPendingTechniquePromotionReceived(data)
             }
 
             // XP toast — lightweight overlay, not a routed modal
@@ -106,9 +94,9 @@ extension CoreBuilder {
                     }
                     .any()
                 }),
-                TabBarScreen(title: "Sessions", systemImage: "list.bullet", screen: {
+                TabBarScreen(title: "Train", systemImage: "figure.wrestling", screen: {
                     RouterView { router in
-                        sessionsView(router: router)
+                        trainView(router: router)
                     }
                     .any()
                 }),

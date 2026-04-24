@@ -249,7 +249,7 @@ struct TechniquePickerView: View {
                 TechniquePickerItem(name: "Guard Pass", category: "Guard Passing", stage: "Learning", isSelected: false),
                 TechniquePickerItem(name: "Double Leg Takedown", category: "Takedowns", stage: "Drilling", isSelected: false),
                 TechniquePickerItem(name: "Kimura", category: "Submissions", stage: "Applying", isSelected: false),
-                TechniquePickerItem(name: "X-Guard Sweep", category: "Guard", stage: "Learning", isSelected: false),
+                TechniquePickerItem(name: "X-Guard Sweep", category: "Guard", stage: "Learning", isSelected: false)
             ],
             selectedNames: ["Triangle Choke", "Rear Naked Choke"],
             onTechniqueToggled: { item in print("Toggled: \(item.name)") },
@@ -275,7 +275,7 @@ struct TechniquePickerView: View {
                 TechniquePickerItem(name: "Double Leg Takedown", category: "Takedowns", stage: "Drilling", isSelected: false),
                 TechniquePickerItem(name: "Single Leg Takedown", category: "Takedowns", stage: "Learning", isSelected: false),
                 TechniquePickerItem(name: "X-Guard Sweep", category: "Guard", stage: "Learning", isSelected: false),
-                TechniquePickerItem(name: "De La Riva Hook", category: "Guard", stage: "Drilling", isSelected: true),
+                TechniquePickerItem(name: "De La Riva Hook", category: "Guard", stage: "Drilling", isSelected: true)
             ],
             selectedNames: ["Triangle Choke", "De La Riva Hook"],
             onTechniqueToggled: { item in print("Toggled: \(item.name)") },
@@ -305,7 +305,7 @@ struct TechniquePickerView: View {
     TechniquePickerView(
         techniques: [
             TechniquePickerItem(name: "Triangle Choke", category: "Submissions", stage: "Drilling", isSelected: false),
-            TechniquePickerItem(name: "Armbar", category: "Submissions", stage: "Applying", isSelected: false),
+            TechniquePickerItem(name: "Armbar", category: "Submissions", stage: "Applying", isSelected: false)
         ],
         selectedNames: [],
         onTechniqueToggled: { item in print("Toggled: \(item.name)") },

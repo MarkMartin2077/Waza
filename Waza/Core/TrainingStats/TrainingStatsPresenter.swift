@@ -18,6 +18,36 @@ class TrainingStatsPresenter {
         interactor.activeGoals
     }
 
+    // MARK: - Achievements
+
+    var earnedAchievementCount: Int {
+        interactor.earnedAchievements.count
+    }
+
+    var totalAchievementCount: Int {
+        AchievementId.allCases.count
+    }
+
+    var achievementsProgressText: String {
+        "\(earnedAchievementCount)/\(totalAchievementCount) unlocked"
+    }
+
+    // MARK: - Monthly Report
+
+    var hasMonthlyReport: Bool {
+        interactor.sessionStats.totalSessions > 0
+    }
+
+    // MARK: - Belt Progression
+
+    var currentBelt: BJJBelt {
+        interactor.currentBeltEnum
+    }
+
+    var beltPromotionCount: Int {
+        interactor.beltHistory.count
+    }
+
     private var currentPeriod: DateRange {
         switch selectedPeriodLabel {
         case "Week":     return .lastWeek
@@ -46,6 +76,16 @@ class TrainingStatsPresenter {
         router.showAIInsightsView()
     }
 
+    func onAchievementsTapped() {
+        interactor.trackEvent(event: Event.achievementsTapped)
+        router.showAchievementsView()
+    }
+
+    func onMonthlyReportTapped() {
+        interactor.trackEvent(event: Event.monthlyReportTapped)
+        router.showMonthlyReportView()
+    }
+
     var isAIAvailable: Bool {
         interactor.isAIAvailable
     }
@@ -66,13 +106,17 @@ extension TrainingStatsPresenter {
         case periodChanged(label: String)
         case manageGoalsTapped
         case aiInsightsTapped
+        case achievementsTapped
+        case monthlyReportTapped
 
         var eventName: String {
             switch self {
-            case .onAppear:          return "TrainingStats_Appear"
-            case .periodChanged:     return "TrainingStats_PeriodChange"
-            case .manageGoalsTapped: return "TrainingStats_ManageGoals_Tap"
-            case .aiInsightsTapped:  return "TrainingStats_AIInsights_Tap"
+            case .onAppear:            return "TrainingStats_Appear"
+            case .periodChanged:       return "TrainingStats_PeriodChange"
+            case .manageGoalsTapped:   return "TrainingStats_ManageGoals_Tap"
+            case .aiInsightsTapped:    return "TrainingStats_AIInsights_Tap"
+            case .achievementsTapped:  return "TrainingStats_Achievements_Tap"
+            case .monthlyReportTapped: return "TrainingStats_MonthlyReport_Tap"
             }
         }
 

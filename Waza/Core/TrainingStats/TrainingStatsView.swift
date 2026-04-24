@@ -17,6 +17,14 @@ struct TrainingStatsView: View {
                     .scaleAppear(delay: 0.1)
                 typeBreakdownSection
                     .scaleAppear(delay: 0.15)
+                beltProgressionCard
+                    .scaleAppear(delay: 0.2)
+                achievementsCard
+                    .scaleAppear(delay: 0.25)
+                if presenter.hasMonthlyReport {
+                    monthlyReportCard
+                        .scaleAppear(delay: 0.3)
+                }
             }
             .padding(16)
         }
@@ -27,24 +35,22 @@ struct TrainingStatsView: View {
             // as separate liquid-glass capsules instead of one merged bubble.
             if presenter.isAIAvailable {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        presenter.onAIInsightsTapped()
-                    } label: {
-                        Image(systemName: "apple.intelligence")
-                            .font(.headline)
-                    }
-                    .accessibilityLabel("AI training insights")
+                    Image(systemName: "apple.intelligence")
+                        .font(.headline)
+                        .anyButton(.press) {
+                            presenter.onAIInsightsTapped()
+                        }
+                        .accessibilityLabel("AI training insights")
                 }
             }
             ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    presenter.onManageGoalsTapped()
-                } label: {
-                    Image(systemName: "plus")
-                        .font(.headline)
-                        .foregroundStyle(Color.wazaAccent)
-                }
-                .accessibilityLabel("Manage goals")
+                Image(systemName: "plus")
+                    .font(.headline)
+                    .foregroundStyle(Color.wazaAccent)
+                    .anyButton(.press) {
+                        presenter.onManageGoalsTapped()
+                    }
+                    .accessibilityLabel("Manage goals")
             }
         }
         .onAppear {
@@ -188,6 +194,82 @@ struct TrainingStatsView: View {
             }
             .frame(height: 6)
         }
+    }
+
+    // MARK: - Progress Cards
+
+    private var achievementsCard: some View {
+        navCard(
+            icon: "trophy.fill",
+            title: "Achievements",
+            subtitle: presenter.achievementsProgressText,
+            action: { presenter.onAchievementsTapped() }
+        )
+    }
+
+    private var monthlyReportCard: some View {
+        navCard(
+            icon: "doc.text.fill",
+            title: "Monthly Report",
+            subtitle: "Review last month's training",
+            action: { presenter.onMonthlyReportTapped() }
+        )
+    }
+
+    private var beltProgressionCard: some View {
+        let belt = presenter.currentBelt
+        let promotions = presenter.beltPromotionCount
+        let subtitle = promotions > 0
+            ? "\(belt.displayName) • \(promotions) promotion\(promotions == 1 ? "" : "s")"
+            : belt.displayName
+        return HStack(spacing: 14) {
+            Image(systemName: "medal.fill")
+                .font(.title3)
+                .foregroundStyle(Color.wazaAccent)
+                .frame(width: 36, height: 36)
+                .background(Color.wazaAccent.opacity(0.12), in: RoundedRectangle(cornerRadius: .wazaCornerSmall))
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Belt Progression")
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(Color.wazaInk900)
+                Text(subtitle)
+                    .font(.caption)
+                    .foregroundStyle(Color.wazaInk500)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .padding(14)
+        .wazaCard()
+    }
+
+    private func navCard(icon: String, title: String, subtitle: String, action: @escaping () -> Void) -> some View {
+        HStack(spacing: 14) {
+            Image(systemName: icon)
+                .font(.title3)
+                .foregroundStyle(Color.wazaAccent)
+                .frame(width: 36, height: 36)
+                .background(Color.wazaAccent.opacity(0.12), in: RoundedRectangle(cornerRadius: .wazaCornerSmall))
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(Color.wazaInk900)
+                Text(subtitle)
+                    .font(.caption)
+                    .foregroundStyle(Color.wazaInk500)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            Image(systemName: "chevron.right")
+                .font(.caption)
+                .foregroundStyle(Color.wazaInk400)
+        }
+        .padding(14)
+        .wazaCard()
+        .anyButton(.press) { action() }
     }
 
     private func statCard(value: String, label: String, icon: String) -> some View {

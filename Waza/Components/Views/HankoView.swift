@@ -7,7 +7,7 @@ import SwiftUI
 /// the session type; the color indicates earned status or category.
 struct HankoView: View {
     let kanji: String
-    var label: String? = nil
+    var label: String?
     var size: CGFloat = 40
     var rotation: Double = 0
     var color: Color = .wazaAccent
