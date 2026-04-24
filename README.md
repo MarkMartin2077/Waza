@@ -8,13 +8,6 @@ A BJJ training tracker for iOS 26. Log sessions, check in at your gym, track tec
 
 ---
 
-## Demo
-
-[▶ Watch the 70s tour (`demo.mov`, 38 MB)](./Screenshots/demo.mov) — recorded from the `Waza - Mock` scheme with the marketing seeder active.
-
-> **Regenerate:** start with `xcrun simctl io booted recordVideo Screenshots/demo.mov`, run the screenshot UI test, then stop recording with `Ctrl-C`.
-> For an inline GIF, convert with `ffmpeg -i Screenshots/demo.mov -vf "fps=12,scale=360:-1" Screenshots/demo.gif`.
-
 ## Screenshots
 
 <p align="center">
