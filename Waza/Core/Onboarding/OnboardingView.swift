@@ -103,19 +103,18 @@ struct OnboardingView: View {
     private var pageIndicator: some View {
         HStack(spacing: 6) {
             ForEach(0..<OnboardingPresenter.totalPages, id: \.self) { index in
-                ZStack {
-                    Capsule()
-                        .fill(Color.wazaInk300)
-                        .frame(width: 8, height: 8)
-
+                Group {
                     if index == presenter.currentPage {
                         Capsule()
                             .fill(Color.wazaInk900)
                             .frame(width: 24, height: 8)
                             .matchedGeometryEffect(id: "pill", in: indicatorNamespace)
+                    } else {
+                        Capsule()
+                            .fill(Color.wazaInk300)
+                            .frame(width: 8, height: 8)
                     }
                 }
-                .frame(width: index == presenter.currentPage ? 24 : 8, height: 8)
                 .animation(.spring(response: 0.35, dampingFraction: 0.7), value: presenter.currentPage)
             }
         }
