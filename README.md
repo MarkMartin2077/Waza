@@ -4,7 +4,7 @@ A BJJ training tracker for iOS 26. Log sessions, check in at your gym, track tec
 
 [Available on the App Store →](https://apps.apple.com/app/id6759821384)
 
-> **For engineers and recruiters:** jump to [Engineering Overview](#engineering-overview), [Architectural Decisions](./DECISIONS.md), or the featured [CoreInteractor refactor case study](./docs/refactor-coreinteractor-case-study.md) ([open as PR #1](https://github.com/MarkMartin2077/Waza/pull/1)).
+> **For engineers and recruiters:** jump to [Engineering Overview](#engineering-overview) or the featured [CoreInteractor refactor case study](./docs/refactor-coreinteractor-case-study.md) ([open as PR #1](https://github.com/MarkMartin2077/Waza/pull/1)).
 
 ---
 
@@ -234,7 +234,7 @@ Views never reach into the Interactor or Manager layer directly; Presenters neve
 
 - **[`ChallengeGenerator.swift`](./Waza/Managers/BJJ/ChallengeGenerator.swift)** — weighted-selection algorithm with category-variety enforcement. Deterministic via injectable RNG seed; the unit tests exercise the seed to verify variety and distribution.
 
-- **[`CoreInteractor.swift`](./Waza/Root/RIBs/Core/CoreInteractor.swift)** — the result of a deliberate refactor that consolidated 7 domain-grouped extension files (`+BJJ.swift`, `+Gamification.swift`, etc.) into a single interactor plus 3 orchestration services (`AccountLifecycleService`, `SessionLoggingService`, `MonthlyReportBuilder`). Rationale documented in [`DECISIONS.md`](./DECISIONS.md#2-consolidate-coreinteractor).
+- **[`CoreInteractor.swift`](./Waza/Root/RIBs/Core/CoreInteractor.swift)** — the result of a deliberate refactor that consolidated 7 domain-grouped extension files (`+BJJ.swift`, `+Gamification.swift`, etc.) into a single interactor plus 3 orchestration services (`AccountLifecycleService`, `SessionLoggingService`, `MonthlyReportBuilder`). See the [case study](./docs/refactor-coreinteractor-case-study.md) for rationale and the bug it surfaced.
 
 - **[`SessionLoggingService.swift`](./Waza/Managers/BJJ/SessionLoggingService.swift)** — cross-manager orchestration for the "log a session" flow: session creation, XP calculation with multipliers, streak updates, achievement checks, weekly challenge evaluation, toast firing. All writes log to Crashlytics on failure — no silent `try?` swallows.
 
