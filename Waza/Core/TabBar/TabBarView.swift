@@ -62,6 +62,10 @@ struct TabBarView: View {
                 guard let data = newValue else { return }
                 presenter.onPendingTechniquePromotionReceived(data)
             }
+            .onChange(of: presenter.lastChallengeCompletion) { _, newValue in
+                guard let title = newValue else { return }
+                presenter.onChallengeCompletionReceived(title)
+            }
 
             // XP toast — lightweight overlay, not a routed modal
             if let xpData = presenter.pendingXPToast {
@@ -69,6 +73,15 @@ struct TabBarView: View {
                     data: xpData,
                     accentColor: Color.wazaAccent,
                     onDismiss: { presenter.onXPToastDismissed() }
+                )
+                .allowsHitTesting(false)
+            }
+
+            // Challenge completion toast — editorial, distinct from XP toast
+            if let title = presenter.pendingChallengeToast {
+                ChallengeCompletionToastView(
+                    title: title,
+                    onDismiss: { presenter.onChallengeToastDismissed() }
                 )
                 .allowsHitTesting(false)
             }

@@ -2,16 +2,18 @@ import Foundation
 
 // MARK: - League
 
+/// BJJ-native ranks borrowed from Japanese martial-arts grammar.
+/// Progression: beginner → pupil → disciple → swordsman → live-in student →
+/// instructor → master → head master → legend.
 enum XPLeague: String, CaseIterable, Sendable {
-    case rookie      = "Rookie"
-    case scrapper    = "Scrapper"
-    case grappler    = "Grappler"
-    case contender   = "Contender"
-    case adept       = "Adept"
-    case ace         = "Ace"
-    case vanguard    = "Vanguard"
-    // swiftlint:disable:next inclusive_language
-    case grandmaster = "Grandmaster" // BJJ title for coral/red belt holders
+    case shoshinsha  = "Shoshinsha"  // 初心者 — beginner
+    case monjin      = "Monjin"       // 門人 — pupil/gate-student
+    case deshi       = "Deshi"        // 弟子 — disciple
+    case kenshi      = "Kenshi"       // 剣士 — practitioner/swordsman
+    case uchideshi   = "Uchideshi"    // 内弟子 — live-in student
+    case sensei      = "Sensei"       // 先生 — teacher
+    case shihan      = "Shihan"       // 師範 — master instructor
+    case soke        = "Soke"         // 宗家 — head of lineage
     case legend      = "Legend"
 
     var displayName: String { rawValue }
@@ -61,10 +63,10 @@ enum XPLevelSystem {
 
     /// League for a given level.
     static func league(forLevel level: Int) -> XPLeague {
-        guard level > 0 else { return .rookie }
+        guard level > 0 else { return .shoshinsha }
         if level > maxRankedLevel { return .legend }
         let index = (level - 1) / subRanksPerLeague
-        let leagues: [XPLeague] = [.rookie, .scrapper, .grappler, .contender, .adept, .ace, .vanguard, .grandmaster]
+        let leagues: [XPLeague] = [.shoshinsha, .monjin, .deshi, .kenshi, .uchideshi, .sensei, .shihan, .soke]
         return leagues[min(index, leagues.count - 1)]
     }
 

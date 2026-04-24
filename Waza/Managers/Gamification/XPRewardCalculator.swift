@@ -54,6 +54,16 @@ struct XPRewardResult: Sendable, Equatable {
 
 enum XPRewardCalculator {
 
+    // MARK: - Anti-Farming Guards
+
+    /// Minimum session duration (in seconds) to earn XP. Sub-20-minute sessions earn 0 XP
+    /// to prevent users from logging fake tiny sessions to farm points.
+    static let minimumDurationForXP: TimeInterval = 20 * 60
+
+    /// Daily cap on XP earned from session logging. Prevents log-spamming attacks.
+    /// Note: applied externally in SessionLoggingService since the calculator is stateless.
+    static let dailySessionXPCap: Int = 100
+
     // MARK: - Session XP
 
     /// Calculate total XP reward for logging a session.
@@ -61,6 +71,11 @@ enum XPRewardCalculator {
         params: SessionEntryParams,
         recentFocusAreas: Set<String>
     ) -> XPRewardResult {
+        // Sessions shorter than the minimum earn no XP — the mat work has to be real.
+        guard params.duration >= minimumDurationForXP else {
+            return .empty
+        }
+
         var items: [XPRewardItem] = []
 
         // Base: 10 XP for any session, 20 for competition

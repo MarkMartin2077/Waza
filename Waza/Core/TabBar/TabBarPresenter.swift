@@ -12,6 +12,7 @@ class TabBarPresenter {
 
     private var isShowingCheckIn: Bool = false
     var pendingXPToast: XPToastData?
+    var pendingChallengeToast: String?
 
     init(interactor: TabBarInteractor, router: TabBarRouter) {
         self.interactor = interactor
@@ -38,6 +39,10 @@ class TabBarPresenter {
 
     var lastStreakTierUp: StreakTier? {
         interactor.xpAppState.pendingStreakTierUp
+    }
+
+    var lastChallengeCompletion: String? {
+        interactor.xpAppState.pendingChallengeCompletion
     }
 
     var pendingTechniquePromotion: TechniquePromotionData? {
@@ -69,6 +74,15 @@ class TabBarPresenter {
         interactor.xpAppState.pendingStreakTierUp = nil
         guard !isCelebrationShowing else { return }
         showStreakTierUp(tier)
+    }
+
+    func onChallengeCompletionReceived(_ title: String) {
+        interactor.xpAppState.pendingChallengeCompletion = nil
+        pendingChallengeToast = title
+    }
+
+    func onChallengeToastDismissed() {
+        pendingChallengeToast = nil
     }
 
     // MARK: - Technique Promotion

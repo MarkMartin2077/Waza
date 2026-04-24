@@ -180,7 +180,15 @@ class SettingsPresenter {
         func onEnjoyingAppYesPressed() {
             interactor.trackEvent(event: Event.rateAppYesPressed)
             router.dismissModal()
-            AppStoreRatingsHelper.requestRatingsReview()
+            // Delay so StoreKit's sheet doesn't race with the modal's dismiss animation.
+            // If Apple throttles the native prompt, fall back to the App Store review URL.
+            Task { @MainActor in
+                try? await Task.sleep(for: .milliseconds(350))
+                let surfaced = AppStoreRatingsHelper.requestReview(trigger: .settingsManualRequest)
+                if !surfaced {
+                    AppStoreRatingsHelper.openAppStoreReviewURL()
+                }
+            }
         }
 
         func onEnjoyingAppNoPressed() {

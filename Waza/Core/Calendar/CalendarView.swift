@@ -4,7 +4,10 @@ struct CalendarView: View {
     @State var presenter: CalendarPresenter
 
     var body: some View {
-        ZStack(alignment: .center) {
+        VStack(spacing: 0) {
+            if presenter.isFirstRunEmpty {
+                emptyStateBanner
+            }
             CalendarMonthGridView(
                 days: presenter.days,
                 monthTitle: presenter.monthTitle,
@@ -13,11 +16,7 @@ struct CalendarView: View {
                 onNextMonth: { presenter.onNextMonth() },
                 onTitleTap: { presenter.onJumpToToday() }
             )
-
-            if presenter.isFirstRunEmpty {
-                emptyStateOverlay
-                    .allowsHitTesting(false)
-            }
+            Spacer(minLength: 0)
         }
         .background(Color.wazaPaper)
         .toolbar {
@@ -35,17 +34,24 @@ struct CalendarView: View {
         }
     }
 
-    private var emptyStateOverlay: some View {
-        VStack(spacing: 8) {
+    private var emptyStateBanner: some View {
+        HStack(spacing: 12) {
             Text("技")
-                .font(.system(size: 44))
-                .foregroundStyle(Color.wazaInk300)
+                .font(.system(size: 28))
+                .foregroundStyle(Color.wazaAccent)
             Text("Log your first session to see it here.")
                 .font(.wazaBody)
-                .foregroundStyle(Color.wazaInk500)
-                .multilineTextAlignment(.center)
+                .foregroundStyle(Color.wazaInk600)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .padding(24)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(Color.wazaPaperHi)
+        .overlay(alignment: .bottom) {
+            Rectangle()
+                .fill(Color.wazaInk300)
+                .frame(height: 0.5)
+        }
     }
 }
 

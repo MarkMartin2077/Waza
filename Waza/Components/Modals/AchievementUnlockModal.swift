@@ -5,130 +5,92 @@ struct AchievementUnlockModal: View {
     let accentColor: Color
     let onDismiss: () -> Void
 
-    @State private var badgeScale: Double = 0.3
-    @State private var backgroundOpacity: Double = 0
+    @State private var stampScale: Double = 0.6
+    @State private var stampOpacity: Double = 0
     @State private var contentOpacity: Double = 0
-    @State private var glowScale: Double = 0.8
-    @State private var glowOpacity: Double = 0
-
-    private var rarityColor: Color { achievementId.rarity.color }
 
     var body: some View {
         ZStack {
-            // Background — near-black with subtle belt tint
-            Color.black
-                .opacity(backgroundOpacity * 0.94)
-                .ignoresSafeArea()
-            accentColor
-                .opacity(backgroundOpacity * 0.07)
-                .ignoresSafeArea()
+            Color.wazaPaper.ignoresSafeArea()
 
-            // Confetti burst
-            ConfettiView(colors: confettiColors)
-                .ignoresSafeArea()
-
-            VStack(spacing: 28) {
+            VStack(spacing: 24) {
                 Spacer()
 
-                // Badge
-                ZStack {
-                    // Rarity glow rings
-                    ForEach(0..<3, id: \.self) { ringIndex in
-                        Circle()
-                            .stroke(
-                                rarityColor.opacity(0.25 - Double(ringIndex) * 0.07),
-                                lineWidth: 1.5
-                            )
-                            .frame(
-                                width: 126 + CGFloat(ringIndex) * 20,
-                                height: 126 + CGFloat(ringIndex) * 20
-                            )
-                            .scaleEffect(glowScale)
-                            .opacity(glowOpacity)
-                    }
+                HankoView(kanji: stampKanji, size: 96, rotation: -2)
+                    .scaleEffect(stampScale)
+                    .opacity(stampOpacity)
 
-                    // Badge circle
-                    Circle()
-                        .fill(.white.opacity(0.12))
-                        .frame(width: 120, height: 120)
+                VStack(spacing: 10) {
+                    Text("Marked.")
+                        .font(.wazaDisplayMedium)
+                        .foregroundStyle(Color.wazaInk900)
 
-                    Circle()
-                        .stroke(rarityColor.opacity(0.85), lineWidth: 2.5)
-                        .frame(width: 120, height: 120)
+                    Text(achievementId.displayName)
+                        .font(.wazaDisplaySmall)
+                        .italic()
+                        .foregroundStyle(Color.wazaInk600)
 
-                    Image(systemName: achievementId.iconName)
-                        .font(.system(size: 52, weight: .semibold))
-                        .foregroundStyle(.white)
+                    Text(achievementId.achievementDescription.uppercased())
+                        .font(.wazaLabel)
+                        .tracking(1.5)
+                        .foregroundStyle(Color.wazaInk500)
                 }
-                .scaleEffect(badgeScale)
-
-                VStack(spacing: 16) {
-                    // Rarity chip
-                    HStack(spacing: 6) {
-                        Image(systemName: achievementId.rarity.symbolName)
-                            .font(.caption2.weight(.bold))
-                        Text(achievementId.rarity.displayName.uppercased())
-                            .font(.caption.weight(.bold))
-                            .tracking(1.5)
-                    }
-                    .foregroundStyle(rarityColor)
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 6)
-                    .background(rarityColor.opacity(0.12), in: Capsule())
-                    .overlay(Capsule().stroke(rarityColor.opacity(0.35), lineWidth: 1))
-
-                    // Text stack
-                    VStack(spacing: 8) {
-                        Text("Achievement Unlocked")
-                            .font(.caption)
-                            .fontWeight(.semibold)
-                            .foregroundStyle(.white.opacity(0.6))
-                            .textCase(.uppercase)
-                            .tracking(2)
-
-                        Text(achievementId.displayName)
-                            .font(.wazaTitle)
-                            .foregroundStyle(.white)
-
-                        Text(achievementId.achievementDescription)
-                            .font(.subheadline)
-                            .foregroundStyle(.white.opacity(0.75))
-                            .multilineTextAlignment(.center)
-                    }
-                }
+                .multilineTextAlignment(.center)
+                .opacity(contentOpacity)
 
                 Spacer()
 
-                Text("Tap anywhere to continue")
-                    .font(.caption)
-                    .foregroundStyle(.white.opacity(0.4))
-                    .padding(.bottom, 32)
+                continueButton
+                    .opacity(contentOpacity)
             }
-            .padding(.horizontal, 36)
-            .opacity(contentOpacity)
+            .padding(.horizontal, 32)
+            .padding(.bottom, 32)
         }
         .onAppear(perform: runEntranceAnimation)
-        .onTapGesture { onDismiss() }
+        .accessibilityAddTraits(.isModal)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Marked. \(achievementId.displayName). \(achievementId.achievementDescription).")
     }
 
-    // MARK: - Helpers
+    /// Semantic kanji keyed to each achievement. Defaults to 印 (mark/stamp).
+    private var stampKanji: String {
+        switch achievementId {
+        case .firstSession:               return "初"   // first
+        case .tenSessions:                return "十"   // ten
+        case .fiftySessions:              return "五"   // fifty
+        case .hundredSessions:            return "百"   // hundred
+        case .threeDayStreak:             return "連"   // consecutive
+        case .sevenDayStreak:             return "連"
+        case .thirtyDayStreak:            return "連"
+        case .firstGoalCompleted:         return "達"   // attain/reach
+        case .firstClassCheckedIn:        return "入"   // enter
+        case .fiveClassAttendance:        return "皆"   // all/every
+        case .twentyFiveClassAttendance:  return "道"   // path/way
+        case .perfectWeek:                return "全"   // complete/perfect
+        case .fourWeekConsistency:        return "継"   // continue/sustain
+        }
+    }
 
-    private var confettiColors: [Color] {
-        [rarityColor, rarityColor.opacity(0.7), .white, accentColor.opacity(0.8)]
+    private var continueButton: some View {
+        Button {
+            onDismiss()
+        } label: {
+            Text("Continue")
+                .font(.wazaBody)
+                .fontWeight(.semibold)
+                .foregroundStyle(Color.wazaPaperHi)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 16)
+                .background(Color.wazaAccent, in: RoundedRectangle(cornerRadius: .wazaCornerSmall))
+        }
     }
 
     private func runEntranceAnimation() {
-        withAnimation(.easeIn(duration: 0.25)) {
-            backgroundOpacity = 1
+        withAnimation(.spring(response: 0.5, dampingFraction: 0.65).delay(0.05)) {
+            stampScale = 1
+            stampOpacity = 1
         }
-        withAnimation(.spring(response: 0.48, dampingFraction: 0.62).delay(0.08)) {
-            badgeScale = 1
-        }
-        withAnimation(.spring(response: 0.6, dampingFraction: 0.55).delay(0.12)) {
-            glowScale = 1.1
-            glowOpacity = 1
-        }
-        withAnimation(.easeIn(duration: 0.3).delay(0.18)) {
+        withAnimation(.easeIn(duration: 0.3).delay(0.28)) {
             contentOpacity = 1
         }
     }
@@ -139,7 +101,7 @@ struct AchievementUnlockModal: View {
 #Preview("Common — First Roll") {
     AchievementUnlockModal(
         achievementId: .firstSession,
-        accentColor: Color(hex: "5A6A7A"),
+        accentColor: .wazaAccent,
         onDismiss: { }
     )
 }
@@ -147,7 +109,7 @@ struct AchievementUnlockModal: View {
 #Preview("Rare — 7-Day Streak") {
     AchievementUnlockModal(
         achievementId: .sevenDayStreak,
-        accentColor: Color(hex: "1E56A0"),
+        accentColor: .wazaAccent,
         onDismiss: { }
     )
 }
@@ -155,7 +117,7 @@ struct AchievementUnlockModal: View {
 #Preview("Epic — On a Roll") {
     AchievementUnlockModal(
         achievementId: .fourWeekConsistency,
-        accentColor: Color(hex: "7B2D8B"),
+        accentColor: .wazaAccent,
         onDismiss: { }
     )
 }
@@ -163,7 +125,7 @@ struct AchievementUnlockModal: View {
 #Preview("Legendary — 30-Day Streak") {
     AchievementUnlockModal(
         achievementId: .thirtyDayStreak,
-        accentColor: Color(hex: "1E56A0"),
+        accentColor: .wazaAccent,
         onDismiss: { }
     )
 }

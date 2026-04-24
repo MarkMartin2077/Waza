@@ -69,8 +69,6 @@ struct SessionEntryView: View {
                             in: RoundedRectangle(cornerRadius: 12)
                         )
                         .foregroundStyle(isSelected ? .white : .primary)
-                        .scaleEffect(isSelected ? 1.0 : 0.96)
-                        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isSelected)
                         .anyButton(.press) {
                             presenter.onSessionTypeSelected(sessionType)
                         }
@@ -102,8 +100,6 @@ struct SessionEntryView: View {
                             in: Capsule()
                         )
                         .foregroundStyle(isSelected ? .white : .primary)
-                        .scaleEffect(isSelected ? 1.0 : 0.96)
-                        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isSelected)
                         .anyButton(.press) {
                             presenter.onFocusAreaToggled(area)
                         }
@@ -151,6 +147,7 @@ struct SessionEntryView: View {
                                 .accessibilityLabel("Remove \(name)")
                             }
                         }
+                        .transition(.opacity)
                     }
 
                     TechniquePickerView(
@@ -161,6 +158,7 @@ struct SessionEntryView: View {
                     )
                 }
                 .padding(16)
+                .animation(.easeInOut(duration: 0.2), value: presenter.selectedTechniques.isEmpty)
             }
         }
         .wazaCard()
@@ -427,8 +425,6 @@ struct SessionEntryView: View {
                             RoundedRectangle(cornerRadius: 12)
                                 .stroke(isSelected ? Color.wazaAccent : Color.clear, lineWidth: 1.5)
                         )
-                        .scaleEffect(isSelected ? 1.1 : 1.0)
-                        .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isSelected)
                         .accessibilityLabel("\(moodLabels[rating - 1]), mood \(rating) of 5")
                         .anyButton {
                             presenter.onMoodSelected(isBefore: isBefore, rating: rating)

@@ -34,7 +34,6 @@ struct CoreInteractor: GlobalInteractor {
     let trainingStatsManager: TrainingStatsManager
     let aiInsightsManager: AIInsightsManager
     let classScheduleManager: ClassScheduleManager
-    let liveActivityManager: LiveActivityManager
     let techniqueManager: TechniqueManager
     let challengeManager: ChallengeManager
 
@@ -65,7 +64,6 @@ struct CoreInteractor: GlobalInteractor {
         let trainingStatsManager = container.resolve(TrainingStatsManager.self)!
         let aiInsightsManager = container.resolve(AIInsightsManager.self)!
         let classScheduleManager = container.resolve(ClassScheduleManager.self)!
-        let liveActivityManager = container.resolve(LiveActivityManager.self)!
         let techniqueManager = container.resolve(TechniqueManager.self)!
         let challengeManager = container.resolve(ChallengeManager.self)!
 
@@ -88,7 +86,6 @@ struct CoreInteractor: GlobalInteractor {
         self.trainingStatsManager = trainingStatsManager
         self.aiInsightsManager = aiInsightsManager
         self.classScheduleManager = classScheduleManager
-        self.liveActivityManager = liveActivityManager
         self.techniqueManager = techniqueManager
         self.challengeManager = challengeManager
 
@@ -116,7 +113,22 @@ struct CoreInteractor: GlobalInteractor {
             achievementManager: achievementManager,
             challengeManager: challengeManager,
             classScheduleManager: classScheduleManager,
-            logManager: logManager
+            logManager: logManager,
+            refreshWidgetData: { [beltManager, sessionManager, streakManager, classScheduleManager] in
+                let upcoming = classScheduleManager.nextUpcomingClass
+                let data = WazaWidgetData(
+                    streakCount: streakManager.currentStreakData.currentStreak ?? 0,
+                    accentColorHex: Color.wazaAccentHex,
+                    beltDisplayName: beltManager.currentBeltEnum.displayName,
+                    sessionsThisWeek: sessionManager.getSessionStats().thisWeekSessions,
+                    nextClassTypeDisplayName: upcoming?.0.sessionType.displayName,
+                    nextClassGymName: upcoming?.1.name,
+                    nextClassDayOfWeek: upcoming?.0.dayOfWeek,
+                    nextClassStartHour: upcoming?.0.startHour,
+                    nextClassStartMinute: upcoming?.0.startMinute
+                )
+                WidgetDataStore.shared.update(data)
+            }
         )
         self.monthlyReportBuilder = MonthlyReportBuilder(
             sessionManager: sessionManager,
@@ -183,7 +195,7 @@ struct CoreInteractor: GlobalInteractor {
     }
 
     var currentUserName: String {
-        currentUser?.commonNameCalculated ?? currentUser?.displayName ?? "Grappler"
+        currentUser?.commonNameCalculated ?? currentUser?.displayName ?? "Athlete"
     }
 
     func getUser(userId: String) async throws -> UserModel {
@@ -575,6 +587,25 @@ struct CoreInteractor: GlobalInteractor {
         WidgetDataStore.shared.update(data)
     }
 
+    /// Assemble current widget data from live managers and push it to the App Group.
+    /// Call after any mutation that affects the Home Screen widgets (session save,
+    /// check-in, streak freeze consumed, schedule change, gym edit).
+    func refreshWidgetData() {
+        let upcoming = nextUpcomingClass
+        let data = WazaWidgetData(
+            streakCount: currentStreakData.currentStreak ?? 0,
+            accentColorHex: Color.wazaAccentHex,
+            beltDisplayName: currentBeltEnum.displayName,
+            sessionsThisWeek: sessionStats.thisWeekSessions,
+            nextClassTypeDisplayName: upcoming?.0.sessionType.displayName,
+            nextClassGymName: upcoming?.1.name,
+            nextClassDayOfWeek: upcoming?.0.dayOfWeek,
+            nextClassStartHour: upcoming?.0.startHour,
+            nextClassStartMinute: upcoming?.0.startMinute
+        )
+        WidgetDataStore.shared.update(data)
+    }
+
     // MARK: - Notifications
 
     func scheduleStreakRiskNotificationIfNeeded(currentStreak: Int, isAtRisk: Bool) {
@@ -626,6 +657,53 @@ struct CoreInteractor: GlobalInteractor {
     @discardableResult
     func addStreakFreeze(id: String, dateExpires: Date? = nil) async throws -> StreakFreeze {
         try await streakManager.addStreakFreeze(id: id, dateExpires: dateExpires)
+    }
+
+    /// Maximum freezes a user can hold at any time. Prevents indefinite stockpiling
+    /// while leaving enough cushion for a travel week or minor injury.
+    static let freezeCap = 3
+
+    /// Grant a freeze if the user is under the cap. No-op if already at max.
+    /// Freezes never expire — users accumulate them and spend as needed.
+    @discardableResult
+    func awardFreezeIfUnderCap(id: String, source: String) async -> Bool {
+        let current = currentStreakData.freezesAvailableCount ?? 0
+        guard current < Self.freezeCap else { return false }
+        do {
+            _ = try await streakManager.addStreakFreeze(id: id, dateExpires: nil)
+            logManager.trackEvent(eventName: "Freeze_Awarded", parameters: ["source": source, "id": id], type: .analytic)
+            return true
+        } catch {
+            logManager.trackEvent(
+                eventName: "Freeze_AwardFailed",
+                parameters: ["source": source, "id": id, "error": String(describing: error)],
+                type: .severe
+            )
+            return false
+        }
+    }
+
+    /// Grants the monthly freeze if it hasn't been awarded for the current calendar month.
+    /// Safe to call on every Dashboard appear — guarded by UserDefaults.
+    func awardMonthlyFreezeIfNeeded() async {
+        let monthKey = Self.currentMonthKey()
+        let storedKey = UserDefaults.standard.string(forKey: Self.monthlyFreezeKey)
+        guard storedKey != monthKey else { return }
+        let awarded = await awardFreezeIfUnderCap(id: "monthly_\(monthKey)", source: "monthly")
+        // Mark the month as attempted even if we were at cap, so we don't keep trying
+        // every Dashboard appear for the rest of the month.
+        if awarded || (currentStreakData.freezesAvailableCount ?? 0) >= Self.freezeCap {
+            UserDefaults.standard.set(monthKey, forKey: Self.monthlyFreezeKey)
+        }
+    }
+
+    private static let monthlyFreezeKey = "freeze.monthly.lastGrantedMonth"
+
+    private static func currentMonthKey() -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM"
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        return formatter.string(from: Date())
     }
 
     func useStreakFreezes() async throws {
@@ -782,6 +860,7 @@ struct CoreInteractor: GlobalInteractor {
         let totalCount = classScheduleManager.attendance.count
         let thisWeek = classScheduleManager.weeklyAttendanceCount()
         let weeklyTarget = trainingGoalPerWeek ?? 3
+        let wasPerfectBefore = thisWeek - 1 >= weeklyTarget
         let isPerfectWeek = thisWeek >= weeklyTarget
         let consecutivePerfect = classScheduleManager.consecutivePerfectWeeks(weeklyTarget: weeklyTarget)
         achievementManager.checkAndAward(
@@ -789,29 +868,31 @@ struct CoreInteractor: GlobalInteractor {
             sessionStats: sessionStats,
             streakCount: currentStreakData.currentStreak ?? 0
         )
+        // Rating prompt only fires the week the user first hits their weekly target,
+        // not on every check-in after (AppStoreRatingsHelper enforces a 60-day cooldown).
+        if isPerfectWeek, !wasPerfectBefore {
+            Task { @MainActor in
+                try? await Task.sleep(for: .seconds(2))
+                AppStoreRatingsHelper.requestReview(trigger: .perfectWeek)
+            }
+            // Freeze reward for hitting the weekly target — one per week, idempotent via ID.
+            let weekKey = Self.weekKey(for: Date())
+            Task { @MainActor in
+                await awardFreezeIfUnderCap(id: "perfect_week_\(weekKey)", source: "perfect_week")
+            }
+        }
         return record
+    }
+
+    private static func weekKey(for date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-'W'ww"
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        return formatter.string(from: date)
     }
 
     func updateAttendance(_ record: ClassAttendanceModel) throws {
         try classScheduleManager.updateAttendance(record)
-    }
-
-    // MARK: - Live Activity
-
-    func startTrainingLiveActivity(
-        sessionTypeDisplayName: String,
-        gymName: String?,
-        beltAccentColorHex: String
-    ) {
-        liveActivityManager.startTraining(
-            sessionTypeDisplayName: sessionTypeDisplayName,
-            gymName: gymName,
-            beltAccentColorHex: beltAccentColorHex
-        )
-    }
-
-    func endTrainingLiveActivity() async {
-        await liveActivityManager.endTraining()
     }
 
     // MARK: - Weekly Challenges

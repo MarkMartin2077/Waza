@@ -1,8 +1,20 @@
 import SwiftUI
+import OSLog
+
+extension OSLog {
+    static let widget = OSLog(subsystem: "com.markmartin89.Waza", category: "widget")
+}
 
 // MARK: - Shared data model
 // Intentionally duplicated from Waza/Utilities/WidgetDataStore.swift.
 // Both targets encode/decode the same JSON from App Group UserDefaults.
+
+/// App Group ID shared between the Waza app and WazaWidgets extension.
+/// Must match the entitlements file on both targets.
+enum WazaWidgetConstants {
+    static let appGroupID = "group.com.markmartin89.Waza"
+    static let dataKey = "waza_widget_data"
+}
 
 struct WazaWidgetData: Codable {
     let streakCount: Int
@@ -14,6 +26,21 @@ struct WazaWidgetData: Codable {
     let nextClassDayOfWeek: Int?
     let nextClassStartHour: Int?
     let nextClassStartMinute: Int?
+
+    // Explicit keys ensure the encoded shape is stable and drift between app ⇄ widget
+    // surfaces as a compile error, not a silent decode failure. Keep this exactly in sync
+    // with Waza/Utilities/WidgetDataStore.swift.
+    enum CodingKeys: String, CodingKey {
+        case streakCount = "streak_count"
+        case accentColorHex = "accent_color_hex"
+        case beltDisplayName = "belt_display_name"
+        case sessionsThisWeek = "sessions_this_week"
+        case nextClassTypeDisplayName = "next_class_type_display_name"
+        case nextClassGymName = "next_class_gym_name"
+        case nextClassDayOfWeek = "next_class_day_of_week"
+        case nextClassStartHour = "next_class_start_hour"
+        case nextClassStartMinute = "next_class_start_minute"
+    }
 
     static var placeholder: WazaWidgetData {
         WazaWidgetData(
@@ -31,12 +58,18 @@ struct WazaWidgetData: Codable {
 
     static func load() -> WazaWidgetData {
         guard
-            let data = UserDefaults(suiteName: "group.com.markmartin89.Waza")?.data(forKey: "waza_widget_data"),
-            let decoded = try? JSONDecoder().decode(WazaWidgetData.self, from: data)
+            let defaults = UserDefaults(suiteName: WazaWidgetConstants.appGroupID),
+            let data = defaults.data(forKey: WazaWidgetConstants.dataKey)
         else {
             return .placeholder
         }
-        return decoded
+        do {
+            return try JSONDecoder().decode(WazaWidgetData.self, from: data)
+        } catch {
+            // Decode failures fall back to placeholder; OSLog for TestFlight diagnosis.
+            os_log(.error, log: .widget, "WazaWidgetData decode failed: %{public}@", String(describing: error))
+            return .placeholder
+        }
     }
 
     var accentColor: Color {

@@ -43,12 +43,12 @@ A BJJ training tracker for iOS 26. Log sessions, check in at your gym, track tec
 ### Check In at Your Gym
 - Get notified when you arrive at your gym — tap to check in
 - See a personalized AI message after each check-in
-- Live timer on your Lock Screen while you train
 
 ### Rank Up with XP
 - Earn XP for every session, check-in, and milestone
-- Climb through 8 ranked leagues: Rookie, Scrapper, Grappler, Contender, Adept, Ace, Vanguard, Grandmaster — plus Legend for the dedicated
-- Boost your XP with streak multipliers, perfect week bonuses, and random Fire Rounds (2x XP for 24 hours)
+- Climb through 8 ranked leagues borrowed from Japanese martial-arts grammar: Shoshinsha, Monjin, Deshi, Kenshi, Uchideshi, Sensei, Shihan, Soke — plus Legend for the dedicated
+- Boost your XP with streak multipliers and perfect-week bonuses
+- Earn a 24-hour Fire Round (2× XP) by sweeping all 3 weekly challenges
 - Full-screen celebrations when you level up or unlock a new streak tier
 
 ### Build Your Technique Journal
@@ -83,10 +83,10 @@ A BJJ training tracker for iOS 26. Log sessions, check in at your gym, track tec
 - Never miss a session with customizable notifications
 
 ### Stay Motivated
-- Daily training streaks with warnings before they break
-- Use streak freezes to protect your streak on rest days
+- Training streaks with a 24-hour rest-day grace so consistency matches how BJJ is actually trained
+- Earn streak freezes four ways: starter freeze on your first session, one per month, hitting a perfect week, and completing 2/3 weekly challenges — up to 3 held at a time, never expire
 - 13 achievements to unlock across sessions, streaks, attendance, and goals
-- Home screen widgets for your streak and next class
+- Home-screen widget for your next class
 
 ---
 
@@ -97,7 +97,7 @@ A solo iOS portfolio project designed to demonstrate production-grade engineerin
 ### Stack
 
 - **Language:** Swift 6 (strict concurrency enabled)
-- **UI:** SwiftUI, iOS 26 — Live Activities, widgets, Apple Intelligence integration
+- **UI:** SwiftUI, iOS 26 — widgets, Apple Intelligence integration
 - **State:** `@Observable` classes, `@MainActor` discipline, structured concurrency
 - **Persistence:** SwiftData + FileManager (local cache, offline-first) with Firestore sync
 - **Backends:** Firebase (auth, storage, messaging, crashlytics), RevenueCat (IAP), Mixpanel (analytics)

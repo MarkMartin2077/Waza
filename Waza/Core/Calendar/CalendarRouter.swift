@@ -14,6 +14,7 @@ protocol CalendarRouter: GlobalRouter {
     func showSessionDetailView(session: BJJSessionModel)
     func showCheckInView(gym: GymLocationModel, schedule: ClassScheduleModel?, checkInMethod: CheckInMethod, onDismiss: (() -> Void)?)
     func showSessionEntryView(onDismiss: (() -> Void)?)
+    func showSessionEntryView(initialDate: Date?, onDismiss: (() -> Void)?)
     func showCalendarDayDetailSheet(day: CalendarDayModel, callbacks: CalendarDayDetailCallbacks)
     func showAddScheduleSheet(gymId: String, existingSchedule: ClassScheduleModel?, onDismiss: (() -> Void)?)
     func showGymSetupView(existingGym: GymLocationModel?, onDismiss: (() -> Void)?)
@@ -42,6 +43,13 @@ extension CoreRouter: CalendarRouter {
     func showSessionsView() {
         router.showScreen(.push) { router in
             builder.sessionsView(router: router)
+        }
+    }
+
+    func showSessionEntryView(initialDate: Date?, onDismiss: (() -> Void)?) {
+        let delegate = SessionEntryDelegate(initialDate: initialDate)
+        router.showScreen(.sheet, onDismiss: onDismiss) { router in
+            builder.sessionEntryView(router: router, delegate: delegate)
         }
     }
 

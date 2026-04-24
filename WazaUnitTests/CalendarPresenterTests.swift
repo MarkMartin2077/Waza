@@ -69,8 +69,17 @@ final class SpyCalendarRouter: CalendarRouter {
         lastCheckInOnDismiss = onDismiss
     }
 
+    private(set) var lastSessionEntryInitialDate: Date?
+
     func showSessionEntryView(onDismiss: (() -> Void)?) {
         sessionEntryCalls += 1
+        lastSessionEntryInitialDate = nil
+        lastSessionEntryOnDismiss = onDismiss
+    }
+
+    func showSessionEntryView(initialDate: Date?, onDismiss: (() -> Void)?) {
+        sessionEntryCalls += 1
+        lastSessionEntryInitialDate = initialDate
         lastSessionEntryOnDismiss = onDismiss
     }
 

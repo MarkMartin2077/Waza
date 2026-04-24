@@ -101,7 +101,8 @@ enum StreakTier: Int, Sendable, Equatable, Comparable {
 
 enum XPMultiplierCalculator {
 
-    static let fireRoundChance: Double = 0.15
+    // Fire round is no longer a random roll — it's earned by sweeping the weekly challenges.
+    // See `SessionLoggingService.handleWeeklyChallengeEvaluation` for the activation trigger.
     static let fireRoundDuration: TimeInterval = 24 * 60 * 60
     static let perfectWeekTarget: Int = 3
 
@@ -175,29 +176,26 @@ enum XPMultiplierCalculator {
     // MARK: - Calculate
 
     /// Compute the XP multiplier for a session.
+    /// Fire round is not rolled here — it activates only when a user sweeps the weekly
+    /// challenges (see `SessionLoggingService.handleWeeklyChallengeEvaluation`).
     /// - Parameters:
     ///   - streakDays: Current consecutive streak count.
     ///   - sessionsLastWeek: Number of sessions logged in the previous calendar week.
-    ///   - randomRoll: A value in 0..<1 for fire round determination. Inject for testability.
     ///   - checkActiveFireRound: Whether to check for existing fire round boost. Set false in tests.
     static func calculate(
         streakDays: Int,
         sessionsLastWeek: Int,
-        randomRoll: Double = Double.random(in: 0..<1),
         checkActiveFireRound: Bool = true
     ) -> XPMultiplierResult {
         var components: [XPMultiplierComponent] = []
-        var didActivateNew = false
 
         // Apply debug overrides if active
         var effectiveStreakDays = streakDays
         var effectiveSessionsLastWeek = sessionsLastWeek
-        var effectiveRoll = randomRoll
 
         #if DEBUG
         if devOverrideStreakDays > 0 { effectiveStreakDays = devOverrideStreakDays }
         if devForcePerfectWeek { effectiveSessionsLastWeek = max(effectiveSessionsLastWeek, perfectWeekTarget) }
-        if devForceFireRound { effectiveRoll = 0.0 }
         #endif
 
         // Streak multiplier
@@ -211,15 +209,16 @@ enum XPMultiplierCalculator {
             components.append(XPMultiplierComponent(reason: .perfectWeek, bonus: 0.25))
         }
 
-        // Fire round — check active boost first, then roll for new
-        if checkActiveFireRound && isFireRoundActive() {
+        // Fire round — active only if previously earned (by sweep).
+        var forceFireRoundActive = false
+        #if DEBUG
+        forceFireRoundActive = devForceFireRound
+        #endif
+        if (checkActiveFireRound && isFireRoundActive()) || forceFireRoundActive {
             components.append(XPMultiplierComponent(reason: .fireRound, bonus: 0))
-        } else if effectiveRoll < fireRoundChance {
-            components.append(XPMultiplierComponent(reason: .fireRound, bonus: 0))
-            didActivateNew = true
         }
 
-        return XPMultiplierResult(components: components, didActivateFireRound: didActivateNew)
+        return XPMultiplierResult(components: components, didActivateFireRound: false)
     }
 
     // MARK: - Apply

@@ -11,8 +11,6 @@ import SwiftUI
 @main
 struct WazaWidgetsBundle: WidgetBundle {
     var body: some Widget {
-        StreakWidget()
         NextClassWidget()
-        TrainingTimerLiveActivity()
     }
 }

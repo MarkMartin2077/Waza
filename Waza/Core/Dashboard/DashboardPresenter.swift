@@ -26,6 +26,9 @@ class DashboardPresenter {
     func onViewAppear() {
         interactor.trackScreenEvent(event: Event.onAppear)
         loadData()
+        Task { @MainActor in
+            await interactor.awardMonthlyFreezeIfNeeded()
+        }
     }
 
     func loadData() {
@@ -74,6 +77,24 @@ class DashboardPresenter {
 
     var isGymSet: Bool {
         !interactor.gyms.isEmpty
+    }
+
+    // MARK: - XP Badge
+
+    var xpLevelInfo: XPLevelInfo {
+        XPLevelSystem.levelInfo(forXP: interactor.currentExperiencePointsData.pointsAllTime ?? 0)
+    }
+
+    var streakTier: StreakTier {
+        StreakTier.tier(forDays: streakCount)
+    }
+
+    var fireRoundExpiresAt: Date? {
+        XPMultiplierCalculator.fireRoundExpiresAt()
+    }
+
+    var isStreakAtRisk: Bool {
+        interactor.currentStreakData.isStreakAtRisk
     }
 
     var sessionsThisWeek: Int {
@@ -157,12 +178,7 @@ class DashboardPresenter {
     func onLogSessionTapped() {
         interactor.trackEvent(event: Event.logSessionTapped)
         router.showSessionEntryView(onDismiss: { [weak self] in
-            guard let self else { return }
-            let interactor = self.interactor
-            Task { @MainActor in
-                await interactor.endTrainingLiveActivity()
-            }
-            self.loadData()
+            self?.loadData()
         })
     }
 

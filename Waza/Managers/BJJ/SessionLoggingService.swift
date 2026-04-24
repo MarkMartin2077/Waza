@@ -14,6 +14,11 @@ struct SessionLoggingService {
     let challengeManager: ChallengeManager
     let classScheduleManager: ClassScheduleManager
     let logManager: LogManager
+    /// Callback to refresh Home Screen widget data. Injected by CoreInteractor so the
+    /// service can push a widget update after session save without knowing about BeltManager.
+    let refreshWidgetData: @MainActor () -> Void
+
+    static let freezeCap = 3
 
     // MARK: - Public Entry Points
 
@@ -45,6 +50,7 @@ struct SessionLoggingService {
         async let streakResult = streakManager.addStreakEvent(metadata: [:])
         async let xpResult = xpManager.addExperiencePoints(points: result.points, metadata: result.metadata)
         _ = try await (streakResult, xpResult)
+        recordSessionXPEarnedToday(result.points)
 
         handlePostSessionGamification(
             oldStreakDays: oldStreakDays,
@@ -56,7 +62,31 @@ struct SessionLoggingService {
 
         checkTechniquePromotions(techniquesWorked: params.focusAreas + params.techniquesWorked)
 
+        // First-session starter freeze — gives brand-new users a single safety net before
+        // they're even engaged with weekly challenges.
+        if sessionManager.getSessionStats().totalSessions == 1 {
+            awardFreezeIfUnderCap(id: "starter", source: "first_session")
+        }
+
+        // Push fresh widget data so the home-screen streak widget doesn't lag the save.
+        refreshWidgetData()
+
         return session
+    }
+
+    /// Grant a freeze if the user is under the 3-freeze cap. Freezes no longer expire.
+    /// Fire-and-forget with severe logging on failure.
+    private func awardFreezeIfUnderCap(id: String, source: String) {
+        let current = streakManager.currentStreakData.freezesAvailableCount ?? 0
+        guard current < Self.freezeCap else { return }
+        Task {
+            do {
+                _ = try await streakManager.addStreakFreeze(id: id, dateExpires: nil)
+                logManager.trackEvent(eventName: "Freeze_Awarded", parameters: ["source": source, "id": id], type: .analytic)
+            } catch {
+                logRewardFailure(source: "freeze_\(source)", error: error)
+            }
+        }
     }
 
     func awardCheckInXP() {
@@ -95,12 +125,11 @@ struct SessionLoggingService {
         let recent = recentFocusAreas(withinDays: 30)
         let reward = XPRewardCalculator.calculate(params: params, recentFocusAreas: recent)
         let multiplier = XPMultiplierCalculator.calculate(streakDays: streakDays, sessionsLastWeek: sessionsLastWeek())
-        let points = XPMultiplierCalculator.apply(multiplier, toBasePoints: reward.totalPoints)
-
-        if multiplier.didActivateFireRound {
-            XPMultiplierCalculator.activateFireRound()
-            appState.pendingFireRoundActivation = true
-        }
+        // Apply multiplier, then clamp by daily cap (computed from today's already-earned session XP).
+        let boosted = XPMultiplierCalculator.apply(multiplier, toBasePoints: reward.totalPoints)
+        let earnedToday = sessionXPEarnedToday()
+        let remaining = max(0, XPRewardCalculator.dailySessionXPCap - earnedToday)
+        let points = min(boosted, remaining)
 
         var metadata = reward.metadata
         if multiplier.hasBoost {
@@ -121,6 +150,8 @@ struct SessionLoggingService {
         let newStreakDays = streakManager.currentStreakData.currentStreak ?? 0
         if let newTier = XPMultiplierCalculator.streakTierUp(oldDays: oldStreakDays, newDays: newStreakDays) {
             appState.pendingStreakTierUp = newTier
+            // Streak-tier up is a textbook positive moment — ask for a review.
+            maybePromptReview(trigger: .streakMilestone)
         }
 
         fireXPToast(
@@ -138,10 +169,54 @@ struct SessionLoggingService {
             streakCount: streakManager.currentStreakData.currentStreak ?? 0
         )
 
+        // Session-count milestones — user has committed enough to have an opinion.
+        if Self.ratingSessionMilestones.contains(stats.totalSessions) {
+            maybePromptReview(trigger: .sessionMilestone)
+        }
+
         handleWeeklyChallengeEvaluation()
     }
 
-    // swiftlint:disable:next function_body_length
+    private static let ratingSessionMilestones: Set<Int> = [10, 25, 50, 100]
+
+    // MARK: - Daily XP Cap Tracking
+    // Lightweight UserDefaults-backed counter so we can clamp without hitting Firebase per session.
+
+    private static let dailyXPEarnedKey = "xp.session.earnedToday.points"
+    private static let dailyXPDateKey = "xp.session.earnedToday.dateKey"
+
+    private func sessionXPEarnedToday() -> Int {
+        let today = Self.todayKey()
+        let storedDay = UserDefaults.standard.string(forKey: Self.dailyXPDateKey)
+        guard storedDay == today else { return 0 }
+        return UserDefaults.standard.integer(forKey: Self.dailyXPEarnedKey)
+    }
+
+    private func recordSessionXPEarnedToday(_ points: Int) {
+        guard points > 0 else { return }
+        let today = Self.todayKey()
+        let storedDay = UserDefaults.standard.string(forKey: Self.dailyXPDateKey)
+        let current = storedDay == today ? UserDefaults.standard.integer(forKey: Self.dailyXPEarnedKey) : 0
+        UserDefaults.standard.set(current + points, forKey: Self.dailyXPEarnedKey)
+        UserDefaults.standard.set(today, forKey: Self.dailyXPDateKey)
+    }
+
+    private static func todayKey() -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        return formatter.string(from: Date())
+    }
+
+    /// Defer slightly so any XP/tier-up toast or modal animates first; the rating prompt
+    /// lands after the user has seen their reward, not on top of it.
+    private func maybePromptReview(trigger: RatingPromptTrigger) {
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(2))
+            AppStoreRatingsHelper.requestReview(trigger: trigger)
+        }
+    }
+
     private func handleWeeklyChallengeEvaluation() {
         let weekStart = WeeklyChallengeModel.currentWeekStart()
         guard let weekEnd = Calendar.current.date(byAdding: .day, value: 7, to: weekStart) else { return }
@@ -177,15 +252,7 @@ struct SessionLoggingService {
 
         if completedBefore < 2, completedAfter >= 2 {
             let weekId = Int(weekStart.timeIntervalSince1970)
-            let freezeId = "weekly_challenge_\(weekId)"
-            let nextMonday = Calendar.current.date(byAdding: .day, value: 7, to: weekStart)
-            Task {
-                do {
-                    try await streakManager.addStreakFreeze(id: freezeId, dateExpires: nextMonday)
-                } catch {
-                    logRewardFailure(source: "weekly_challenge_freeze_reward", error: error)
-                }
-            }
+            awardFreezeIfUnderCap(id: "weekly_challenge_\(weekId)", source: "weekly_challenge")
         }
 
         if completedBefore < 3, completedAfter >= 3 {
@@ -199,6 +266,11 @@ struct SessionLoggingService {
                     logRewardFailure(source: "weekly_challenge_sweep", error: error)
                 }
             }
+            // Earning a fire round is now the reward for sweeping — no more random rolls.
+            XPMultiplierCalculator.activateFireRound()
+            appState.pendingFireRoundActivation = true
+            // A full sweep is the best-feeling moment in the weekly loop.
+            maybePromptReview(trigger: .weeklyChallengeSweep)
         }
     }
 

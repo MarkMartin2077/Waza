@@ -30,7 +30,7 @@ class CalendarPresenter {
     // Runs in onDismissDayDetail so the next screen only presents after the sheet
     // finishes dismissing — avoids stacked sheets.
     private enum PendingAction {
-        case logSession
+        case logSession(initialDate: Date?)
         case addSchedule
         case openSession(BJJSessionModel)
         case openCheckIn(ScheduledClassOccurrence)
@@ -128,13 +128,14 @@ class CalendarPresenter {
             }
         }
 
+        let tappedDate = day.date
         router.showCalendarDayDetailSheet(
             day: day,
             callbacks: CalendarDayDetailCallbacks(
                 onSessionTap: { [weak self] session in self?.onSessionTapped(session) },
                 onOccurrenceTap: { [weak self] occurrence in self?.onOccurrenceTapped(occurrence) },
                 onAddSchedule: { [weak self] in self?.onAddScheduleTapped() },
-                onLogSession: { [weak self] in self?.onLogSessionTapped() },
+                onLogSession: { [weak self] in self?.onLogSessionTapped(initialDate: tappedDate) },
                 onViewAllSessions: { [weak self] in self?.onViewAllSessionsTapped() },
                 onDismiss: { [weak self] in self?.onDismissDayDetail() }
             )
@@ -159,9 +160,16 @@ class CalendarPresenter {
         }
     }
 
-    func onLogSessionTapped() {
+    func onLogSessionTapped(initialDate: Date? = nil) {
         interactor.trackEvent(event: Event.logSessionTapped)
-        pendingAction = .logSession
+        // Past days (backdated logging) pre-fill the date picker; today/future fall back to Date().
+        let targetDate: Date?
+        if let initialDate, Calendar.current.compare(initialDate, to: Date(), toGranularity: .day) == .orderedAscending {
+            targetDate = initialDate
+        } else {
+            targetDate = nil
+        }
+        pendingAction = .logSession(initialDate: targetDate)
     }
 
     func onAddScheduleTapped() {
@@ -186,8 +194,8 @@ class CalendarPresenter {
     private func runPendingAction(_ action: PendingAction?) {
         guard let action else { return }
         switch action {
-        case .logSession:
-            router.showSessionEntryView(onDismiss: { [weak self] in self?.reload() })
+        case .logSession(let initialDate):
+            router.showSessionEntryView(initialDate: initialDate, onDismiss: { [weak self] in self?.reload() })
         case .addSchedule:
             let gyms = Array(interactor.gymsById.values).sorted { $0.name < $1.name }
             guard let firstGym = gyms.first else { return }

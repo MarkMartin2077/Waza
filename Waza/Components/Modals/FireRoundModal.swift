@@ -3,115 +3,73 @@ import SwiftUI
 struct FireRoundModal: View {
     let onDismiss: () -> Void
 
-    @State private var badgeScale: Double = 0.3
-    @State private var backgroundOpacity: Double = 0
+    @State private var stampScale: Double = 0.6
+    @State private var stampOpacity: Double = 0
     @State private var contentOpacity: Double = 0
-    @State private var glowScale: Double = 0.8
-    @State private var glowOpacity: Double = 0
-
-    private let flameColor = Color.orange
 
     var body: some View {
         ZStack {
-            Color.black
-                .opacity(backgroundOpacity * 0.94)
-                .ignoresSafeArea()
-            flameColor
-                .opacity(backgroundOpacity * 0.07)
-                .ignoresSafeArea()
+            Color.wazaPaper.ignoresSafeArea()
 
-            ConfettiView(colors: [.orange, .yellow, .red.opacity(0.8), .white])
-                .ignoresSafeArea()
-
-            VStack(spacing: 28) {
+            VStack(spacing: 24) {
                 Spacer()
 
-                ZStack {
-                    ForEach(0..<3, id: \.self) { ringIndex in
-                        Circle()
-                            .stroke(
-                                flameColor.opacity(0.3 - Double(ringIndex) * 0.08),
-                                lineWidth: 1.5
-                            )
-                            .frame(
-                                width: 126 + CGFloat(ringIndex) * 20,
-                                height: 126 + CGFloat(ringIndex) * 20
-                            )
-                            .scaleEffect(glowScale)
-                            .opacity(glowOpacity)
-                    }
+                HankoView(kanji: "倍", size: 96, rotation: -2)
+                    .scaleEffect(stampScale)
+                    .opacity(stampOpacity)
 
-                    Circle()
-                        .fill(flameColor.opacity(0.15))
-                        .frame(width: 120, height: 120)
+                VStack(spacing: 10) {
+                    Text("Double time.")
+                        .font(.wazaDisplayMedium)
+                        .foregroundStyle(Color.wazaInk900)
 
-                    Circle()
-                        .stroke(flameColor.opacity(0.85), lineWidth: 2.5)
-                        .frame(width: 120, height: 120)
+                    Text("For the next 24 hours, every mark counts twice.")
+                        .font(.wazaDisplaySmall)
+                        .italic()
+                        .foregroundStyle(Color.wazaInk600)
 
-                    Image(systemName: "flame.fill")
-                        .font(.system(size: 52, weight: .semibold))
-                        .foregroundStyle(
-                            .linearGradient(
-                                colors: [.yellow, .orange, .red],
-                                startPoint: .top,
-                                endPoint: .bottom
-                            )
-                        )
-                }
-                .scaleEffect(badgeScale)
-
-                VStack(spacing: 16) {
-                    Text("2x XP")
-                        .font(.caption.weight(.bold))
+                    Text("2× XP · 24 HOURS")
+                        .font(.wazaLabel)
                         .tracking(1.5)
-                        .foregroundStyle(.orange)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 6)
-                        .background(flameColor.opacity(0.12), in: Capsule())
-                        .overlay(Capsule().stroke(flameColor.opacity(0.35), lineWidth: 1))
-
-                    VStack(spacing: 8) {
-                        Text("Fire Round")
-                            .font(.wazaTitle)
-                            .foregroundStyle(.white)
-
-                        Text("All XP is doubled for the next 24 hours!")
-                            .font(.subheadline)
-                            .foregroundStyle(.white.opacity(0.75))
-                            .multilineTextAlignment(.center)
-                    }
+                        .foregroundStyle(Color.wazaInk500)
                 }
+                .multilineTextAlignment(.center)
+                .opacity(contentOpacity)
 
                 Spacer()
 
-                Text("Tap anywhere to continue")
-                    .font(.caption)
-                    .foregroundStyle(.white.opacity(0.4))
-                    .padding(.bottom, 32)
+                continueButton
+                    .opacity(contentOpacity)
             }
-            .padding(.horizontal, 36)
-            .opacity(contentOpacity)
+            .padding(.horizontal, 32)
+            .padding(.bottom, 32)
         }
         .onAppear(perform: runEntranceAnimation)
-        .onTapGesture { onDismiss() }
         .accessibilityAddTraits(.isModal)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Fire Round activated! All XP is doubled for the next 24 hours. Tap to continue.")
+        .accessibilityLabel("Double time. For the next 24 hours, every mark counts twice. 2 times XP for 24 hours.")
+    }
+
+    private var continueButton: some View {
+        Button {
+            onDismiss()
+        } label: {
+            Text("Continue")
+                .font(.wazaBody)
+                .fontWeight(.semibold)
+                .foregroundStyle(Color.wazaPaperHi)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 16)
+                .background(Color.wazaAccent, in: RoundedRectangle(cornerRadius: .wazaCornerSmall))
+        }
     }
 
     private func runEntranceAnimation() {
-        withAnimation(.easeIn(duration: 0.25)) {
-            backgroundOpacity = 1
+        withAnimation(.spring(response: 0.5, dampingFraction: 0.65).delay(0.05)) {
+            stampScale = 1
+            stampOpacity = 1
         }
-        withAnimation(.spring(response: 0.48, dampingFraction: 0.62).delay(0.08)) {
-            badgeScale = 1
-        }
-        withAnimation(.spring(response: 0.6, dampingFraction: 0.55).delay(0.12)) {
-            glowScale = 1.1
-            glowOpacity = 1
-        }
-        withAnimation(.easeIn(duration: 0.3).delay(0.18)) {
+        withAnimation(.easeIn(duration: 0.3).delay(0.28)) {
             contentOpacity = 1
         }
     }

@@ -41,6 +41,9 @@ class SessionEntryPresenter {
         self.interactor = interactor
         self.router = router
         self.delegate = delegate
+        if let initialDate = delegate.initialDate {
+            self.date = initialDate
+        }
     }
 
     func onViewAppear() {
@@ -281,6 +284,7 @@ extension SessionEntryPresenter {
 }
 
 struct SessionEntryDelegate {
+    var initialDate: Date?
     var onSessionSaved: ((BJJSessionModel) -> Void)?
     var eventParameters: [String: Any]? { nil }
 }

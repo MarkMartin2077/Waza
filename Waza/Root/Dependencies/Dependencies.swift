@@ -10,11 +10,14 @@ import SwiftfulRouting
 struct Dependencies {
     let container: DependencyContainer
 
+    // BJJ is a 3-5x/week sport, not a daily one. 24h leeway is the maximum SwiftfulGamification
+    // allows — gives users a full rest day without breaking their streak. Freezes remain the
+    // mitigation for longer gaps.
     static let streakConfiguration = StreakConfiguration(
         streakKey: Constants.streakKey,
         eventsRequiredPerDay: 1,
         useServerCalculation: false,
-        leewayHours: 0,
+        leewayHours: 24,
         freezeBehavior: .autoConsumeFreezes
     )
 
@@ -48,7 +51,6 @@ struct Dependencies {
         let trainingStatsManager: TrainingStatsManager
         let aiInsightsManager: AIInsightsManager
         let classScheduleManager: ClassScheduleManager
-        let liveActivityManager: LiveActivityManager
         let techniqueManager: TechniqueManager
         let challengeManager: ChallengeManager
 
@@ -141,7 +143,6 @@ struct Dependencies {
             challengeManager = ChallengeManager(localService: SwiftDataChallengePersistence())
         }
 
-        liveActivityManager = LiveActivityManager()
         pushManager = PushManager(logManager: logManager)
         soundEffectManager = SoundEffectManager(logger: logManager)
 
@@ -165,7 +166,6 @@ struct Dependencies {
         container.register(TrainingStatsManager.self, service: trainingStatsManager)
         container.register(AIInsightsManager.self, service: aiInsightsManager)
         container.register(ClassScheduleManager.self, service: classScheduleManager)
-        container.register(LiveActivityManager.self, service: liveActivityManager)
         container.register(TechniqueManager.self, service: techniqueManager)
         container.register(ChallengeManager.self, service: challengeManager)
 
@@ -200,7 +200,6 @@ class DevPreview {
         container.register(TrainingStatsManager.self, service: trainingStatsManager)
         container.register(AIInsightsManager.self, service: aiInsightsManager)
         container.register(ClassScheduleManager.self, service: classScheduleManager)
-        container.register(LiveActivityManager.self, service: liveActivityManager)
         container.register(TechniqueManager.self, service: techniqueManager)
         container.register(ChallengeManager.self, service: challengeManager)
         return container
@@ -225,7 +224,6 @@ class DevPreview {
     let trainingStatsManager: TrainingStatsManager
     let aiInsightsManager: AIInsightsManager
     let classScheduleManager: ClassScheduleManager
-    let liveActivityManager: LiveActivityManager
     let techniqueManager: TechniqueManager
     let challengeManager: ChallengeManager
 
@@ -249,7 +247,6 @@ class DevPreview {
         self.trainingStatsManager = TrainingStatsManager(sessionManager: sessionManager)
         self.aiInsightsManager = AIInsightsManager()
         self.classScheduleManager = ClassScheduleManager(services: MockClassScheduleServices())
-        self.liveActivityManager = LiveActivityManager()
         self.techniqueManager = TechniqueManager(services: MockTechniqueServices())
         self.challengeManager = ChallengeManager(localService: SwiftDataChallengePersistence(inMemory: true))
 

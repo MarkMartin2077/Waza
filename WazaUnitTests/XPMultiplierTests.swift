@@ -46,7 +46,7 @@ struct XPMultiplierCalculateTests {
 
     @Test("No boosts when streak is low and no perfect week")
     func noBoosts() {
-        let result = XPMultiplierCalculator.calculate(streakDays: 1, sessionsLastWeek: 1, randomRoll: 0.99)
+        let result = XPMultiplierCalculator.calculate(streakDays: 1, sessionsLastWeek: 1, checkActiveFireRound: false)
         #expect(result.totalMultiplier == 1.0)
         #expect(result.hasBoost == false)
         #expect(result.components.isEmpty)
@@ -54,7 +54,7 @@ struct XPMultiplierCalculateTests {
 
     @Test("Streak component added for 7-day streak")
     func streakOnly() {
-        let result = XPMultiplierCalculator.calculate(streakDays: 7, sessionsLastWeek: 0, randomRoll: 0.99)
+        let result = XPMultiplierCalculator.calculate(streakDays: 7, sessionsLastWeek: 0, checkActiveFireRound: false)
         #expect(result.baseMultiplier == 1.5)
         #expect(result.totalMultiplier == 1.5)
         #expect(result.components.count == 1)
@@ -63,7 +63,7 @@ struct XPMultiplierCalculateTests {
 
     @Test("Perfect week adds +0.25x")
     func perfectWeekOnly() {
-        let result = XPMultiplierCalculator.calculate(streakDays: 0, sessionsLastWeek: 3, randomRoll: 0.99)
+        let result = XPMultiplierCalculator.calculate(streakDays: 0, sessionsLastWeek: 3, checkActiveFireRound: false)
         #expect(result.baseMultiplier == 1.25)
         #expect(result.totalMultiplier == 1.25)
         #expect(result.components.contains { $0.reason == .perfectWeek })
@@ -71,26 +71,30 @@ struct XPMultiplierCalculateTests {
 
     @Test("Perfect week requires meeting the target")
     func belowPerfectWeekTarget() {
-        let result = XPMultiplierCalculator.calculate(streakDays: 0, sessionsLastWeek: 2, randomRoll: 0.99)
+        let result = XPMultiplierCalculator.calculate(streakDays: 0, sessionsLastWeek: 2, checkActiveFireRound: false)
         #expect(!result.components.contains { $0.reason == .perfectWeek })
     }
 
-    @Test("Fire round triggers below 15% threshold")
-    func fireRoundTriggers() {
-        let result = XPMultiplierCalculator.calculate(streakDays: 0, sessionsLastWeek: 0, randomRoll: 0.10)
+    @Test("Fire round component applies when an active fire round is set")
+    func fireRoundActiveApplies() {
+        XPMultiplierCalculator.clearFireRound()
+        XPMultiplierCalculator.activateFireRound()
+        defer { XPMultiplierCalculator.clearFireRound() }
+        let result = XPMultiplierCalculator.calculate(streakDays: 0, sessionsLastWeek: 0)
         #expect(result.isFireRound)
         #expect(result.totalMultiplier == 2.0)
     }
 
-    @Test("Fire round does not trigger above 15% threshold")
-    func fireRoundDoesNotTrigger() {
-        let result = XPMultiplierCalculator.calculate(streakDays: 0, sessionsLastWeek: 0, randomRoll: 0.20)
+    @Test("Fire round is absent when no active fire round is set")
+    func fireRoundInactiveOmitted() {
+        XPMultiplierCalculator.clearFireRound()
+        let result = XPMultiplierCalculator.calculate(streakDays: 0, sessionsLastWeek: 0)
         #expect(!result.isFireRound)
     }
 
     @Test("Streak + perfect week stack additively")
     func streakPlusPerfectWeek() {
-        let result = XPMultiplierCalculator.calculate(streakDays: 7, sessionsLastWeek: 4, randomRoll: 0.99)
+        let result = XPMultiplierCalculator.calculate(streakDays: 7, sessionsLastWeek: 4, checkActiveFireRound: false)
         // 1.0 + 0.5 (streak) + 0.25 (perfect week) = 1.75
         #expect(result.baseMultiplier == 1.75)
         #expect(result.totalMultiplier == 1.75)
@@ -99,7 +103,10 @@ struct XPMultiplierCalculateTests {
 
     @Test("Fire round doubles the full multiplier")
     func fireRoundDoubles() {
-        let result = XPMultiplierCalculator.calculate(streakDays: 7, sessionsLastWeek: 3, randomRoll: 0.05)
+        XPMultiplierCalculator.clearFireRound()
+        XPMultiplierCalculator.activateFireRound()
+        defer { XPMultiplierCalculator.clearFireRound() }
+        let result = XPMultiplierCalculator.calculate(streakDays: 7, sessionsLastWeek: 3)
         // base = 1.0 + 0.5 + 0.25 = 1.75, fire round = 1.75 * 2 = 3.5
         #expect(result.baseMultiplier == 1.75)
         #expect(result.totalMultiplier == 3.5)
@@ -108,7 +115,10 @@ struct XPMultiplierCalculateTests {
 
     @Test("Maximum multiplier is 30-day streak + perfect week + fire round")
     func maximumMultiplier() {
-        let result = XPMultiplierCalculator.calculate(streakDays: 30, sessionsLastWeek: 5, randomRoll: 0.01)
+        XPMultiplierCalculator.clearFireRound()
+        XPMultiplierCalculator.activateFireRound()
+        defer { XPMultiplierCalculator.clearFireRound() }
+        let result = XPMultiplierCalculator.calculate(streakDays: 30, sessionsLastWeek: 5)
         // base = 1.0 + 1.0 + 0.25 = 2.25, fire round = 2.25 * 2 = 4.5
         #expect(result.totalMultiplier == 4.5)
     }
@@ -127,20 +137,23 @@ struct XPMultiplierApplyTests {
 
     @Test("1.5x multiplier on 18 base = 27")
     func streakMultiplied() {
-        let result = XPMultiplierCalculator.calculate(streakDays: 7, sessionsLastWeek: 0, randomRoll: 0.99)
+        let result = XPMultiplierCalculator.calculate(streakDays: 7, sessionsLastWeek: 0)
         #expect(XPMultiplierCalculator.apply(result, toBasePoints: 18) == 27)
     }
 
     @Test("Rounding works correctly for odd multipliers")
     func roundingCorrect() {
-        let result = XPMultiplierCalculator.calculate(streakDays: 3, sessionsLastWeek: 0, randomRoll: 0.99)
+        let result = XPMultiplierCalculator.calculate(streakDays: 3, sessionsLastWeek: 0)
         // 1.25x on 13 = 16.25, rounds to 16
         #expect(XPMultiplierCalculator.apply(result, toBasePoints: 13) == 16)
     }
 
     @Test("Fire round on max session = expected ceiling")
     func fireRoundOnMaxSession() {
-        let result = XPMultiplierCalculator.calculate(streakDays: 30, sessionsLastWeek: 5, randomRoll: 0.01)
+        XPMultiplierCalculator.clearFireRound()
+        XPMultiplierCalculator.activateFireRound()
+        defer { XPMultiplierCalculator.clearFireRound() }
+        let result = XPMultiplierCalculator.calculate(streakDays: 30, sessionsLastWeek: 5)
         // 33 * 4.5 = 148.5 rounds to 149
         #expect(XPMultiplierCalculator.apply(result, toBasePoints: 33) == 149)
     }
@@ -158,7 +171,7 @@ struct XPMultiplierDisplayTests {
 
     @Test("Single component shows multiplier and reason")
     func singleComponent() {
-        let result = XPMultiplierCalculator.calculate(streakDays: 7, sessionsLastWeek: 0, randomRoll: 0.99)
+        let result = XPMultiplierCalculator.calculate(streakDays: 7, sessionsLastWeek: 0)
         let text = result.displayText
         #expect(text?.contains("1.5x") == true)
         #expect(text?.contains("Streak") == true)
@@ -166,7 +179,7 @@ struct XPMultiplierDisplayTests {
 
     @Test("Multiple components joined with +")
     func multipleComponents() {
-        let result = XPMultiplierCalculator.calculate(streakDays: 7, sessionsLastWeek: 3, randomRoll: 0.99)
+        let result = XPMultiplierCalculator.calculate(streakDays: 7, sessionsLastWeek: 3)
         let text = result.displayText
         #expect(text?.contains("Streak") == true)
         #expect(text?.contains("Perfect Week") == true)
@@ -175,7 +188,10 @@ struct XPMultiplierDisplayTests {
 
     @Test("Fire round included in display")
     func fireRoundDisplay() {
-        let result = XPMultiplierCalculator.calculate(streakDays: 0, sessionsLastWeek: 0, randomRoll: 0.05)
+        XPMultiplierCalculator.clearFireRound()
+        XPMultiplierCalculator.activateFireRound()
+        defer { XPMultiplierCalculator.clearFireRound() }
+        let result = XPMultiplierCalculator.calculate(streakDays: 0, sessionsLastWeek: 0)
         let text = result.displayText
         #expect(text?.contains("Fire Round") == true)
         #expect(text?.contains("2x") == true)

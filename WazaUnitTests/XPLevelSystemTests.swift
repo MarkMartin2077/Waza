@@ -55,60 +55,59 @@ struct XPLevelCalculationTests {
 @Suite("XPLevelSystem - Leagues & Sub-Ranks")
 struct XPLeagueTests {
 
-    @Test("Levels 1-5 are Rookie")
-    func rookieLeague() {
+    @Test("Levels 1-5 are Shoshinsha")
+    func shoshinshaLeague() {
         for lvl in 1...5 {
-            #expect(XPLevelSystem.league(forLevel: lvl) == .rookie)
+            #expect(XPLevelSystem.league(forLevel: lvl) == .shoshinsha)
         }
     }
 
-    @Test("Levels 6-10 are Scrapper")
-    func scrapperLeague() {
+    @Test("Levels 6-10 are Monjin")
+    func monjinLeague() {
         for lvl in 6...10 {
-            #expect(XPLevelSystem.league(forLevel: lvl) == .scrapper)
+            #expect(XPLevelSystem.league(forLevel: lvl) == .monjin)
         }
     }
 
-    @Test("Levels 11-15 are Grappler")
-    func grapplerLeague() {
+    @Test("Levels 11-15 are Deshi")
+    func deshiLeague() {
         for lvl in 11...15 {
-            #expect(XPLevelSystem.league(forLevel: lvl) == .grappler)
+            #expect(XPLevelSystem.league(forLevel: lvl) == .deshi)
         }
     }
 
-    @Test("Levels 16-20 are Contender")
-    func contenderLeague() {
+    @Test("Levels 16-20 are Kenshi")
+    func kenshiLeague() {
         for lvl in 16...20 {
-            #expect(XPLevelSystem.league(forLevel: lvl) == .contender)
+            #expect(XPLevelSystem.league(forLevel: lvl) == .kenshi)
         }
     }
 
-    @Test("Levels 21-25 are Adept")
-    func adeptLeague() {
+    @Test("Levels 21-25 are Uchideshi")
+    func uchideshiLeague() {
         for lvl in 21...25 {
-            #expect(XPLevelSystem.league(forLevel: lvl) == .adept)
+            #expect(XPLevelSystem.league(forLevel: lvl) == .uchideshi)
         }
     }
 
-    @Test("Levels 26-30 are Ace")
-    func aceLeague() {
+    @Test("Levels 26-30 are Sensei")
+    func senseiLeague() {
         for lvl in 26...30 {
-            #expect(XPLevelSystem.league(forLevel: lvl) == .ace)
+            #expect(XPLevelSystem.league(forLevel: lvl) == .sensei)
         }
     }
 
-    @Test("Levels 31-35 are Vanguard")
-    func vanguardLeague() {
+    @Test("Levels 31-35 are Shihan")
+    func shihanLeague() {
         for lvl in 31...35 {
-            #expect(XPLevelSystem.league(forLevel: lvl) == .vanguard)
+            #expect(XPLevelSystem.league(forLevel: lvl) == .shihan)
         }
     }
 
-    @Test("Levels 36-40 are Grandmaster")
-    // swiftlint:disable:next inclusive_language
-    func grandmasterLeague() {
+    @Test("Levels 36-40 are Soke")
+    func sokeLeague() {
         for lvl in 36...40 {
-            #expect(XPLevelSystem.league(forLevel: lvl) == .grandmaster)
+            #expect(XPLevelSystem.league(forLevel: lvl) == .soke)
         }
     }
 
@@ -221,13 +220,13 @@ struct XPLevelUpTests {
 @Suite("XPLevelSystem - Level Info")
 struct XPLevelInfoTests {
 
-    @Test("Level info for 0 XP returns Rookie 1")
+    @Test("Level info for 0 XP returns Shoshinsha 1")
     func levelInfoZeroXP() {
         let info = XPLevelSystem.levelInfo(forXP: 0)
         #expect(info.level == 1)
-        #expect(info.league == .rookie)
+        #expect(info.league == .shoshinsha)
         #expect(info.subRank == 1)
-        #expect(info.title == "Rookie 1")
+        #expect(info.title == "Shoshinsha 1")
         #expect(info.currentXP == 0)
     }
 

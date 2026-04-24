@@ -5,136 +5,110 @@ struct StreakTierUpModal: View {
     let accentColor: Color
     let onDismiss: () -> Void
 
-    @State private var badgeScale: Double = 0.3
-    @State private var backgroundOpacity: Double = 0
+    @State private var stampScale: Double = 0.6
+    @State private var stampOpacity: Double = 0
     @State private var contentOpacity: Double = 0
-    @State private var glowScale: Double = 0.8
-    @State private var glowOpacity: Double = 0
 
     var body: some View {
         ZStack {
-            Color.black
-                .opacity(backgroundOpacity * 0.94)
-                .ignoresSafeArea()
-            accentColor
-                .opacity(backgroundOpacity * 0.07)
-                .ignoresSafeArea()
+            Color.wazaPaper.ignoresSafeArea()
 
-            ConfettiView(colors: [accentColor, accentColor.opacity(0.7), .white, .yellow.opacity(0.8)])
-                .ignoresSafeArea()
-
-            VStack(spacing: 28) {
+            VStack(spacing: 24) {
                 Spacer()
 
-                ZStack {
-                    ForEach(0..<3, id: \.self) { ringIndex in
-                        Circle()
-                            .stroke(
-                                accentColor.opacity(0.25 - Double(ringIndex) * 0.07),
-                                lineWidth: 1.5
-                            )
-                            .frame(
-                                width: 126 + CGFloat(ringIndex) * 20,
-                                height: 126 + CGFloat(ringIndex) * 20
-                            )
-                            .scaleEffect(glowScale)
-                            .opacity(glowOpacity)
-                    }
+                HankoView(kanji: "連", size: 96, rotation: 2)
+                    .scaleEffect(stampScale)
+                    .opacity(stampOpacity)
 
-                    Circle()
-                        .fill(.white.opacity(0.12))
-                        .frame(width: 120, height: 120)
+                VStack(spacing: 10) {
+                    Text(headline)
+                        .font(.wazaDisplayMedium)
+                        .foregroundStyle(Color.wazaInk900)
 
-                    Circle()
-                        .stroke(accentColor.opacity(0.85), lineWidth: 2.5)
-                        .frame(width: 120, height: 120)
+                    Text(warmStatement)
+                        .font(.wazaDisplaySmall)
+                        .italic()
+                        .foregroundStyle(Color.wazaInk600)
 
-                    VStack(spacing: 2) {
-                        Image(systemName: "flame.fill")
-                            .font(.system(size: 28, weight: .semibold))
-                            .foregroundStyle(accentColor)
-                        Text("+\(tier.bonusPercent)%")
-                            .font(.wazaDisplayMedium)
-                            .foregroundStyle(.white)
-                    }
-                }
-                .scaleEffect(badgeScale)
-
-                VStack(spacing: 16) {
-                    Text("\(tier.displayName) Streak".uppercased())
-                        .font(.caption.weight(.bold))
+                    Text("STREAK TIER · +\(tier.bonusPercent)% XP BONUS")
+                        .font(.wazaLabel)
                         .tracking(1.5)
-                        .foregroundStyle(accentColor)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 6)
-                        .background(accentColor.opacity(0.12), in: Capsule())
-                        .overlay(Capsule().stroke(accentColor.opacity(0.35), lineWidth: 1))
-
-                    VStack(spacing: 8) {
-                        Text("Streak Bonus Upgraded")
-                            .font(.caption)
-                            .fontWeight(.semibold)
-                            .foregroundStyle(.white.opacity(0.6))
-                            .textCase(.uppercase)
-                            .tracking(2)
-
-                        Text("\(tier.displayName) Tier — +\(tier.bonusPercent)% XP")
-                            .font(.wazaTitle)
-                            .foregroundStyle(.white)
-
-                        Text("Keep your streak alive to maintain this bonus!")
-                            .font(.subheadline)
-                            .foregroundStyle(.white.opacity(0.75))
-                            .multilineTextAlignment(.center)
-                    }
+                        .foregroundStyle(Color.wazaInk500)
                 }
+                .multilineTextAlignment(.center)
+                .opacity(contentOpacity)
 
                 Spacer()
 
-                Text("Tap anywhere to continue")
-                    .font(.caption)
-                    .foregroundStyle(.white.opacity(0.4))
-                    .padding(.bottom, 32)
+                continueButton
+                    .opacity(contentOpacity)
             }
-            .padding(.horizontal, 36)
-            .opacity(contentOpacity)
+            .padding(.horizontal, 32)
+            .padding(.bottom, 32)
         }
         .onAppear(perform: runEntranceAnimation)
-        .onTapGesture { onDismiss() }
         .accessibilityAddTraits(.isModal)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Streak bonus upgraded to \(tier.displayName) tier, plus \(tier.bonusPercent) percent XP. Tap to continue.")
+        .accessibilityLabel("Streak bonus upgraded to \(tier.displayName) tier. Plus \(tier.bonusPercent) percent XP bonus.")
+    }
+
+    private var headline: String {
+        switch tier {
+        case .none:    return "On the mat."
+        case .bronze:  return "Three days on the mat."
+        case .silver:  return "Seven days on the mat."
+        case .gold:    return "Fourteen days on the mat."
+        case .diamond: return "Thirty days on the mat."
+        }
+    }
+
+    private var warmStatement: String {
+        switch tier {
+        case .none:    return "Keep going."
+        case .bronze:  return "The habit takes hold."
+        case .silver:  return "The ink dries."
+        case .gold:    return "Consistency becomes character."
+        case .diamond: return "This is who you are now."
+        }
+    }
+
+    private var continueButton: some View {
+        Button {
+            onDismiss()
+        } label: {
+            Text("Continue")
+                .font(.wazaBody)
+                .fontWeight(.semibold)
+                .foregroundStyle(Color.wazaPaperHi)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 16)
+                .background(Color.wazaAccent, in: RoundedRectangle(cornerRadius: .wazaCornerSmall))
+        }
     }
 
     private func runEntranceAnimation() {
-        withAnimation(.easeIn(duration: 0.25)) {
-            backgroundOpacity = 1
+        withAnimation(.spring(response: 0.5, dampingFraction: 0.65).delay(0.05)) {
+            stampScale = 1
+            stampOpacity = 1
         }
-        withAnimation(.spring(response: 0.48, dampingFraction: 0.62).delay(0.08)) {
-            badgeScale = 1
-        }
-        withAnimation(.spring(response: 0.6, dampingFraction: 0.55).delay(0.12)) {
-            glowScale = 1.1
-            glowOpacity = 1
-        }
-        withAnimation(.easeIn(duration: 0.3).delay(0.18)) {
+        withAnimation(.easeIn(duration: 0.3).delay(0.28)) {
             contentOpacity = 1
         }
     }
 }
 
 #Preview("Bronze — +25%") {
-    StreakTierUpModal(tier: .bronze, accentColor: .cyan, onDismiss: { })
+    StreakTierUpModal(tier: .bronze, accentColor: .wazaAccent, onDismiss: { })
 }
 
 #Preview("Silver — +50%") {
-    StreakTierUpModal(tier: .silver, accentColor: .cyan, onDismiss: { })
+    StreakTierUpModal(tier: .silver, accentColor: .wazaAccent, onDismiss: { })
 }
 
 #Preview("Gold — +75%") {
-    StreakTierUpModal(tier: .gold, accentColor: .cyan, onDismiss: { })
+    StreakTierUpModal(tier: .gold, accentColor: .wazaAccent, onDismiss: { })
 }
 
 #Preview("Diamond — +100%") {
-    StreakTierUpModal(tier: .diamond, accentColor: .cyan, onDismiss: { })
+    StreakTierUpModal(tier: .diamond, accentColor: .wazaAccent, onDismiss: { })
 }

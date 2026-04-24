@@ -41,11 +41,6 @@ class CheckInPresenter {
             isConfirmed = true
             interactor.trackEvent(event: Event.checkInSuccess)
             interactor.awardCheckInXP()
-            interactor.startTrainingLiveActivity(
-                sessionTypeDisplayName: delegate.matchedSchedule?.sessionType.displayName ?? delegate.gym.name,
-                gymName: delegate.gym.name,
-                beltAccentColorHex: Color.wazaAccentHex
-            )
             Task {
                 interactor.playHaptic(option: .medium)
                 try? await Task.sleep(nanoseconds: 120_000_000)

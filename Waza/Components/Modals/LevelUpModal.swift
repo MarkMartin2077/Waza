@@ -7,11 +7,9 @@ struct LevelUpModal: View {
     let accentColor: Color
     let onDismiss: () -> Void
 
-    @State private var badgeScale: Double = 0.3
-    @State private var backgroundOpacity: Double = 0
+    @State private var stampScale: Double = 0.6
+    @State private var stampOpacity: Double = 0
     @State private var contentOpacity: Double = 0
-    @State private var glowScale: Double = 0.8
-    @State private var glowOpacity: Double = 0
 
     private var league: XPLeague {
         XPLevelSystem.league(forLevel: level)
@@ -19,146 +17,67 @@ struct LevelUpModal: View {
 
     var body: some View {
         ZStack {
-            Color.black
-                .opacity(backgroundOpacity * 0.94)
-                .ignoresSafeArea()
-            accentColor
-                .opacity(backgroundOpacity * 0.07)
-                .ignoresSafeArea()
+            Color.wazaPaper.ignoresSafeArea()
 
-            ConfettiView(colors: [accentColor, accentColor.opacity(0.7), .white, .yellow.opacity(0.8)])
-                .ignoresSafeArea()
-
-            VStack(spacing: 28) {
+            VStack(spacing: 24) {
                 Spacer()
 
-                // Level badge
-                ZStack {
-                    ForEach(0..<3, id: \.self) { ringIndex in
-                        Circle()
-                            .stroke(
-                                accentColor.opacity(0.25 - Double(ringIndex) * 0.07),
-                                lineWidth: 1.5
-                            )
-                            .frame(
-                                width: 126 + CGFloat(ringIndex) * 20,
-                                height: 126 + CGFloat(ringIndex) * 20
-                            )
-                            .scaleEffect(glowScale)
-                            .opacity(glowOpacity)
-                    }
+                HankoView(kanji: "段", size: 96, rotation: -3)
+                    .scaleEffect(stampScale)
+                    .opacity(stampOpacity)
 
-                    Circle()
-                        .fill(.white.opacity(0.12))
-                        .frame(width: 120, height: 120)
+                VStack(spacing: 10) {
+                    Text("Promotion.")
+                        .font(.wazaDisplayMedium)
+                        .foregroundStyle(Color.wazaInk900)
 
-                    Circle()
-                        .stroke(accentColor.opacity(0.85), lineWidth: 2.5)
-                        .frame(width: 120, height: 120)
+                    Text(title)
+                        .font(.wazaDisplaySmall)
+                        .italic()
+                        .foregroundStyle(Color.wazaInk600)
 
-                    VStack(spacing: 2) {
-                        Image(systemName: "arrow.up")
-                            .font(.system(size: 20, weight: .bold))
-                            .foregroundStyle(.white.opacity(0.5))
-                        Text("\(level)")
-                            .font(.wazaStat)
-                            .foregroundStyle(.white)
-                    }
+                    Text("LEVEL \(level) · \(xpGained) XP EARNED")
+                        .font(.wazaLabel)
+                        .tracking(1.5)
+                        .foregroundStyle(Color.wazaInk500)
                 }
-                .scaleEffect(badgeScale)
-
-                VStack(spacing: 16) {
-                    // League chip
-                    HStack(spacing: 6) {
-                        Image(systemName: "bolt.fill")
-                            .font(.caption2.weight(.bold))
-                        Text(league.displayName.uppercased())
-                            .font(.caption.weight(.bold))
-                            .tracking(1.5)
-                    }
-                    .foregroundStyle(accentColor)
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 6)
-                    .background(accentColor.opacity(0.12), in: Capsule())
-                    .overlay(Capsule().stroke(accentColor.opacity(0.35), lineWidth: 1))
-
-                    VStack(spacing: 8) {
-                        Text("Level Up")
-                            .font(.caption)
-                            .fontWeight(.semibold)
-                            .foregroundStyle(.white.opacity(0.6))
-                            .textCase(.uppercase)
-                            .tracking(2)
-
-                        Text(title)
-                            .font(.wazaTitle)
-                            .foregroundStyle(.white)
-
-                        Text("+\(xpGained) XP earned")
-                            .font(.subheadline)
-                            .foregroundStyle(.white.opacity(0.75))
-                    }
-                }
+                .multilineTextAlignment(.center)
+                .opacity(contentOpacity)
 
                 Spacer()
 
-                VStack(spacing: 16) {
-                    if let image = shareImage {
-                        ShareLink(
-                            item: Image(uiImage: image),
-                            preview: SharePreview("Level \(level) — \(title)", image: Image(uiImage: image))
-                        ) {
-                            HStack(spacing: 6) {
-                                Image(systemName: "square.and.arrow.up")
-                                Text("Share")
-                            }
-                            .font(.subheadline)
-                            .fontWeight(.semibold)
-                            .foregroundStyle(.white)
-                            .padding(.horizontal, 24)
-                            .padding(.vertical, 10)
-                            .background(.white.opacity(0.15), in: Capsule())
-                        }
-                    }
-
-                    Text("Tap anywhere to continue")
-                        .font(.caption)
-                        .foregroundStyle(.white.opacity(0.4))
-                }
-                .padding(.bottom, 32)
+                continueButton
+                    .opacity(contentOpacity)
             }
-            .padding(.horizontal, 36)
-            .opacity(contentOpacity)
+            .padding(.horizontal, 32)
+            .padding(.bottom, 32)
         }
         .onAppear(perform: runEntranceAnimation)
-        .onTapGesture { onDismiss() }
         .accessibilityAddTraits(.isModal)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Level up! You reached level \(level), \(title). Plus \(xpGained) XP earned. Tap to continue.")
+        .accessibilityLabel("Promotion. You reached level \(level), \(title). \(xpGained) XP earned.")
     }
 
-    private var shareImage: UIImage? {
-        ShareCardRenderer.render(
-            card: ShareCardView(
-                cardType: .levelUp(level: level, title: title),
-                userName: "",
-                accentColor: accentColor
-            )
-        )
+    private var continueButton: some View {
+        Button {
+            onDismiss()
+        } label: {
+            Text("Continue")
+                .font(.wazaBody)
+                .fontWeight(.semibold)
+                .foregroundStyle(Color.wazaPaperHi)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 16)
+                .background(Color.wazaAccent, in: RoundedRectangle(cornerRadius: .wazaCornerSmall))
+        }
     }
 
     private func runEntranceAnimation() {
-        withAnimation(.easeIn(duration: 0.25)) {
-            backgroundOpacity = 1
+        withAnimation(.spring(response: 0.5, dampingFraction: 0.65).delay(0.05)) {
+            stampScale = 1
+            stampOpacity = 1
         }
-        withAnimation(.spring(response: 0.48, dampingFraction: 0.62).delay(0.08)) {
-            badgeScale = 1
-        }
-        withAnimation(.spring(response: 0.6, dampingFraction: 0.55).delay(0.12)) {
-            glowScale = 1.1
-            glowOpacity = 1
-        }
-        withAnimation(.easeIn(duration: 0.3).delay(0.18)) {
+        withAnimation(.easeIn(duration: 0.3).delay(0.28)) {
             contentOpacity = 1
         }
     }
@@ -169,7 +88,7 @@ struct LevelUpModal: View {
         level: 2,
         title: "Rookie 2",
         xpGained: 15,
-        accentColor: .cyan,
+        accentColor: .wazaAccent,
         onDismiss: { }
     )
 }
@@ -179,7 +98,7 @@ struct LevelUpModal: View {
         level: 6,
         title: "Scrapper 1",
         xpGained: 23,
-        accentColor: .cyan,
+        accentColor: .wazaAccent,
         onDismiss: { }
     )
 }
@@ -189,7 +108,7 @@ struct LevelUpModal: View {
         level: 23,
         title: "Adept 3",
         xpGained: 33,
-        accentColor: .cyan,
+        accentColor: .wazaAccent,
         onDismiss: { }
     )
 }
@@ -199,7 +118,7 @@ struct LevelUpModal: View {
         level: 41,
         title: "Legend",
         xpGained: 50,
-        accentColor: .cyan,
+        accentColor: .wazaAccent,
         onDismiss: { }
     )
 }

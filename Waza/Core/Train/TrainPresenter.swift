@@ -34,8 +34,8 @@ class TrainPresenter {
 
     func onSegmentSelected(_ segment: Segment) {
         guard segment != selectedSegment else { return }
-        let from = selectedSegment
-        interactor.trackEvent(event: Event.segmentChanged(from: from, to: segment))
+        let previous = selectedSegment
+        interactor.trackEvent(event: Event.segmentChanged(fromSegment: previous, toSegment: segment))
         selectedSegment = segment
     }
 }
@@ -44,7 +44,7 @@ extension TrainPresenter {
 
     enum Event: LoggableEvent {
         case onAppear
-        case segmentChanged(from: TrainPresenter.Segment, to: TrainPresenter.Segment)
+        case segmentChanged(fromSegment: TrainPresenter.Segment, toSegment: TrainPresenter.Segment)
 
         var eventName: String {
             switch self {
@@ -55,8 +55,8 @@ extension TrainPresenter {
 
         var parameters: [String: Any]? {
             switch self {
-            case .segmentChanged(from: let from, to: let to):
-                return ["from_segment": from.rawValue, "to_segment": to.rawValue]
+            case .segmentChanged(fromSegment: let fromSegment, toSegment: let toSegment):
+                return ["from_segment": fromSegment.rawValue, "to_segment": toSegment.rawValue]
             default:
                 return nil
             }

@@ -11,6 +11,23 @@ struct DashboardView: View {
                 greetingHeader
                     .scaleAppear(delay: 0)
 
+                // MARK: XP + status badge
+                if !presenter.isNewUser {
+                    DashboardXPBadgeView(
+                        levelInfo: presenter.xpLevelInfo,
+                        fireRoundExpiresAt: presenter.fireRoundExpiresAt,
+                        streakTier: presenter.streakTier,
+                        streakCount: presenter.streakCount,
+                        isStreakAtRisk: presenter.isStreakAtRisk,
+                        freezesAvailable: presenter.freezesAvailable,
+                        perfectWeekActive: false,
+                        onUseFreezePressed: nil,
+                        accentColor: Color.wazaAccent
+                    )
+                    .padding(.top, 16)
+                    .scaleAppear(delay: 0.03)
+                }
+
                 // MARK: Streak hero
                 if !presenter.isNewUser {
                     streakHeroSection
