@@ -179,16 +179,16 @@ final class ScreenshotTests: XCTestCase {
     /// Tap a tab bar item by its label. Returns true if found.
     @discardableResult
     private func tap(_ app: XCUIApplication, label: String) -> Bool {
-        // Try tab bar buttons first
+        // Try tab bar buttons first (iPhone)
         let tabButton = app.tabBars.buttons[label]
         if tabButton.waitForExistence(timeout: 3) {
             tabButton.tap()
             return true
         }
-        // Fallback to any descendant with the label
-        let fallback = app.descendants(matching: .any)[label]
-        if fallback.waitForExistence(timeout: 2) {
-            fallback.tap()
+        // iPad sidebar / NavigationSplitView: scope to buttons, take first match
+        let sidebarButton = app.buttons.matching(identifier: label).firstMatch
+        if sidebarButton.waitForExistence(timeout: 2) {
+            sidebarButton.tap()
             return true
         }
         return false

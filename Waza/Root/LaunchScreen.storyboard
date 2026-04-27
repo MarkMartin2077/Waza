@@ -3,7 +3,6 @@
     <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23084"/>
-        <capability name="Image references" minToolsVersion="7.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -16,33 +15,34 @@
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <!-- Logo image -->
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" image="waza-logo-white" translatesAutoresizingMaskIntoConstraints="NO" id="Lm1-qR-wX3">
-                                <rect key="frame" x="146.5" y="306" width="100" height="100"/>
-                            </imageView>
-                            <!-- WAZA wordmark -->
+                            <!-- Kanji 技 — brand mark in tatami red -->
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="技" textAlignment="center" lineBreakMode="middleTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Lm1-qR-wX3">
+                                <rect key="frame" x="46.5" y="276" width="300" height="200"/>
+                                <fontDescription key="fontDescription" type="boldSystem" pointSize="200"/>
+                                <!-- Tatami red #C8412A -->
+                                <color key="textColor" red="0.78" green="0.255" blue="0.165" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <!-- WAZA wordmark — serif italic to match in-app headline style -->
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="WAZA" textAlignment="center" lineBreakMode="middleTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Pp4-nS-vY7">
-                                <rect key="frame" x="0.0" y="426" width="393" height="52"/>
-                                <fontDescription key="fontDescription" type="boldSystem" pointSize="44"/>
-                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <rect key="frame" x="0.0" y="496" width="393" height="46"/>
+                                <fontDescription key="fontDescription" name="Georgia-BoldItalic" family="Georgia" pointSize="40"/>
+                                <!-- Ink900 light #13110E -->
+                                <color key="textColor" red="0.075" green="0.067" blue="0.055" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="Bcu-3y-fUS"/>
-                        <!-- Near-black background -->
-                        <color key="backgroundColor" red="0.067" green="0.067" blue="0.067" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <!-- Warm paper #F4EFE6 -->
+                        <color key="backgroundColor" red="0.957" green="0.937" blue="0.902" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
-                            <!-- Logo: centered horizontally -->
+                            <!-- Kanji: centered horizontally -->
                             <constraint firstItem="Lm1-qR-wX3" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="Ax1-bC-dE2"/>
-                            <!-- Logo: centered vertically, shifted up by 40pt -->
-                            <constraint firstItem="Lm1-qR-wX3" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" constant="-40" id="Ax3-bC-dE4"/>
-                            <!-- Logo: fixed width -->
-                            <constraint firstItem="Lm1-qR-wX3" firstAttribute="width" constant="100" id="Ax5-bC-dE6"/>
-                            <!-- Logo: fixed height -->
-                            <constraint firstItem="Lm1-qR-wX3" firstAttribute="height" constant="100" id="Ax7-bC-dE8"/>
+                            <!-- Kanji: centered vertically, shifted up by 50pt to leave room for wordmark -->
+                            <constraint firstItem="Lm1-qR-wX3" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" constant="-50" id="Ax3-bC-dE4"/>
                             <!-- Wordmark: centered horizontally -->
                             <constraint firstItem="Pp4-nS-vY7" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="Bx1-cD-eF2"/>
-                            <!-- Wordmark: top = logo bottom + 20 -->
+                            <!-- Wordmark: top = kanji bottom + 20 -->
                             <constraint firstItem="Pp4-nS-vY7" firstAttribute="top" secondItem="Lm1-qR-wX3" secondAttribute="bottom" constant="20" id="Bx3-cD-eF4"/>
                         </constraints>
                     </view>
@@ -52,7 +52,4 @@
             <point key="canvasLocation" x="53" y="375"/>
         </scene>
     </scenes>
-    <resources>
-        <image name="waza-logo-white" width="100" height="100"/>
-    </resources>
 </document>

@@ -30,7 +30,6 @@ struct UserModel: StringIdentifiable, Codable {
     // These values can be added by the user
     let submittedEmail: String?
     let submittedName: String?
-    let submittedProfileImage: String?
     let fcmToken: String?
     private(set) var didCompleteOnboarding: Bool?
     let trainingGoalPerWeek: Int?
@@ -50,7 +49,6 @@ struct UserModel: StringIdentifiable, Codable {
         lastSignInDate: Date? = nil,
         submittedEmail: String? = nil,
         submittedName: String? = nil,
-        submittedProfileImage: String? = nil,
         fcmToken: String? = nil,
         didCompleteOnboarding: Bool? = nil,
         trainingGoalPerWeek: Int? = nil
@@ -69,7 +67,6 @@ struct UserModel: StringIdentifiable, Codable {
         self.lastSignInDate = lastSignInDate
         self.submittedName = submittedName
         self.submittedEmail = submittedEmail
-        self.submittedProfileImage = submittedProfileImage
         self.fcmToken = fcmToken
         self.didCompleteOnboarding = didCompleteOnboarding
         self.trainingGoalPerWeek = trainingGoalPerWeek
@@ -107,7 +104,6 @@ struct UserModel: StringIdentifiable, Codable {
         case lastSignInDate = "last_sign_in_date"
         case submittedName = "submitted_name"
         case submittedEmail = "submitted_email"
-        case submittedProfileImage = "submitted_profile_image"
         case fcmToken = "fcm_token"
         case didCompleteOnboarding = "did_complete_onboarding"
         case trainingGoalPerWeek = "training_goal_per_week"
@@ -131,7 +127,6 @@ struct UserModel: StringIdentifiable, Codable {
             "user_\(CodingKeys.lastSignInDate.rawValue)": lastSignInDate,
             "user_\(CodingKeys.submittedName.rawValue)": submittedName,
             "user_\(CodingKeys.submittedEmail.rawValue)": submittedEmail,
-            "user_\(CodingKeys.submittedProfileImage.rawValue)": submittedProfileImage,
             "user_has_\(CodingKeys.fcmToken.rawValue)": (fcmToken?.count ?? 0) > 0,
             "user_\(CodingKeys.didCompleteOnboarding.rawValue)": didCompleteOnboarding,
             "user_\(CodingKeys.trainingGoalPerWeek.rawValue)": trainingGoalPerWeek
@@ -183,16 +178,6 @@ struct UserModel: StringIdentifiable, Codable {
             return displayNameCalculated
         } else if let firstNameCalculated {
             return firstNameCalculated
-        }
-        return nil
-    }
-    
-    /// Try to get submitted profile image, otherwise user image from user's auth (if available).
-    var profileImageNameCalculated: String? {
-        if let submittedProfileImage {
-            return submittedProfileImage
-        } else if let photoURL {
-            return photoURL
         }
         return nil
     }

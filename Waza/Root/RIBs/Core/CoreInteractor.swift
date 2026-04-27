@@ -230,10 +230,6 @@ struct CoreInteractor: GlobalInteractor {
         try await userManager.saveUserEmail(email: email)
     }
 
-    func saveUserProfileImage(image: UIImage) async throws {
-        try await userManager.saveUserProfileImage(image: image)
-    }
-
     func saveUserFCMToken(token: String) async throws {
         try await userManager.saveUserFCMToken(token: token)
     }

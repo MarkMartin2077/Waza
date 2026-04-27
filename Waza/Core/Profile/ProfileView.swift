@@ -1,5 +1,4 @@
 import SwiftUI
-import PhotosUI
 
 struct ProfileDelegate {
     var eventParameters: [String: Any]? {
@@ -11,7 +10,6 @@ struct ProfileView: View {
 
     @State var presenter: ProfilePresenter
     let delegate: ProfileDelegate
-    @State private var selectedPhotoItem: PhotosPickerItem?
 
     var body: some View {
         ScrollView {
@@ -68,10 +66,7 @@ struct ProfileView: View {
 
     private var headerSection: some View {
         VStack(spacing: 12) {
-            avatarPicker
-                .onChange(of: selectedPhotoItem) { _, newItem in
-                    Task { await handlePhotoSelection(newItem) }
-                }
+            avatar
 
             Text(presenter.userName)
                 .font(.wazaDisplayMedium)
@@ -88,51 +83,18 @@ struct ProfileView: View {
         .padding(.vertical, 8)
     }
 
-    /// Tappable avatar — shows existing profile image if available, falls back to
-    /// initials. Opens the system photo picker on tap.
-    ///
-    /// The label content is extracted into a dedicated `View` struct (`AvatarLabelView`)
-    /// rather than an instance method so that constructing it inside `PhotosPicker`'s
-    /// `label:` closure doesn't cross a main-actor boundary — construction is a plain
-    /// value init, and the view's own body runs on main at render time through `View`
-    /// conformance.
-    private var avatarPicker: some View {
-        // Read presenter state into local Sendable primitives *before* entering the
-        // PhotosPicker closure — the label closure is @Sendable and can't touch
-        // main-actor-isolated state directly.
-        let imageURL = presenter.profileImageURL
-        let localImage = presenter.pendingLocalImage
-        let userName = presenter.userName
-        let isUploading = presenter.isUploadingProfileImage
+    private var avatar: some View {
+        ZStack {
+            Circle()
+                .fill(Color.wazaAccent.opacity(0.15))
+                .frame(width: 80, height: 80)
 
-        return PhotosPicker(selection: $selectedPhotoItem, matching: .images) {
-            AvatarLabelView(
-                imageURL: imageURL,
-                localImage: localImage,
-                userName: userName,
-                isUploading: isUploading
-            )
+            Text(presenter.avatarInitials)
+                .font(.largeTitle)
+                .fontWeight(.bold)
+                .foregroundStyle(Color.wazaAccent)
         }
-        .accessibilityLabel("Change profile photo")
-    }
-
-    private func handlePhotoSelection(_ item: PhotosPickerItem?) async {
-        guard let item else { return }
-        defer { selectedPhotoItem = nil }
-
-        do {
-            guard let data = try await item.loadTransferable(type: Data.self) else {
-                presenter.onProfileImageLoadFailed(error: nil)
-                return
-            }
-            guard let image = UIImage(data: data) else {
-                presenter.onProfileImageLoadFailed(error: nil)
-                return
-            }
-            presenter.onProfileImageSelected(image)
-        } catch {
-            presenter.onProfileImageLoadFailed(error: error)
-        }
+        .accessibilityLabel("Profile avatar")
     }
 
     // MARK: - Stats
@@ -201,59 +163,6 @@ struct ProfileView: View {
 
     return RouterView { router in
         builder.profileView(router: router)
-    }
-}
-
-// MARK: - Avatar Label
-
-/// Value-type view so construction inside `PhotosPicker`'s `label:` closure
-/// doesn't cross main-actor isolation. The body runs on the main actor at render
-/// time through standard SwiftUI View conformance.
-private struct AvatarLabelView: View {
-    let imageURL: String?
-    let localImage: UIImage?
-    let userName: String
-    let isUploading: Bool
-
-    var body: some View {
-        ZStack {
-            Circle()
-                .fill(Color.wazaAccent.opacity(0.15))
-                .frame(width: 80, height: 80)
-
-            if let localImage {
-                Image(uiImage: localImage)
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .frame(width: 80, height: 80)
-                    .clipShape(Circle())
-            } else if let imageURL, !imageURL.isEmpty {
-                ImageLoaderView(urlString: imageURL)
-                    .frame(width: 80, height: 80)
-                    .clipShape(Circle())
-            } else {
-                Text(String(userName.prefix(1)).uppercased())
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-                    .foregroundStyle(Color.wazaAccent)
-            }
-
-            Image(systemName: "camera.fill")
-                .font(.caption2)
-                .foregroundStyle(.white)
-                .frame(width: 22, height: 22)
-                .background(Color.wazaAccent, in: Circle())
-                .overlay(Circle().strokeBorder(Color(.systemBackground), lineWidth: 2))
-                .offset(x: 28, y: 28)
-
-            if isUploading {
-                Circle()
-                    .fill(.black.opacity(0.35))
-                    .frame(width: 80, height: 80)
-                ProgressView()
-                    .tint(.white)
-            }
-        }
     }
 }
 

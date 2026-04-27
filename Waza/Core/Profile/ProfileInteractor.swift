@@ -7,7 +7,6 @@ protocol ProfileInteractor: GlobalInteractor {
     var isPremium: Bool { get }
     var currentStreakData: CurrentStreakData { get }
     var currentExperiencePointsData: CurrentExperiencePointsData { get }
-    func saveUserProfileImage(image: UIImage) async throws
 }
 
 extension CoreInteractor: ProfileInteractor { }

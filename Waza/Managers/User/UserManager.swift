@@ -91,11 +91,6 @@ class UserManager {
         try await remote.saveUserEmail(userId: uid, email: email)
     }
     
-    func saveUserProfileImage(image: UIImage) async throws {
-        let uid = try currentUserId()
-        try await remote.saveUserProfileImage(userId: uid, image: image)
-    }
-    
     func saveUserFCMToken(token: String) async throws {
         let uid = try currentUserId()
         try await remote.saveUserFCMToken(userId: uid, token: token)

@@ -5,7 +5,6 @@
 //  
 //
 import SwiftUI
-import UIKit
 
 @MainActor
 class MockUserService: RemoteUserService {
@@ -42,41 +41,6 @@ class MockUserService: RemoteUserService {
     
     func saveUserEmail(userId: String, email: String) async throws {
         
-    }
-    
-    func saveUserProfileImage(userId: String, image: UIImage) async throws {
-        guard let user = currentUser else {
-            throw URLError(.userAuthenticationRequired)
-        }
-
-        guard let data = image.jpegData(compressionQuality: 0.85) else {
-            throw URLError(.cannotCreateFile)
-        }
-
-        let fileURL = FileManager.default.temporaryDirectory
-            .appendingPathComponent("mock_profile_\(userId)_\(UUID().uuidString).jpg")
-        try data.write(to: fileURL)
-
-        currentUser = UserModel(
-            userId: user.userId,
-            email: user.email,
-            isAnonymous: user.isAnonymous,
-            authProviders: user.authProviders,
-            displayName: user.displayName,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            phoneNumber: user.phoneNumber,
-            photoURL: user.photoURL,
-            creationDate: user.creationDate,
-            creationVersion: user.creationVersion,
-            lastSignInDate: user.lastSignInDate,
-            submittedEmail: user.submittedEmail,
-            submittedName: user.submittedName,
-            submittedProfileImage: fileURL.absoluteString,
-            fcmToken: user.fcmToken,
-            didCompleteOnboarding: user.didCompleteOnboarding,
-            trainingGoalPerWeek: user.trainingGoalPerWeek
-        )
     }
     
     func markOnboardingCompleted(userId: String) async throws {

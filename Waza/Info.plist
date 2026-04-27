@@ -56,5 +56,7 @@
 	<string>Waza uses background location to detect when you arrive at your gym for automatic check-in.</string>
 	<key>NSSupportsLiveActivities</key>
 	<true/>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>Waza uses this to measure how training features are used so we can improve the app. Your data is never sold.</string>
 </dict>
 </plist>
