@@ -2,7 +2,7 @@
 
 A BJJ training tracker for iOS 26. Log sessions, check in at your gym, track techniques, earn XP, and watch your game grow.
 
-[Available on the App Store →](https://apps.apple.com/app/id6759821384)
+[Available on the App Store →](https://apps.apple.com/us/app/wazabjj/id6759821384)
 
 <p align="center">
   <img src="Screenshots/01_home.png" width="24%" alt="Home" />
